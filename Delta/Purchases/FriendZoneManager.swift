@@ -67,17 +67,7 @@ extension FriendZoneManager
         }
     }
     
-    func updateRevenueCatPatrons() async throws
-    {
-        let context = DatabaseManager.shared.newBackgroundContext()
-        _ = try await self.fetchRevenueCatPatrons(in: context)
-        
-        try await context.perform(schedule: .enqueued) {
-            try context.save()
-        }
-        
-        NotificationCenter.default.post(name: FriendZoneManager.didUpdatePatronsNotification, object: self)
-    }
+
 }
 
 @available(iOS 17.5, *)
@@ -112,10 +102,7 @@ private extension FriendZoneManager
         
         let context = DatabaseManager.shared.newBackgroundContext()
         
-        async let patreonPatrons = self.fetchPatreonPatrons(in: context)
-        async let revenueCatPatrons: [ManagedPatron] = [] //TODO: Re-enable fetching RevenueCat patrons once we can effectively fetch Friend Zone customers at scale.
-        
-        let allPatrons = try await revenueCatPatrons + patreonPatrons
+        let allPatrons = try await self.fetchPatreonPatrons(in: context)
         
         try await context.perform {
             let patronIDs = allPatrons.map(\.identifier)
@@ -158,22 +145,4 @@ private extension FriendZoneManager
         }
     }
     
-    func fetchRevenueCatPatrons(in context: NSManagedObjectContext) async throws -> [ManagedPatron]
-    {
-        do
-        {
-            let users = try await RevenueCatManager.shared.fetchFriendZoneUsers()
-            
-            let managedPatrons = await context.perform {
-                return users.compactMap { ManagedPatron(name: $0.name, identifier: $0.id, isPatreonPatron: false, context: context) }
-            }
-            
-            return managedPatrons
-        }
-        catch
-        {
-            Logger.main.error("Failed to update RevenueCat Friend Zone patrons. \(error.localizedDescription, privacy: .public)")
-            throw error
-        }
-    }
 }

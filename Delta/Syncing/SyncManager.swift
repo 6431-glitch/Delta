@@ -43,12 +43,14 @@ extension SyncManager
     {
         case googleDrive = "com.rileytestut.Harmony.Drive"
         case dropbox = "com.rileytestut.Harmony.Dropbox"
+        case iCloud = "page.ducnguyen.Delta.iCloud"
         
         var localizedName: String {
             switch self
             {
             case .googleDrive: return NSLocalizedString("Google Drive", comment: "")
             case .dropbox: return NSLocalizedString("Dropbox", comment: "")
+            case .iCloud: return NSLocalizedString("iCloud", comment: "")
             }
         }
         
@@ -57,6 +59,7 @@ extension SyncManager
             {
             case .googleDrive: return DriveService.shared
             case .dropbox: return DropboxService.shared
+            case .iCloud: return iCloudService.shared
             }
         }
     }

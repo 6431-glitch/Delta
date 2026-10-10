@@ -57,12 +57,6 @@ public class Keychain
     @KeychainItem(key: "patreonAccountID")
     public var patreonAccountID: String?
     
-    @KeychainItem(key: "revenueCatDisplayName")
-    public var revenueCatDisplayName: String?
-    
-    @KeychainItem(key: "revenueCatEmailAddress")
-    public var revenueCatEmailAddress: String?
-    
     @KeychainItem(key: "retroAchievementsUsername")
     public var retroAchievementsUsername: String?
     

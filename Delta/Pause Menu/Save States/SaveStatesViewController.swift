@@ -48,6 +48,12 @@ extension SaveStatesViewController
         }
     }
     
+    enum Layout: String, CaseIterable {
+        case grid, list
+        var title: String { self == .grid ? String(localized: "Grid") : String(localized: "List") }
+        var symbol: String { self == .grid ? "square.grid.2x2" : "list.bullet" }
+    }
+
     enum Sorting: String, CaseIterable
     {
         case name
@@ -113,6 +119,9 @@ class SaveStatesViewController: UICollectionViewController
         }
     }
     
+    private var preferredLayout = Layout(rawValue: UserDefaults.standard.string(forKey: "saveStatesLayout") ?? "") ?? .grid
+    private var layoutButton: UIBarButtonItem!
+    private var cardWidth: CGFloat = 150
     private var filter: Filter = .compatible
         
     private var vibrancyView: UIVisualEffectView!
@@ -163,6 +172,14 @@ extension SaveStatesViewController
     {
         super.viewDidLoad()
         
+        let compactLayout = UICollectionViewFlowLayout()
+        compactLayout.minimumLineSpacing = 12
+        compactLayout.minimumInteritemSpacing = 12
+        compactLayout.sectionInset = UIEdgeInsets(top: 6, left: 16, bottom: 12, right: 16)
+        collectionView.setCollectionViewLayout(compactLayout, animated: false)
+        navigationItem.largeTitleDisplayMode = .never
+        overrideUserInterfaceStyle = .dark
+
         self.collectionView?.dataSource = self.dataSource
         self.collectionView?.prefetchDataSource = self.dataSource
         
@@ -186,6 +203,13 @@ extension SaveStatesViewController
         self.collectionView.allowsMultipleSelectionDuringEditing = true
 
         var rightBarButtonItems = self.navigationItem.rightBarButtonItems ?? []
+        layoutButton = UIBarButtonItem(image: UIImage(systemName: preferredLayout.symbol), primaryAction: UIAction { [weak self] _ in
+            guard let self else { return }
+            self.changeLayout(self.preferredLayout == .grid ? .list : .grid)
+        })
+        layoutButton.accessibilityLabel = String(localized: "Save State Layout")
+        updateLayoutButton()
+        rightBarButtonItems.insert(layoutButton, at: 0)
         rightBarButtonItems.insert(self.editButtonItem, at: 0)
         self.navigationItem.rightBarButtonItems = rightBarButtonItems
 
@@ -256,6 +280,16 @@ extension SaveStatesViewController
     override func didReceiveMemoryWarning()
     {
         super.didReceiveMemoryWarning()
+    }
+
+    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        super.traitCollectionDidChange(previousTraitCollection)
+        guard isViewLoaded,
+              previousTraitCollection?.preferredContentSizeCategory != traitCollection.preferredContentSizeCategory else { return }
+        let selected = collectionView.indexPathsForSelectedItems ?? []
+        update()
+        collectionView.reloadData()
+        for index in selected { collectionView.selectItem(at: index, animated: false, scrollPosition: []) }
     }
 }
 
@@ -655,45 +689,38 @@ private extension SaveStatesViewController
             self.incompatibleButton.isHidden = true
         }
                 
-        let collectionViewLayout = self.collectionViewLayout as! GridCollectionViewLayout
-        
-        if self.traitCollection.horizontalSizeClass == .regular
-        {
-            collectionViewLayout.itemWidth = 180
-            collectionViewLayout.minimumInteritemSpacing = 30
-        }
-        else
-        {
-            //FIXME: Calculate actual values so resizing results in correct thumbnail size
-            let averageHorizontalInset = 20.0
-            
-            var portraitWindowWidth = UIScreen.main.coordinateSpace.convert(UIScreen.main.bounds, to: UIScreen.main.fixedCoordinateSpace).width
-            
-            if let window = self.view.window
-            {
-                if window.bounds.height > window.bounds.width
-                {
-                    // Portrait window
-                    portraitWindowWidth = window.bounds.width
-                }
-                else
-                {
-                    // Landscape window
-                    portraitWindowWidth = window.bounds.height
-                }
-            }
-            
-            // Use dimensions that allow two cells to fill the screen horizontally with padding in portrait mode
-            // We'll keep the same size for landscape orientation, which will allow more to fit
-            let value = (portraitWindowWidth - (averageHorizontalInset * 3)) / 2
-            collectionViewLayout.itemWidth = floor(value)
-        }
-        
-        // Manually update prototype cell properties
-        self.prototypeCellWidthConstraint.constant = collectionViewLayout.itemWidth
-        self.prototypeHeaderWidthConstraint.constant = self.collectionView.bounds.width - (self.collectionView.contentInset.left + self.collectionView.contentInset.right)
+        let available = max(1, collectionView.bounds.width - collectionView.adjustedContentInset.left - collectionView.adjustedContentInset.right - 32)
+        let columns = traitCollection.preferredContentSizeCategory.isAccessibilityCategory ? 1 : max(1, Int((available + 12) / 150))
+        cardWidth = preferredLayout == .list ? available : floor((available - CGFloat(columns - 1) * 12) / CGFloat(columns))
+        prototypeCellWidthConstraint.constant = cardWidth
+        prototypeHeaderWidthConstraint.constant = available + 32
+        collectionViewLayout.invalidateLayout()
     }
     
+    func changeLayout(_ layout: Layout) {
+        guard preferredLayout != layout else { return }
+        let selected = collectionView.indexPathsForSelectedItems ?? []
+        let anchor = collectionView.indexPathsForVisibleItems.sorted().first
+        preferredLayout = layout
+        UserDefaults.standard.set(layout.rawValue, forKey: "saveStatesLayout")
+        updateLayoutButton()
+        update()
+        collectionView.reloadData()
+        collectionView.layoutIfNeeded()
+        for index in selected { collectionView.selectItem(at: index, animated: false, scrollPosition: []) }
+        if let anchor { collectionView.scrollToItem(at: anchor, at: .top, animated: false) }
+    }
+
+    func updateLayoutButton() {
+        layoutButton.image = UIImage(systemName: preferredLayout.symbol)
+        layoutButton.accessibilityValue = preferredLayout.title
+        layoutButton.menu = UIMenu(title: String(localized: "Layout"), children: Layout.allCases.map { layout in
+            UIAction(title: layout.title, image: UIImage(systemName: layout.symbol), state: preferredLayout == layout ? .on : .off) { [weak self] _ in
+                self?.changeLayout(layout)
+            }
+        })
+    }
+
     //MARK: - Configure Views -
     
     func configure(_ cell: GridCollectionViewCell, for indexPath: IndexPath)
@@ -746,7 +773,15 @@ private extension SaveStatesViewController
             dimensions = CGSize(width: 1, height: 1)
         }
                 
-        cell.maximumImageSize = CGSize(width: self.prototypeCellWidthConstraint.constant, height: (self.prototypeCellWidthConstraint.constant / dimensions.width) * dimensions.height)
+        let imageWidth = preferredLayout == .list ? 84 : max(1, cardWidth - 20)
+        let ratio = dimensions.height / max(1, dimensions.width)
+        cell.maximumImageSize = CGSize(width: imageWidth, height: min(imageWidth * ratio, preferredLayout == .list ? 64 : imageWidth * 0.8))
+        cell.isImageViewVibrancyEnabled = false
+        cell.isTextLabelVibrancyEnabled = false
+        if #available(iOS 26, *) { cell.isImageViewGlassEnabled = false }
+        cell.imageView.contentMode = .scaleAspectFit
+        cell.setSaveStateLayout(isList: preferredLayout == .list)
+        cell.textLabel.textColor = .white
         
         let fontDescriptor = UIFontDescriptor.preferredFontDescriptor(withTextStyle: .subheadline).withSymbolicTraits(.traitBold)!
         cell.textLabel.font = UIFont(descriptor: fontDescriptor, size: 0.0)
@@ -759,6 +794,8 @@ private extension SaveStatesViewController
     func configure(_ headerView: SaveStatesCollectionHeaderView, forSection section: Int)
     {
         let section = self.correctedSectionForSectionIndex(section)
+        headerView.textView.textAlignment = .left
+        headerView.textView.font = UIFont.preferredFont(forTextStyle: .subheadline)
         switch section
         {
         case .info:
@@ -1365,16 +1402,19 @@ extension SaveStatesViewController: UICollectionViewDelegateFlowLayout
     {
         self.configure(self.prototypeCell, for: indexPath)
         
-        let size = self.prototypeCell.contentView.systemLayoutSizeFitting(UIView.layoutFittingCompressedSize)
-        return size
+        let textHeight = ceil(prototypeCell.textLabel.font.lineHeight * 2)
+        let height = preferredLayout == .list ? max(84, textHeight + 24) : prototypeCell.maximumImageSize.height + textHeight + 28
+        return CGSize(width: cardWidth, height: height)
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, referenceSizeForHeaderInSection section: Int) -> CGSize
     {
         self.configure(self.prototypeHeader, forSection: section)
         
-        let size = self.prototypeHeader.systemLayoutSizeFitting(UIView.layoutFittingCompressedSize)
-        return size
+        if correctedSectionForSectionIndex(section) != .info {
+            return CGSize(width: prototypeHeaderWidthConstraint.constant, height: max(32, ceil(prototypeHeader.textView.font?.lineHeight ?? 20) + 12))
+        }
+        return self.prototypeHeader.systemLayoutSizeFitting(UIView.layoutFittingCompressedSize)
     }
 }
 
