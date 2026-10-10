@@ -25,7 +25,7 @@ struct MenuItemButton: View
         // This probably should be a .contextMenu() View modifier instead of Menu...
         // but the animation when presenting the context menu is kinda jank on iOS 26 :(
         Menu {
-            ForEach(item.menuOptions, id: \.title) { action in
+            ForEach(Array(item.menuOptions.enumerated()), id: \.offset) { _, action in
                 button(for: action)
             }
         } label: {

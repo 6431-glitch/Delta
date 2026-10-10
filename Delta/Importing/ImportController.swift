@@ -37,6 +37,7 @@ class ImportController: NSObject
     
     var delegate: ImportControllerDelegate?
     var importOptions: [ImportOption]?
+    var allowsMultipleSelection = true
     
     weak var presentingViewController: UIViewController?
     
@@ -159,7 +160,7 @@ class ImportController: NSObject
             let documentPickerViewController = UIDocumentPickerViewController(forOpeningContentTypes: supportedTypes, asCopy: true)
             documentPickerViewController.delegate = self
             documentPickerViewController.overrideUserInterfaceStyle = .dark
-            documentPickerViewController.allowsMultipleSelection = true
+            documentPickerViewController.allowsMultipleSelection = allowsMultipleSelection
             
             presentedViewController = documentPickerViewController
         }

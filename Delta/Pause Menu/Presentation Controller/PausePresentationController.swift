@@ -100,6 +100,12 @@ class PausePresentationController: UIPresentationController
         self.vibrancyView.frame = self.containerView!.frame
         self.vibrancyView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         self.containerView?.addSubview(self.vibrancyView)
+        if #unavailable(iOS 26) {
+            let outsideTap = UITapGestureRecognizer(target: self, action: #selector(dismissFromOutsideTap))
+            outsideTap.delegate = self
+            containerView?.addGestureRecognizer(outsideTap)
+        }
+
         
         if #available(iOS 26, *)
         {
@@ -246,5 +252,16 @@ class PausePresentationController: UIPresentationController
         
         self.contentView.setNeedsLayout() // Ensures that layout will actually occur (sometimes the system thinks a layout is not needed, which messes up calculations)
         self.contentView.layoutIfNeeded()
+    }
+}
+
+extension PausePresentationController: UIGestureRecognizerDelegate {
+    func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
+        guard let presentedView else { return false }
+        return !presentedView.bounds.contains(touch.location(in: presentedView))
+    }
+
+    @objc private func dismissFromOutsideTap() {
+        (presentedViewController as? PauseViewController)?.dismiss()
     }
 }

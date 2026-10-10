@@ -65,6 +65,11 @@ extension PauseView
     }
 }
 
+private struct PauseItemFramesKey: PreferenceKey {
+    static let defaultValue: [CGRect] = []
+    static func reduce(value: inout [CGRect], nextValue: () -> [CGRect]) { value += nextValue() }
+}
+
 @available(iOS 26, *)
 struct PauseView: View
 {
@@ -78,7 +83,8 @@ struct PauseView: View
     
     @SwiftUI.State
     private var isHidden: Bool = true
-    
+    @SwiftUI.State private var itemFrames: [CGRect] = []
+
     @AppStorage(Settings.Name.pauseMenuToolbarPlacement.rawValue)
     private var toolbarPlacement: Settings.PauseMenuToolbarPlacement = .bottom
 
@@ -105,6 +111,9 @@ struct PauseView: View
                             ForEach(items, id: \.text) { item in
                                 MenuItemButton(item: item)
                                     .frame(maxWidth: .infinity, maxHeight: .infinity) // Fill proposed frame with glass effect
+                                    .background(GeometryReader { itemGeometry in
+                                        Color.clear.preference(key: PauseItemFramesKey.self, value: [itemGeometry.frame(in: .named("pauseMenuViewport"))])
+                                    })
                             }
                         }
                     }
@@ -113,6 +122,13 @@ struct PauseView: View
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity) // Fill proposed frame with ScrollView.
         }
+        .coordinateSpace(name: "pauseMenuViewport")
+        .onPreferenceChange(PauseItemFramesKey.self) { itemFrames = $0 }
+        .simultaneousGesture(SpatialTapGesture().onEnded { tap in
+            guard !isHidden, !itemFrames.isEmpty,
+                  !itemFrames.contains(where: { $0.contains(tap.location) }) else { return }
+            resumeHandler()
+        })
         .ignoresSafeArea(edges: [.top, .bottom])
         .navigationTitle(Text("")) // HACK: Fixes UI glitch when transitioning to SaveStatesViewController.
         .navigationBarTitleDisplayMode(.large)

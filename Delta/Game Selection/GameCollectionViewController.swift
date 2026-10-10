@@ -572,13 +572,13 @@ private extension GameCollectionViewController
     }
     
     //MARK: - Emulation
-    func launchGame(at indexPath: IndexPath, clearScreen: Bool, ignoreAlreadyRunningError: Bool = false)
+    func launchGame(at indexPath: IndexPath, clearScreen: Bool, ignoreAlreadyRunningError: Bool = false, selectedGame: Game? = nil)
     {
         self.isResumingGame = false
         
         func launchGame(ignoringErrors ignoredErrors: [Error])
         {
-            let game = self.dataSource.item(at: indexPath)
+            let game = selectedGame ?? self.dataSource.item(at: indexPath)
             
             do
             {
@@ -589,8 +589,7 @@ private extension GameCollectionViewController
                     self.activeEmulatorCore?.gameViews.forEach { $0.inputImage = nil }
                 }
                 
-                let cell = self.collectionView.cellForItem(at: indexPath)
-                self.performSegue(withIdentifier: "unwindFromGames", sender: cell)
+                self.performSegue(withIdentifier: "unwindFromGames", sender: game)
             }
             catch
             {
@@ -787,7 +786,7 @@ private extension GameCollectionViewController
 //MARK: - Game Actions -
 private extension GameCollectionViewController
 {
-    func actions(for game: Game) -> [UIMenuElement]
+    func actions(for game: Game, artworkActions: [UIMenuElement]? = nil) -> [UIMenuElement]
     {
         let openNewWindowAction = UIAction(title: NSLocalizedString("Open in New Window", comment: ""), image: UIImage(symbolNameIfAvailable: "square.grid.2x2")) { [unowned self] action in
             self.openInNewWindow(game)
@@ -805,7 +804,9 @@ private extension GameCollectionViewController
             self.rename(game)
         }
         
-        let changeArtworkAction = UIAction(title: NSLocalizedString("Change Artwork", comment: ""), image: UIImage(symbolNameIfAvailable: "photo")) { [unowned self] action in
+        let changeArtworkAction: UIMenuElement = artworkActions.map {
+            UIMenu(title: NSLocalizedString("Artwork", comment: ""), image: UIImage(systemName: "photo"), children: $0)
+        } ?? UIAction(title: NSLocalizedString("Change Artwork", comment: ""), image: UIImage(symbolNameIfAvailable: "photo")) { [unowned self] action in
             self.changeArtwork(for: game)
         }
         
@@ -1576,6 +1577,39 @@ extension GameCollectionViewController: UICollectionViewDragDelegate
         {
             Logger.main.error("Error validating dragging game. \(error.localizedDescription, privacy: .public)")
             return []
+        }
+    }
+}
+
+
+extension GameCollectionViewController {
+    /// Share the complete library action set, including its existing confirmation and validation flows.
+    func actionsFromAurora(for game: Game, sourceView: UIView, artworkActions: [UIMenuElement]) -> [UIMenuElement] {
+        _popoverSourceView = sourceView
+        return actions(for: game, artworkActions: artworkActions)
+    }
+
+    func dragProviderFromAurora(for game: Game) -> NSItemProvider? {
+        do {
+            try validateLaunchingGame(game, ignoringErrors: [])
+            let provider = NSItemProvider()
+            provider.registerObject(NSUserActivity(game: game), visibility: .all)
+            return provider
+        } catch { return nil }
+    }
+
+    func favoriteFromHome(_ game: Game) { favorite(game) }
+
+    /// Reuse the existing validation and unwind route without depending on a grid cell.
+    func launchFromHome(_ game: Game) {
+        guard game.gameCollection?.system != nil else { return }
+        if #available(iOS 26, *), Settings.opensGamesInNewWindow,
+           let scene = view.window?.windowScene, scene.isStageManagerEnabled {
+            openInNewWindow(game)
+        } else if (activeEmulatorCore?.game as? Game)?.identifier == game.identifier || game.playedDate != nil {
+            resume(game)
+        } else {
+            launchGame(at: IndexPath(item: 0, section: 0), clearScreen: true, selectedGame: game)
         }
     }
 }

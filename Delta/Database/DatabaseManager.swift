@@ -383,7 +383,7 @@ extension DatabaseManager
                     continue
                 }
                 
-                guard let gameType = GameType(fileExtension: url.pathExtension), let system = System(gameType: gameType) else {
+                guard let gameType = GameType(fileExtension: url.pathExtension.lowercased()), let system = System(gameType: gameType) else {
                     errors.insert(.unsupported(url))
                     continue
                 }
@@ -405,7 +405,7 @@ extension DatabaseManager
                     continue
                 }
                 
-                let filename = identifier + "." + url.pathExtension
+                let filename = identifier + "." + url.pathExtension.lowercased()
                 
                 let game = Game(context: context)
                 game.identifier = identifier

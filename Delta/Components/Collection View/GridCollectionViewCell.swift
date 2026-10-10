@@ -72,6 +72,45 @@ class GridCollectionViewCell: UICollectionViewCell
     private let vibrancyView = UIVisualEffectView(effect: UIVibrancyEffect(blurEffect: UIBlurEffect(style: .dark)))
     private let labelVibrancyView = UIVisualEffectView(effect: UIVibrancyEffect(blurEffect: UIBlurEffect(style: .dark)))
     
+    private var defaultPositionConstraints = [NSLayoutConstraint]()
+    private var saveStatePositionConstraints = [NSLayoutConstraint]()
+    private var saveStateListLayout: Bool?
+
+    /// Compact save-state cards only; the other library/menu cells retain their layout.
+    func setSaveStateLayout(isList: Bool) {
+        guard saveStateListLayout != isList else { return }
+        saveStateListLayout = isList
+        NSLayoutConstraint.deactivate(defaultPositionConstraints + [textLabelBottomAnchorConstraint, textLabelVerticalSpacingConstraint])
+        NSLayoutConstraint.deactivate(saveStatePositionConstraints)
+        if isList {
+            saveStatePositionConstraints = [
+                imageView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 10),
+                imageView.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
+                textLabel.leadingAnchor.constraint(equalTo: imageView.trailingAnchor, constant: 12),
+                textLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -12),
+                textLabel.centerYAnchor.constraint(equalTo: contentView.centerYAnchor)
+            ]
+        } else {
+            saveStatePositionConstraints = [
+                imageView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 10),
+                imageView.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
+                textLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 10),
+                textLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -10),
+                textLabel.topAnchor.constraint(equalTo: imageView.bottomAnchor, constant: 8),
+                textLabel.bottomAnchor.constraint(lessThanOrEqualTo: contentView.bottomAnchor, constant: -10)
+            ]
+        }
+        NSLayoutConstraint.activate(saveStatePositionConstraints)
+        textLabel.textAlignment = .left
+        textLabel.numberOfLines = 2
+        let backdrop = UIVisualEffectView(effect: UIBlurEffect(style: .systemUltraThinMaterialDark))
+        backdrop.layer.cornerRadius = 16
+        backdrop.clipsToBounds = true
+        backdrop.layer.borderColor = UIColor.white.withAlphaComponent(0.12).cgColor
+        backdrop.layer.borderWidth = 0.5
+        backgroundView = backdrop
+    }
+
     private var imageViewWidthConstraint: NSLayoutConstraint!
     private var imageViewHeightConstraint: NSLayoutConstraint!
     
@@ -189,8 +228,13 @@ class GridCollectionViewCell: UICollectionViewCell
         // Image View
         self.imageView.translatesAutoresizingMaskIntoConstraints = false
         
-        self.imageView.topAnchor.constraint(equalTo: self.contentView.topAnchor).isActive = true
-        self.imageView.centerXAnchor.constraint(equalTo: self.contentView.centerXAnchor).isActive = true
+        defaultPositionConstraints = [
+            imageView.topAnchor.constraint(equalTo: contentView.topAnchor),
+            imageView.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
+            textLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
+            textLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor)
+        ]
+        NSLayoutConstraint.activate(defaultPositionConstraints)
         
         self.imageViewWidthConstraint = self.imageView.widthAnchor.constraint(equalToConstant: self.maximumImageSize.width)
         self.imageViewWidthConstraint.isActive = true
@@ -203,8 +247,6 @@ class GridCollectionViewCell: UICollectionViewCell
         // Text Label
         self.textLabel.translatesAutoresizingMaskIntoConstraints = false
         
-        self.textLabel.trailingAnchor.constraint(equalTo: self.contentView.trailingAnchor).isActive = true
-        self.textLabel.leadingAnchor.constraint(equalTo: self.contentView.leadingAnchor).isActive = true
         
         self.textLabelBottomAnchorConstraint = self.textLabel.bottomAnchor.constraint(equalTo: self.contentView.bottomAnchor)
         self.textLabelBottomAnchorConstraint.isActive = true

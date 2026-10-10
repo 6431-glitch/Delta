@@ -324,7 +324,7 @@
         <!--Navigation Controller-->
         <scene sceneID="zJI-sC-1sm">
             <objects>
-                <navigationController storyboardIdentifier="gamesNavigationController" automaticallyAdjustsScrollViewInsets="NO" id="wKV-3d-NIY" sceneMemberID="viewController">
+                <navigationController storyboardIdentifier="gamesNavigationController" automaticallyAdjustsScrollViewInsets="NO" id="wKV-3d-NIY" customClass="GamesNavigationController" customModule="Delta" customModuleProvider="target" sceneMemberID="viewController">
                     <toolbarItems/>
                     <nil key="simulatedBottomBarMetrics"/>
                     <navigationBar key="navigationBar" contentMode="scaleToFill" id="wj9-1e-eev">

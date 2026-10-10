@@ -14,6 +14,52 @@ import AltKit
 
 import ShowTouches
 
+enum AppOrientation: String, CaseIterable {
+    case automatic, portrait, landscape
+    var title: String {
+        switch self {
+        case .automatic: return String(localized: "Auto")
+        case .portrait: return String(localized: "Lock Portrait")
+        case .landscape: return String(localized: "Lock Landscape")
+        }
+    }
+    var symbol: String {
+        switch self {
+        case .automatic: return "arrow.triangle.2.circlepath"
+        case .portrait: return "iphone.gen3"
+        case .landscape: return "iphone.gen3.landscape"
+        }
+    }
+    var mask: UIInterfaceOrientationMask {
+        switch self {
+        case .automatic: return .allButUpsideDown
+        case .portrait: return .portrait
+        case .landscape: return .landscape
+        }
+    }
+
+    static let didChange = Notification.Name("AppOrientationDidChange")
+    static var current: AppOrientation {
+        AppOrientation(rawValue: UserDefaults.standard.string(forKey: "homeOrientation") ?? "") ?? .automatic
+    }
+
+    static func apply(_ orientation: AppOrientation, onError: @escaping (Error) -> Void) {
+        UserDefaults.standard.set(orientation.rawValue, forKey: "homeOrientation")
+        NotificationCenter.default.post(name: didChange, object: nil)
+        guard #available(iOS 16, *) else { return }
+        func invalidate(_ controller: UIViewController) {
+            controller.setNeedsUpdateOfSupportedInterfaceOrientations()
+            controller.children.forEach(invalidate)
+            if let presented = controller.presentedViewController { invalidate(presented) }
+        }
+        for case let scene as UIWindowScene in UIApplication.shared.connectedScenes {
+            guard scene.session.role == .windowApplication else { continue }
+            scene.windows.compactMap(\.rootViewController).forEach(invalidate)
+            scene.requestGeometryUpdate(.iOS(interfaceOrientations: orientation.mask), errorHandler: onError)
+        }
+    }
+}
+
 private extension CFNotificationName
 {
     static let altstoreRequestAppState: CFNotificationName = CFNotificationName("com.altstore.RequestAppState.com.rileytestut.Delta" as CFString)
@@ -33,6 +79,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate
     
     private let deepLinkController = DeepLinkController(window: nil)
     private var appLaunchDeepLink: DeepLink?
+
+    func application(_ application: UIApplication, supportedInterfaceOrientationsFor window: UIWindow?) -> UIInterfaceOrientationMask {
+        AppOrientation.current.mask
+    }
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool
     {
@@ -64,12 +114,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate
             return false
         }
         
-        if #available(iOS 17.5, *)
-        {
-            Task<Void, Never> {
-                await PurchaseManager.shared.prepare()
-            }
-        }
 
         // Operator: start device listener
         self.startOperator()

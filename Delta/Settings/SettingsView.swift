@@ -28,46 +28,221 @@ private struct SettingsBadge: View
 
 struct SettingsView: View
 {
+    var isTab = false
     @Environment(\.dismiss)
     private var dismiss
+    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
+    @Environment(\.dynamicTypeSize) private var typeSize
+    @Environment(\.colorScheme) private var inheritedColorScheme
+    @SwiftUI.State private var category: SettingsCategory = .all
 
     var body: some View {
         NavigationStack {
-            Form {
-                PatreonSection()
-                ControlsSection()
-                EmulationSection()
-                OnlineMultiplayerSection()
-                DisplaySection()
-                ServicesSection()
-                MiscellaneousSection()
-                CreditsSection()
-                SupportSection()
+            Group {
+                if #available(iOS 26, *) {
+                    modernSettings
+                } else {
+                    Form {
+                        ControlsSection()
+                        EmulationSection()
+                        OnlineMultiplayerSection()
+                        DisplaySection()
+                        ServicesSection()
+                        MiscellaneousSection()
+                        CreditsSection()
+                        SupportSection()
+                    }
+                    .safeAreaPadding(.top, 8)
+                }
             }
-            .safeAreaPadding(.top, 8)
             .navigationTitle("Settings")
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                if #available(iOS 26, *)
-                {
-                    ToolbarItem(placement: .cancellationAction) {
-                        Button(role: .close) {
-                            // dismiss() skips presentationControllerDidDismiss, so explicitly sync on close.
-                            SyncManager.shared.sync()
-                            dismiss()
+                if !isTab {
+                    if #available(iOS 26, *)
+                    {
+                        ToolbarItem(placement: .cancellationAction) {
+                            Button(role: .close) {
+                                // dismiss() skips presentationControllerDidDismiss, so explicitly sync on close.
+                                SyncManager.shared.sync()
+                                dismiss()
+                            }
                         }
                     }
-                }
-                else
-                {
-                    ToolbarItem(placement: .confirmationAction) {
-                        Button("Done") {
-                            // dismiss() skips presentationControllerDidDismiss, so explicitly sync on close.
-                            SyncManager.shared.sync()
-                            dismiss()
+                    else
+                    {
+                        ToolbarItem(placement: .confirmationAction) {
+                            Button("Done") {
+                                // dismiss() skips presentationControllerDidDismiss, so explicitly sync on close.
+                                SyncManager.shared.sync()
+                                dismiss()
+                            }
                         }
                     }
                 }
             }
+            .toolbarColorScheme(isModern ? .dark : nil, for: .navigationBar)
+        }
+        .preferredColorScheme(isModern ? .dark : nil)
+        .environment(\.colorScheme, isModern ? .dark : inheritedColorScheme)
+    }
+
+    private var isModern: Bool {
+        if #available(iOS 26, *) { return true }
+        return false
+    }
+
+    @available(iOS 26, *)
+    private var modernSettings: some View {
+        GeometryReader { geometry in
+            let sidebar = geometry.size.width >= 650 && !typeSize.isAccessibilitySize
+            ZStack {
+                Color(red: 0.035, green: 0.045, blue: 0.09).ignoresSafeArea()
+                if !reduceTransparency {
+                    RadialGradient(colors: [.purple.opacity(0.24), .clear], center: .topLeading, startRadius: 0, endRadius: 550)
+                        .ignoresSafeArea().allowsHitTesting(false)
+                    RadialGradient(colors: [.teal.opacity(0.09), .clear], center: .bottomTrailing, startRadius: 0, endRadius: 500)
+                        .ignoresSafeArea().allowsHitTesting(false)
+                }
+                if sidebar {
+                    HStack(spacing: 0) {
+                        VStack(alignment: .leading, spacing: 20) {
+                            Label("Delta", systemImage: "gamecontroller.fill")
+                                .font(.title3.bold()).padding(.horizontal, 12)
+                            GlassEffectContainer(spacing: 12) {
+                                VStack(spacing: 8) {
+                                    ForEach(SettingsCategory.allCases) { item in
+                                        categoryButton(item, sidebar: true)
+                                    }
+                                }
+                            }
+                            Spacer(minLength: 0)
+                        }.padding(16).frame(width: 190)
+                        settingsForm
+                    }
+                } else {
+                    VStack(spacing: 0) {
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            GlassEffectContainer(spacing: 12) {
+                                HStack(spacing: 8) {
+                                    ForEach(SettingsCategory.allCases) { item in
+                                        categoryButton(item, sidebar: false)
+                                    }
+                                }.padding(.horizontal, 20).padding(.vertical, 10)
+                            }
+                        }
+                        settingsForm
+                    }
+                }
+            }
+        }
+        .preferredColorScheme(.dark)
+        .tint(Color(red: 0.73, green: 0.52, blue: 1))
+    }
+
+    @available(iOS 26, *)
+    private func categoryButton(_ item: SettingsCategory, sidebar: Bool) -> some View {
+        Button { category = item } label: {
+            Label(item.title, systemImage: item.symbol)
+                .font(.subheadline.weight(category == item ? .semibold : .medium))
+                .padding(.horizontal, 16).frame(minHeight: 44)
+                .frame(maxWidth: sidebar ? .infinity : nil, alignment: .leading)
+                .foregroundStyle(category == item ? .white : .white.opacity(0.7))
+        }
+        .buttonStyle(.plain)
+        .glassEffect(.regular.tint(category == item ? .purple.opacity(0.3) : .clear).interactive(), in: .capsule)
+        .accessibilityAddTraits(category == item ? .isSelected : [])
+    }
+
+    @available(iOS 26, *)
+    private var settingsForm: some View {
+        Form {
+            Section {
+                settingsHero
+                    .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
+                    .listRowBackground(Color.clear)
+            }
+            Group {
+                if category == .all || category == .play {
+                    ControlsSection()
+                    EmulationSection()
+                    OnlineMultiplayerSection()
+                }
+                if category == .all || category == .appearance { DisplaySection() }
+                if category == .all || category == .accounts { ServicesSection() }
+                if category == .all || category == .more {
+                    MiscellaneousSection()
+                    CreditsSection()
+                    SupportSection()
+                }
+            }
+            .listRowBackground(Color(red: 0.095, green: 0.105, blue: 0.16))
+            .listRowInsets(EdgeInsets(top: 14, leading: 16, bottom: 14, trailing: 16))
+            Section {
+                Text("Delta \(Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "")")
+                    .font(.caption).foregroundStyle(.secondary).frame(maxWidth: .infinity)
+                    .listRowBackground(Color.clear)
+            }
+        }
+        .environment(\.colorScheme, .dark)
+        .scrollContentBackground(.hidden)
+        .contentMargins(.top, 8, for: .scrollContent)
+        .listSectionSpacing(8)
+        .id(category)
+    }
+
+    private var settingsHero: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(alignment: .top, spacing: 16) {
+                Image(systemName: category == .all ? "gamecontroller.fill" : category.symbol)
+                    .font(.system(size: 26, weight: .medium))
+                    .foregroundStyle(.white)
+                    .frame(width: 50, height: 50)
+                    .background(LinearGradient(colors: [.purple, .indigo], startPoint: .topLeading, endPoint: .bottomTrailing), in: RoundedRectangle(cornerRadius: 18))
+                    .accessibilityHidden(true)
+                VStack(alignment: .leading, spacing: 6) {
+                    Text(category == .all ? String(localized: "Make Delta yours") : category.title)
+                        .font(.title2.bold()).foregroundStyle(.white)
+                    Text(category.subtitle).font(.subheadline).foregroundStyle(.white.opacity(0.65))
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                Spacer(minLength: 0)
+            }
+        }
+        .padding(16).frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color.white.opacity(reduceTransparency ? 0.1 : 0.045), in: RoundedRectangle(cornerRadius: 26))
+        .overlay(RoundedRectangle(cornerRadius: 26).stroke(.white.opacity(0.08), lineWidth: 1))
+    }
+}
+
+private enum SettingsCategory: String, CaseIterable, Identifiable {
+    case all, play, appearance, accounts, more
+    var id: String { rawValue }
+    var title: String {
+        switch self {
+        case .all: return String(localized: "Overview")
+        case .play: return String(localized: "Play")
+        case .appearance: return String(localized: "Appearance")
+        case .accounts: return String(localized: "Accounts")
+        case .more: return String(localized: "More")
+        }
+    }
+    var symbol: String {
+        switch self {
+        case .all: return "square.grid.2x2"
+        case .play: return "gamecontroller"
+        case .appearance: return "paintpalette"
+        case .accounts: return "person.crop.circle"
+        case .more: return "ellipsis"
+        }
+    }
+    var subtitle: String {
+        switch self {
+        case .all: return String(localized: "Your controls, your look, your way to play.")
+        case .play: return String(localized: "Fine-tune controls, audio, video, and emulation.")
+        case .appearance: return String(localized: "Give Delta a look of your own.")
+        case .accounts: return String(localized: "Manage game syncing and achievements.")
+        case .more: return String(localized: "Preferences, support, and the people behind Delta.")
         }
     }
 }
@@ -140,7 +315,7 @@ private struct EmulationSection: View
 private struct OnlineMultiplayerSection: View
 {
     var body: some View {
-        Section {
+        Section("Multiplayer") {
             NavigationLink {
                 OnlineMultiplayerView()
             } label: {
@@ -237,7 +412,7 @@ private struct ServicesSection: View
     private var retroAchievementsUsername: String? = Keychain.shared.retroAchievementsUsername
 
     var body: some View {
-        Section {
+        Section("Accounts & Sync") {
             NavigationLink {
                 SyncingServicesViewController.ViewRepresentable()
                     .ignoresSafeArea()
@@ -262,7 +437,7 @@ private struct ServicesSection: View
                         }
                         else
                         {
-                            SettingsBadge(text: "Up-to-date", color: .green)
+                            SettingsBadge(text: "No conflicts", color: .green)
                         }
                     }
                 }
@@ -308,32 +483,6 @@ private struct ServicesSection: View
     }
 }
 
-// MARK: - Patreon
-
-private struct PatreonSection: View
-{
-    var body: some View {
-        if PurchaseManager.shared.supportsExternalPurchases
-        {
-            Section {
-                NavigationLink {
-                    PatreonViewController.ViewRepresentable()
-                        .ignoresSafeArea()
-                } label: {
-                    SettingsRow(
-                        label: Text(PurchaseManager.shared.isActivePatron
-                            ? "Manage Subscription" : "Become a Patron"),
-                        systemImage: "heart",
-                        color: .accentColor
-                    )
-                }
-            } footer: {
-                Text("Get early access to new features and unlock exclusive app icons.")
-            }
-        }
-    }
-}
-
 // MARK: - App Icon
 
 private struct DisplaySection: View
@@ -356,7 +505,7 @@ private struct DisplaySection: View
 private struct MiscellaneousSection: View
 {
     var body: some View {
-        Section {
+        Section("Preferences") {
             NavigationLink {
                 MinorSettingsView()
             } label: {

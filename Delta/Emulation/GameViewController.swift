@@ -94,6 +94,7 @@ class GameViewController: DeltaCore.GameViewController
     /// Assumed to be Delta.Game instance
     override var game: GameProtocol? {
         willSet {
+            self.stopRepeatingButtons()
             self.emulatorCore?.removeObserver(self, forKeyPath: #keyPath(EmulatorCore.state), context: &kvoContext)
             
             let game = self.game as? Game
@@ -208,6 +209,20 @@ class GameViewController: DeltaCore.GameViewController
     private var sustainButtonsBlurView: UIVisualEffectView!
     private var sustainButtonsBackgroundView: RSTPlaceholderView!
     private var inputsToSustain = [AnyInput: Double]()
+    private weak var repeatingController: GameController?
+    private var repeatingInputs = [AnyInput: Double]()
+    private var pressedRepeatInputs = [AnyInput]()
+    private var repeatPlayerIndex: Int?
+    private lazy var gbaQuickSaveButton = makeGBAQuickStateButton(symbol: "square.and.arrow.down", label: String(localized: "Quick Save"), action: #selector(saveFromGBAControl))
+    private lazy var gbaQuickLoadButton = makeGBAQuickStateButton(symbol: "arrow.counterclockwise", label: String(localized: "Quick Load"), action: #selector(loadFromGBAControl))
+
+    private var repeatTimer: Timer?
+    private var repeatStartedAt = ProcessInfo.processInfo.systemUptime
+    private var repeatTapInterval: Double {
+        let stored = UserDefaults.standard.double(forKey: "repeatTapInterval")
+        return stored > 0 ? min(5, max(0.05, stored)) : 0.2
+    }
+
     
     private var isGyroActive = false
     private var presentedGyroAlert = false
@@ -218,10 +233,11 @@ class GameViewController: DeltaCore.GameViewController
     private var isPreparingAchievements = false
     
     override var shouldAutorotate: Bool {
-        return !self.isGyroActive
+        return AppOrientation.current != .automatic || !self.isGyroActive
     }
     
     override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
+        if AppOrientation.current != .automatic { return AppOrientation.current.mask }
         guard self.isGyroActive else { return super.supportedInterfaceOrientations }
         
         // Lock orientation to whatever current device orientation is.
@@ -301,12 +317,20 @@ class GameViewController: DeltaCore.GameViewController
     
     deinit
     {
+        stopRepeatingButtons()
         self.emulatorCore?.removeObserver(self, forKeyPath: #keyPath(EmulatorCore.state), context: &kvoContext)
     }
     
     // MARK: - GameControllerReceiver -
     override func gameController(_ gameController: GameController, didActivate input: Input, value: Double)
     {
+        // Synthetic taps go directly to the core. A real game-control press cancels
+        // repetition before passing the user's input through the normal receiver path.
+        if view.window?.windowScene?.hasKeyboardFocus == true,
+           let core = emulatorCore, repeatGameInput(input, gameType: core.game.type) != nil,
+           !isSelectingSustainedButtons, !isMenuButtonHeldDown, !repeatingInputs.isEmpty {
+            stopRepeatingButtons()
+        }
         super.gameController(gameController, didActivate: input, value: value)
         
         // Ignore unless we're the active scene.
@@ -346,15 +370,11 @@ class GameViewController: DeltaCore.GameViewController
         {
             self.ignoreNextMenuInput = true
             
-            if gameController.sustainedInputs.keys.contains(AnyInput(input))
-            {
-                DispatchQueue.main.async {
-                    gameController.unsustain(input)
-                }
-            }
-            else
-            {                
-                gameController.sustain(input, value: value)
+            DispatchQueue.main.async {
+                var inputs = self.repeatingController === gameController ? self.repeatingInputs : [:]
+                let key = AnyInput(input)
+                inputs[key] = inputs[key] == nil ? value : nil
+                self.startRepeatingButtons(inputs, controller: gameController)
             }
         }
     }
@@ -430,7 +450,7 @@ extension GameViewController
         
         self.sustainButtonsBackgroundView = RSTPlaceholderView(frame: CGRect(x: 0, y: 0, width: vibrancyView.contentView.bounds.width, height: vibrancyView.contentView.bounds.height))
         self.sustainButtonsBackgroundView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-        self.sustainButtonsBackgroundView.textLabel.text = NSLocalizedString("Select Buttons to Hold Down", comment: "")
+        self.sustainButtonsBackgroundView.textLabel.text = String(localized: "Select Buttons to Repeat")
         self.sustainButtonsBackgroundView.textLabel.numberOfLines = 1
         self.sustainButtonsBackgroundView.textLabel.minimumScaleFactor = 0.5
         self.sustainButtonsBackgroundView.textLabel.adjustsFontSizeToFitWidth = true
@@ -536,7 +556,8 @@ extension GameViewController
     override func viewDidLayoutSubviews()
     {
         super.viewDidLayoutSubviews()
-        
+        updateGBAQuickStateControls()
+
         if let sustainButtonsBackgroundView
         {
             // Fixes Hold Button description laying out vertically after orientation change.
@@ -606,14 +627,12 @@ extension GameViewController
                 self.performScreenshotAction()
             }
             
-            pauseViewController.sustainButtonsItem?.isSelected = gameController.sustainedInputs.count > 0
+            pauseViewController.sustainButtonsItem?.isSelected = !self.repeatingInputs.isEmpty
+            pauseViewController.sustainButtonsItem?.menuOptions = self.repeatIntervalOptions(for: pauseViewController)
             pauseViewController.sustainButtonsItem?.action = { [unowned self, unowned pauseViewController] item in
                 
-                for input in gameController.sustainedInputs.keys
-                {
-                    gameController.unsustain(input)
-                }
-                
+                self.stopRepeatingButtons()
+
                 if item.isSelected
                 {
                     self.showSustainButtonView()
@@ -744,6 +763,11 @@ extension GameViewController
     {
         guard context == &kvoContext else { return super.observeValue(forKeyPath: keyPath, of: object, change: change, context: context) }
         
+        DispatchQueue.main.async { [weak self] in
+            guard let self else { return }
+            if self.emulatorCore?.state == .stopped { self.stopRepeatingButtons() }
+            else if self.emulatorCore?.state != .running { self.releaseRepeatInputs() }
+        }
         guard let rawValue = change?[.oldKey] as? Int, let previousState = EmulatorCore.State(rawValue: rawValue) else { return }
         
         if let saveState = _deepLinkResumingSaveState, let emulatorCore = self.emulatorCore, emulatorCore.state == .running
@@ -905,6 +929,7 @@ private extension GameViewController
         
         if self.shouldResetSustainedInputs
         {
+            self.stopRepeatingButtons()
             for controller in controllers
             {
                 for input in controller.sustainedInputs.keys
@@ -1369,14 +1394,176 @@ private extension GameViewController
     }
 }
 
+// MARK: - GBA Quick State Controls
+private extension GameViewController {
+    func makeGBAQuickStateButton(symbol: String, label: String, action: Selector) -> UIButton {
+        let button = UIButton(type: .system)
+        var configuration = UIButton.Configuration.plain()
+        configuration.image = UIImage(systemName: symbol, withConfiguration: UIImage.SymbolConfiguration(pointSize: 18, weight: .semibold))
+        configuration.baseForegroundColor = .white
+        configuration.background.backgroundColor = UIColor.black.withAlphaComponent(0.35)
+        configuration.background.cornerRadius = 12
+        button.configuration = configuration
+        button.accessibilityLabel = label
+        button.isExclusiveTouch = false
+        button.addTarget(self, action: action, for: .touchUpInside)
+        button.isHidden = true
+        return button
+    }
+
+    @objc func saveFromGBAControl() {
+        guard emulatorCore?.state == .running else { return }
+        stopRepeatingButtons()
+        performQuickSaveAction()
+        view.setNeedsLayout()
+    }
+
+    @objc func loadFromGBAControl() {
+        guard emulatorCore?.state == .running else { return }
+        stopRepeatingButtons()
+        performQuickLoadAction()
+    }
+
+    func updateGBAQuickStateControls() {
+        let buttons = [gbaQuickSaveButton, gbaQuickLoadButton]
+        for button in buttons where button.superview == nil { view.addSubview(button) }
+        guard let game = game as? Game, System(gameType: game.type) == .gba,
+              !controllerView.isHidden, controllerView.playerIndex != nil,
+              let skin = controllerView.controllerSkin, let traits = controllerView.controllerSkinTraits,
+              let items = skin.items(for: traits) else {
+            buttons.forEach { $0.isHidden = true }
+            return
+        }
+        func shoulderFrame(_ name: String) -> CGRect? {
+            guard let item = items.first(where: { $0.kind == .button && $0.inputs.allInputs.contains { $0.stringValue == name } }) else { return nil }
+            let bounds = controllerView.bounds
+            let frame = CGRect(x: bounds.minX + item.frame.minX * bounds.width,
+                               y: bounds.minY + item.frame.minY * bounds.height,
+                               width: item.frame.width * bounds.width, height: item.frame.height * bounds.height)
+            return controllerView.convert(frame, to: view)
+        }
+        guard let left = shoulderFrame("l"), let right = shoulderFrame("r") else {
+            buttons.forEach { $0.isHidden = true }
+            return
+        }
+        let side: CGFloat = 44
+        gbaQuickSaveButton.frame = CGRect(x: left.maxX + 8, y: left.midY - side / 2, width: side, height: side)
+        gbaQuickLoadButton.frame = CGRect(x: right.minX - 8 - side, y: right.midY - side / 2, width: side, height: side)
+        let available = emulatorCore?.isWirelessMultiplayerActive != true
+        let request = SaveState.fetchRequest(for: game, type: .quick)
+        request.fetchLimit = 1
+        let hasQuickSave = (try? DatabaseManager.shared.viewContext.fetch(request).isEmpty) == false
+        gbaQuickSaveButton.isEnabled = available
+        gbaQuickLoadButton.isEnabled = available && hasQuickSave && (!AchievementsManager.shared.isAuthenticated || !Settings.features.retroAchievements.isHardcoreModeEnabled)
+        gbaQuickLoadButton.accessibilityHint = hasQuickSave ? String(localized: "Loads your latest quick save.") : String(localized: "Create a quick save first.")
+        for button in buttons {
+            button.isHidden = false
+            button.alpha = button.isEnabled ? 1 : 0.4
+            view.bringSubviewToFront(button)
+        }
+        // Selection instructions must stay above these controls while choosing repeat buttons.
+        if isSelectingSustainedButtons { buttons.forEach { $0.isHidden = true } }
+    }
+}
+
 //MARK: - Sustain Buttons -
 private extension GameViewController
 {
+    func releaseRepeatInputs() {
+        // Receiver deactivation ignores inactive scenes and disconnected controllers.
+        // Release at the bridge so losing focus/player assignment cannot leave a key down.
+        if let playerIndex = repeatPlayerIndex, let core = emulatorCore {
+            for input in pressedRepeatInputs {
+                if let value = input.intValue { core.deltaCore.emulatorBridge.deactivateInput(value, playerIndex: playerIndex) }
+            }
+        }
+        pressedRepeatInputs = []
+        repeatPlayerIndex = nil
+    }
+
+    func repeatGameInput(_ input: Input, gameType: GameType) -> Input? {
+        let mapped = StandardGameControllerInput(input: input)?.input(for: gameType) ?? input
+        return mapped.type == .game(gameType) ? mapped : nil
+    }
+
+    func stopRepeatingButtons() {
+        repeatTimer?.invalidate()
+        repeatTimer = nil
+        releaseRepeatInputs()
+        repeatingInputs = [:]
+        repeatingController = nil
+    }
+
+    func startRepeatingButtons(_ inputs: [AnyInput: Double], controller: GameController) {
+        stopRepeatingButtons()
+        repeatingInputs = inputs.filter { !$0.key.isContinuous }
+        guard !repeatingInputs.isEmpty else { return }
+        repeatingController = controller
+        repeatStartedAt = ProcessInfo.processInfo.systemUptime
+        let timer = Timer(timeInterval: repeatTapInterval / 2, repeats: true) { [weak self] _ in
+            self?.updateRepeatInputs()
+        }
+        repeatTimer = timer
+        RunLoop.main.add(timer, forMode: .common)
+        updateRepeatInputs()
+    }
+
+    func updateRepeatInputs() {
+        guard let controller = repeatingController, let core = emulatorCore,
+              core.state == .running, view.window?.windowScene?.hasKeyboardFocus == true,
+              view.window?.windowScene?.activationState == .foregroundActive,
+              controller.playerIndex != nil else { releaseRepeatInputs(); return }
+        let phase = Int(((ProcessInfo.processInfo.systemUptime - repeatStartedAt) / (repeatTapInterval / 2)).rounded())
+        guard phase.isMultiple(of: 2) else { releaseRepeatInputs(); return }
+        guard pressedRepeatInputs.isEmpty else { return }
+        let mapping = controller.inputMapping(for: core)
+        for (input, value) in repeatingInputs {
+            guard let mapped = mapping?.input(forControllerInput: input),
+                  let mapped = repeatGameInput(mapped, gameType: core.game.type) else { continue }
+            core.gameController(controller, didActivate: mapped, value: value)
+            pressedRepeatInputs.append(AnyInput(mapped))
+            repeatPlayerIndex = controller.playerIndex
+        }
+    }
+
+    func repeatIntervalOptions(for pause: PauseViewController) -> [Action] {
+        let intervals: [Double] = [0.1, 0.15, 0.2, 0.3, 0.5, 1]
+        var options = intervals.map { interval in
+            Action(title: "\(Int(interval * 1000)) ms", style: abs(interval - repeatTapInterval) < 0.001 ? .selected : .default) { [weak self, weak pause] _ in
+                self?.setRepeatInterval(interval)
+                if let pause, let self { pause.sustainButtonsItem?.menuOptions = self.repeatIntervalOptions(for: pause) }
+            }
+        }
+        options.append(Action(title: String(localized: "Custom Interval…")) { [weak self, weak pause] _ in
+            guard let self, let pause else { return }
+            let alert = UIAlertController(title: String(localized: "Time Between Taps"), message: String(localized: "Enter 50–5000 milliseconds. Each tap is pressed for half the interval."), preferredStyle: .alert)
+            alert.addTextField { field in
+                field.keyboardType = .numberPad
+                field.text = String(Int(self.repeatTapInterval * 1000))
+            }
+            alert.addAction(UIAlertAction(title: String(localized: "Cancel"), style: .cancel))
+            alert.addAction(UIAlertAction(title: String(localized: "Save"), style: .default) { [weak self, weak pause, weak alert] _ in
+                guard let value = Double(alert?.textFields?.first?.text ?? ""), (50...5000).contains(value), let self else { return }
+                self.setRepeatInterval(value / 1000)
+                if let pause { pause.sustainButtonsItem?.menuOptions = self.repeatIntervalOptions(for: pause) }
+            })
+            pause.present(alert, animated: true)
+        })
+        return options
+    }
+
+    func setRepeatInterval(_ interval: Double) {
+        UserDefaults.standard.set(interval, forKey: "repeatTapInterval")
+        if let controller = repeatingController { startRepeatingButtons(repeatingInputs, controller: controller) }
+    }
+
     func showSustainButtonView()
     {
         guard let gameController = self.pausingGameController else { return }
         
         self.isSelectingSustainedButtons = true
+        gbaQuickSaveButton.isHidden = true
+        gbaQuickLoadButton.isHidden = true
         
         let sustainInputsMapping = SustainInputsMapping(gameController: gameController)
         gameController.addReceiver(self, inputMapping: sustainInputsMapping)
@@ -1399,15 +1586,12 @@ private extension GameViewController
         guard let gameController = self.pausingGameController else { return }
         
         self.isSelectingSustainedButtons = false
+        view.setNeedsLayout()
         
         self.updateControllers()
         self.sustainInputsMapping = nil
         
-        // Activate all sustained inputs, since they will now be mapped to game inputs.
-        for (input, value) in self.inputsToSustain
-        {
-            gameController.sustain(input, value: value)
-        }
+        self.startRepeatingButtons(self.inputsToSustain, controller: gameController)
         
         let blurEffect = self.sustainButtonsBlurView.effect
         
@@ -1491,28 +1675,9 @@ extension GameViewController
         
         if activate
         {
-            // Per-game speed > system-wide per-system speed > maximum supported
-            let speed: Double
-            if let game = emulatorCore.game as? Game,
-               let speedValue = game.settings[.fastForwardSpeed] as? Double
-            {
-                speed = speedValue
-            }
-            else if let preferredSpeed = Settings.features.customFastForward[emulatorCore.game.type]
-            {
-                speed = preferredSpeed.rawValue
-            }
-            else
-            {
-                speed = emulatorCore.deltaCore.supportedRates.upperBound
-            }
-
-            if speed <= emulatorCore.deltaCore.supportedRates.upperBound || Settings.features.customFastForward.allowUnrestrictedSpeeds
-            {
-                emulatorCore.rate = speed
-            }
-            else
-            {
+            if let game = emulatorCore.game as? Game {
+                emulatorCore.rate = FastForwardSpeed.resolvedRate(for: game, core: emulatorCore.deltaCore)
+            } else {
                 emulatorCore.rate = emulatorCore.deltaCore.supportedRates.upperBound
             }
 

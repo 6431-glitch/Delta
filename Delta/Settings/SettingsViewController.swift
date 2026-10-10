@@ -11,7 +11,6 @@ import SwiftUI
 import SafariServices
 import QuickLook
 import MessageUI
-import StoreKit
 
 import DeltaCore
 import Harmony
@@ -148,12 +147,7 @@ class SettingsViewController: UITableViewController
         NotificationCenter.default.addObserver(self, selector: #selector(SettingsViewController.settingsDidChange(with:)), name: Settings.didChangeNotification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(SettingsViewController.externalGameControllerDidConnect(_:)), name: .externalGameControllerDidConnect, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(SettingsViewController.externalGameControllerDidDisconnect(_:)), name: .externalGameControllerDidDisconnect, object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(SettingsViewController.didPressExperimentalFeaturesPatreonButton(_:)), name: BecomePatronButton.didPressNotification, object: nil)
         
-        if #available(iOS 17.5, *)
-        {
-            NotificationCenter.default.addObserver(self, selector: #selector(SettingsViewController.didUpdateRevenueCatCustomerInfo(_:)), name: RevenueCatManager.didUpdateCustomerInfoNotification, object: nil)
-        }
     }
     
     override func viewDidLoad()
@@ -310,11 +304,7 @@ private extension SettingsViewController
             // OSLogStore is not available on iOS 14, so section is only visible if experimental features is visible.
             return !PurchaseManager.shared.supportsExperimentalFeatures
             
-        #if LEGACY || BETA
         case .patreon: return true
-        #elseif APP_STORE
-        case .patreon: return !PurchaseManager.shared.supportsExperimentalFeatures
-        #endif
             
         case .hapticTouch:
             if #available(iOS 13, *)
@@ -547,54 +537,7 @@ private extension SettingsViewController
         }
     }
     
-    @objc func showSubscriptions()
-    {
-        guard #available(iOS 17.5, *) else { return }
-        
-        Task<Void, Never> {
-            var tiersViewController: PatreonTiersViewController?
-            
-            do
-            {
-                var didResume = false
-                
-                let subscription = try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<RevenueCatManager.Subscription, Error>) in
-                    let viewController = PatreonTiersViewController { [weak tiersViewController] result in
-                        if didResume
-                        {
-                            tiersViewController?.dismiss(animated: true)
-                            return
-                        }
-                        
-                        didResume = true
-                        continuation.resume(with: result)
-                    }
-                    
-                    let navigationController = UINavigationController(rootViewController: viewController)
-                    self.present(navigationController, animated: true)
-                    
-                    tiersViewController = viewController
-                }
-                
-                tiersViewController?.process(subscription)
-                
-                self.update()
-            }
-            catch is CancellationError
-            {
-                // Ignore
-                
-                tiersViewController?.dismiss(animated: true)
-            }
-            catch
-            {
-                let presentingViewController = self.presentingViewController ?? self
-                
-                let alertController = UIAlertController(title: NSLocalizedString("Unable to Purchase Subscription", comment: ""), error: error)
-                presentingViewController.present(alertController, animated: true)
-            }
-        }
-    }
+
 }
 
 private extension SettingsViewController
@@ -631,15 +574,6 @@ private extension SettingsViewController
         self.tableView.reloadSections(IndexSet(integer: Section.controllers.rawValue), with: .none)
     }
     
-    @objc func didUpdateRevenueCatCustomerInfo(_ notification: Notification)
-    {
-        self.tableView.reloadData()
-    }
-    
-    @objc func didPressExperimentalFeaturesPatreonButton(_ notification: Notification)
-    {
-        self.performSegue(withIdentifier: "joinPatreonSegue", sender: nil)
-    }
 }
 
 extension SettingsViewController
@@ -872,7 +806,7 @@ extension SettingsViewController
                     toastView.show(in: self.navigationController?.view ?? self.view, duration: 4.0)
                 }
                 
-            case .alternatePaymentMethods: self.showSubscriptions()
+            case .alternatePaymentMethods: break
                 
             case .privacyPolicy:
                 let safariURL = URL(string: "https://altstore.io/privacy")!

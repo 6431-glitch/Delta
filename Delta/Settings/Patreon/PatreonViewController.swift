@@ -47,7 +47,6 @@ class PatreonViewController: UICollectionViewController
     
     private var prototypeAboutHeader: AboutPatreonHeaderView!
     
-    private var isUpdatingRevenueCatPatrons: Bool = false
         
     override var preferredStatusBarStyle: UIStatusBarStyle {
         return .lightContent
@@ -353,10 +352,6 @@ extension PatreonViewController
                 
                 switch FriendZoneManager.shared.updatePatronsResult
                 {
-                case _ where self.isUpdatingRevenueCatPatrons:
-                    // Always show activity indicator when updating just RevenueCat patrons.
-                    footerView.button.isIndicatingActivity = true
-                    
                 case .none: footerView.button.isIndicatingActivity = true
                 case .success?: footerView.button.isHidden = true
                 case .failure?:

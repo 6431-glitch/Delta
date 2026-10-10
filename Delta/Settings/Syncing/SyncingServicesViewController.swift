@@ -168,6 +168,7 @@ extension SyncingServicesViewController
             
         case .service:
             let service = SyncManager.Service.allCases[indexPath.row]
+            cell.textLabel?.text = service.localizedName
             cell.accessoryType = (service == self.selectedSyncingService) ? .checkmark : .none
             
         case .account:
@@ -184,12 +185,12 @@ extension SyncingServicesViewController
             if SyncManager.shared.coordinator?.account != nil
             {
                 cell.textLabel?.textColor = .red
-                cell.textLabel?.text = NSLocalizedString("Sign Out", comment: "")
+                cell.textLabel?.text = self.selectedSyncingService == .iCloud ? NSLocalizedString("Disconnect iCloud", comment: "") : NSLocalizedString("Sign Out", comment: "")
             }
             else
             {
                 cell.textLabel?.textColor = .deltaPurple
-                cell.textLabel?.text = NSLocalizedString("Sign In", comment: "")
+                cell.textLabel?.text = self.selectedSyncingService == .iCloud ? NSLocalizedString("Connect iCloud", comment: "") : NSLocalizedString("Sign In", comment: "")
             }
         }
         
@@ -226,9 +227,12 @@ extension SyncingServicesViewController
         case .authenticate:            
             if SyncManager.shared.coordinator?.account != nil
             {
-                let alertController = UIAlertController(title: NSLocalizedString("Are you sure you want to sign out?", comment: ""), message: NSLocalizedString("Signing in again later may result in conflicts that must be resolved manually.", comment: ""), preferredStyle: .alert)
+                let isCloud = self.selectedSyncingService == .iCloud
+                let title = isCloud ? NSLocalizedString("Disconnect iCloud Sync?", comment: "") : NSLocalizedString("Are you sure you want to sign out?", comment: "")
+                let message = isCloud ? NSLocalizedString("This stops Delta syncing. Your device stays signed in to iCloud and your cloud data is kept.", comment: "") : NSLocalizedString("Signing in again later may result in conflicts that must be resolved manually.", comment: "")
+                let alertController = UIAlertController(title: title, message: message, preferredStyle: .alert)
                 alertController.addAction(.cancel)
-                alertController.addAction(UIAlertAction(title: NSLocalizedString("Sign Out", comment: ""), style: .destructive) { (action) in
+                alertController.addAction(UIAlertAction(title: isCloud ? NSLocalizedString("Disconnect", comment: "") : NSLocalizedString("Sign Out", comment: ""), style: .destructive) { (action) in
                     SyncManager.shared.deauthenticate { (result) in
                         DispatchQueue.main.async {
                             do

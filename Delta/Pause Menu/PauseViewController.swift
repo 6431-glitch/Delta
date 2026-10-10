@@ -280,8 +280,9 @@ private extension PauseViewController
             }
         })
         
-        self.fastForwardItem = MenuItem(text: NSLocalizedString("Fast Forward", comment: ""), image: #imageLiteral(resourceName: "FastForward"), action: { _ in })
-        self.sustainButtonsItem = MenuItem(text: NSLocalizedString("Hold Buttons", comment: ""), image: #imageLiteral(resourceName: "SustainButtons"), action: { _ in })
+        let speed = (emulatorCore.game as? Game).map { FastForwardSpeed.resolvedRate(for: $0, core: emulatorCore.deltaCore) } ?? emulatorCore.deltaCore.supportedRates.upperBound
+        self.fastForwardItem = MenuItem(text: String(localized: "Fast Forward") + " · " + FastForwardSpeed(rawValue: speed).description, image: #imageLiteral(resourceName: "FastForward"), action: { _ in })
+        self.sustainButtonsItem = MenuItem(text: String(localized: "Repeat Buttons"), image: #imageLiteral(resourceName: "SustainButtons"), action: { _ in })
         self.screenshotItem = MenuItem(text: NSLocalizedString("Screenshot", comment: ""), image: #imageLiteral(resourceName: "Screenshot"), action: { _ in })
         
         if let game = emulatorCore.game as? Game
@@ -326,6 +327,12 @@ private extension PauseViewController
         }
     }
     
+    func updateFastForwardTitle(for game: Game) {
+        guard let core = Delta.core(for: game.type) else { return }
+        let rate = FastForwardSpeed.resolvedRate(for: game, core: core)
+        fastForwardItem?.text = String(localized: "Fast Forward") + " · " + FastForwardSpeed(rawValue: rate).description
+    }
+
     func makeFastForwardMenuOptions(for game: Game) -> [Action]?
     {
         guard let deltaCore = Delta.core(for: game.type) else { return nil }
@@ -337,14 +344,12 @@ private extension PauseViewController
             
             let style: Action.Style = (speed.rawValue == preferredSpeed) ? .selected : .default
             var action = Action(title: speed.description, style: style) { [weak self] action in
-                DatabaseManager.shared.performBackgroundTask { context in
-                    let temporaryGame = context.object(with: game.objectID) as! Game
-                    temporaryGame.settings[.fastForwardSpeed] = speed.rawValue
-                    context.saveWithErrorLogging()
-                }
+                game.settings[.fastForwardSpeed] = speed.rawValue
+                game.managedObjectContext?.saveWithErrorLogging()
                 
                 if let fastForwardItem = self?.fastForwardItem
                 {
+                    self?.updateFastForwardTitle(for: game)
                     fastForwardItem.isSelected = true // Always enable FF after selecting speed.
                     fastForwardItem.action(fastForwardItem)
                     
@@ -362,12 +367,11 @@ private extension PauseViewController
         }
         
         let style: Action.Style = (preferredSpeed == nil) ? .selected : .default
-        let action = Action(title: NSLocalizedString("Default", comment: ""), style: style) { [weak self] action in
-            DatabaseManager.shared.performBackgroundTask { context in
-                let temporaryGame = context.object(with: game.objectID) as! Game
-                temporaryGame.settings[.fastForwardSpeed] = nil
-                context.saveWithErrorLogging()
-            }
+        let defaultRate = FastForwardSpeed.resolvedRate(for: game, core: deltaCore, useGamePreference: false)
+        let action = Action(title: FastForwardSpeed(rawValue: defaultRate).description, style: style) { [weak self] action in
+            game.settings[.fastForwardSpeed] = nil
+            game.managedObjectContext?.saveWithErrorLogging()
+            self?.updateFastForwardTitle(for: game)
             
             if let fastForwardItem = self?.fastForwardItem
             {
@@ -379,7 +383,7 @@ private extension PauseViewController
             }
         }
         menuOptions.append(action)
-        
+
         return menuOptions
     }
     
