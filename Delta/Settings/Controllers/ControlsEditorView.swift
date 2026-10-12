@@ -350,6 +350,7 @@ private extension System
     var editorInputs: [Input] {
         switch self
         {
+        case .j2me: return []
         case .nes: return [.a, .b, .up, .down, .left, .right, .start, .select] as [NESGameInput]
         case .snes: return [.a, .b, .x, .y, .up, .down, .left, .right, .l, .r, .start, .select] as [SNESGameInput]
         case .gba: return [.a, .b, .up, .down, .left, .right, .l, .r, .start, .select] as [GBAGameInput]

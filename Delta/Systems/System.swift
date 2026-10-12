@@ -25,12 +25,15 @@ enum System: CaseIterable
     case gbc
     case gba
     case ds
+    case j2me
     
     static var registeredSystems: [System] {
         let systems = System.allCases.filter { Delta.registeredCores.keys.contains($0.gameType) }
         return systems
     }
     
+    static var coreSystems: [System] { allCases.filter { $0 != .j2me } }
+
     static var allCores: [DeltaCoreProtocol] {
         return [NES.core, SNES.core, N64.core, GBC.core, GBA.core, MelonDS.core, GPGX.core]
     }
@@ -47,6 +50,7 @@ extension System
         case .gbc: return NSLocalizedString("Game Boy Color", comment: "")
         case .gba: return NSLocalizedString("Game Boy Advance", comment: "")
         case .ds: return NSLocalizedString("Nintendo DS", comment: "")
+        case .j2me: return "Java ME"
         case .genesis: return NSLocalizedString("Sega Genesis", comment: "")
         }
     }
@@ -60,6 +64,7 @@ extension System
         case .gbc: return NSLocalizedString("GBC", comment: "")
         case .gba: return NSLocalizedString("GBA", comment: "")
         case .ds: return NSLocalizedString("DS", comment: "")
+        case .j2me: return "J2ME"
         case .genesis: return NSLocalizedString("Genesis (Beta)", comment: "")
         }
     }
@@ -73,6 +78,7 @@ extension System
         case .gbc: return NSLocalizedString("Game Boy Color", comment: "")
         case .gba: return NSLocalizedString("Game Boy Advance", comment: "")
         case .ds: return NSLocalizedString("Nintendo DS", comment: "")
+        case .j2me: return "Java ME"
         case .genesis: return NSLocalizedString("Sega Genesis", comment: "")
         }
     }
@@ -81,6 +87,7 @@ extension System
         switch self
         {
         case .nes: return 1985
+        case .j2me: return 2000
         case .genesis: return 1989
         case .snes: return 1990
         case .n64: return 1996
@@ -100,6 +107,7 @@ extension System
         case .gbc: return UIImage(named: "GBC") ?? fallback
         case .gba: return UIImage(named: "GBA") ?? fallback
         case .ds: return UIImage(named: "DS") ?? fallback
+        case .j2me: return UIImage(systemName: "candybarphone") ?? fallback
         case .genesis: return UIImage(named: "Genesis") ?? fallback
         }
     }
@@ -116,6 +124,7 @@ extension System
         case .gbc: return GBC.core
         case .gba: return GBA.core
         case .ds: return Settings.preferredCore(for: .ds) ?? MelonDS.core
+        case .j2me: preconditionFailure("J2ME runs through J2MEGameViewController, not DeltaCore")
         case .genesis: return GPGX.core
         }
     }
@@ -129,6 +138,7 @@ extension System
         case .gbc: return .gbc
         case .gba: return .gba
         case .ds: return .ds
+        case .j2me: return .j2me
         case .genesis: return .genesis
         }
     }
@@ -143,6 +153,7 @@ extension System
         case GameType.gbc: self = .gbc
         case GameType.gba: self = .gba
         case GameType.ds: self = .ds
+        case GameType.j2me: self = .j2me
         case GameType.genesis: self = .genesis
         default: return nil
         }
@@ -151,10 +162,13 @@ extension System
 
 extension DeltaCore.GameType
 {
+    static let j2me = GameType(rawValue: "page.ducnguyen.delta.j2me")
+
     init?(fileExtension: String)
     {
         switch fileExtension.lowercased()
         {
+        case "jar": self = .j2me
         case "nes": self = .nes
         case "smc", "sfc", "fig": self = .snes
         case "n64", "z64": self = .n64

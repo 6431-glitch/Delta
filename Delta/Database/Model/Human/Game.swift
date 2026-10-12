@@ -206,6 +206,10 @@ extension Game
         do
         {
             try FileManager.default.removeItem(at: self.fileURL)
+            if self.type == .j2me {
+                let saves = J2MELibrary.saveDirectory(identifier: self.identifier)
+                if FileManager.default.fileExists(atPath: saves.path) { try FileManager.default.removeItem(at: saves) }
+            }
         }
         catch
         {

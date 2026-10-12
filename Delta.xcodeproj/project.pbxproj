@@ -32,18 +32,79 @@
 /* End PBXAggregateTarget section */
 
 /* Begin PBXBuildFile section */
-		AD1020260000000000000005 /* iCloudSyncState.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD1020260000000000000006 /* iCloudSyncState.swift */; };
-		AD1020260000000000000003 /* iCloudService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD1020260000000000000004 /* iCloudService.swift */; };
-		AD1020260000000000000001 /* AuroraHomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD1020260000000000000002 /* AuroraHomeView.swift */; };
+		003BB931CE3FCBEEB5A5F144 /* jvm_util.c in Sources */ = {isa = PBXBuildFile; fileRef = 94CE94E07CFE65C23165CA46 /* jvm_util.c */; };
+		0110032AF3BD76A042887D46 /* arc4.c in Sources */ = {isa = PBXBuildFile; fileRef = 33FF27168245909B0F4535AA /* arc4.c */; };
+		03B2735699876D4412C268F2 /* des.c in Sources */ = {isa = PBXBuildFile; fileRef = 4327484A7BAAD33E9AD14ADF /* des.c */; };
+		045A7C4AD3C9CE1E209D3424 /* garbage.c in Sources */ = {isa = PBXBuildFile; fileRef = 2ABA8509B88BADD256C56EAC /* garbage.c */; };
+		0464B7317458EB3E4B3539A9 /* hashset.c in Sources */ = {isa = PBXBuildFile; fileRef = DCE76AA6C3587B62C52D1D53 /* hashset.c */; };
+		07886438B00BA0827D81A712 /* md5.c in Sources */ = {isa = PBXBuildFile; fileRef = CABDA8B0947CF31E77050D25 /* md5.c */; };
+		089ED05FA5E86B312FEF5C23 /* d_type.c in Sources */ = {isa = PBXBuildFile; fileRef = 6E716C770D6F3AB6BBDF0E69 /* d_type.c */; };
+		08FD952AF6D052DB1281335A /* jni_io.c in Sources */ = {isa = PBXBuildFile; fileRef = 463B840E959F02FAD75B5DE1 /* jni_io.c */; };
+		0A2E2A03214B1309FE37D546 /* j2me_render.m in Sources */ = {isa = PBXBuildFile; fileRef = E8F7D54D4973FC220CBDDD8B /* j2me_render.m */; };
+		0A971612236343268C007671 /* ssl_cookie.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F385A16BE9E461EB4C8E7A7 /* ssl_cookie.c */; };
+		0EE77971A66D70FCEF397FBB /* J2MENumpadView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AC660E037BF1B99D99E63D0 /* J2MENumpadView.swift */; };
+		14D9CB2377D0219075D267A9 /* threading.c in Sources */ = {isa = PBXBuildFile; fileRef = 9B20BE740287CC38E3677325 /* threading.c */; };
+		154041F48EEE216B080EB9BD /* m3g_ios_gl.c in Sources */ = {isa = PBXBuildFile; fileRef = 246BCCB7FD6008A58949733B /* m3g_ios_gl.c */; };
+		158FF6C3F14463178804BEF7 /* hmac_drbg.c in Sources */ = {isa = PBXBuildFile; fileRef = CF808F9BE97DE43DA2FAE486 /* hmac_drbg.c */; };
+		15F15ACFB9FE99DAB8B2A1F1 /* base64.c in Sources */ = {isa = PBXBuildFile; fileRef = 314319F41B171D051C86C7A0 /* base64.c */; };
+		175564D8FC6B7FC72D9E556F /* x509.c in Sources */ = {isa = PBXBuildFile; fileRef = 8DC9C6FCB304AA13BC8EC020 /* x509.c */; };
 		18FC614F90FE76140AAECE67 /* DeltaOperatorUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCBF2F877CA6072880A54F35 /* DeltaOperatorUtils.swift */; };
+		1B1A731433872FEE8E02BC91 /* jni_reflect.c in Sources */ = {isa = PBXBuildFile; fileRef = 658306578AF02178DC7A26D9 /* jni_reflect.c */; };
+		1B28F96C997F40A1D1E42A40 /* bytebuf.c in Sources */ = {isa = PBXBuildFile; fileRef = FAB3029860A79D9D311E4F3A /* bytebuf.c */; };
+		1F1EF3BA2E3BAD856BF1899A /* J2MEScreenConfigurationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD2C7CED8CD454CF050AAA6B /* J2MEScreenConfigurationController.swift */; };
 		1FA4ABA79AB72914FE414A61 /* libPods-Delta.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC866E433B3BA9AE18ABA1EC /* libPods-Delta.a */; };
+		21BFA58491B192B3795ED1E6 /* sha256.c in Sources */ = {isa = PBXBuildFile; fileRef = 6337F69D0989EE70EF4E8673 /* sha256.c */; };
+		230E1A99B55E082B6B5BCF50 /* m3g_core.c in Sources */ = {isa = PBXBuildFile; fileRef = 7CBDD278ACF28B8B590F19E5 /* m3g_core.c */; };
+		234315D289F551EA2244E934 /* J2MEPreferences.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3DC0A51A62AF88CD9D59AF3 /* J2MEPreferences.swift */; };
+		2393AF595A2405AF72D79EF4 /* J2MEEmulatorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E24EA5C88303E64218FFBDC /* J2MEEmulatorView.swift */; };
+		24245B32F64563DD6046ED85 /* aes.c in Sources */ = {isa = PBXBuildFile; fileRef = A2545703AC51F1C76C8DB32A /* aes.c */; };
+		266525D34D0C1B22E7A71931 /* x509_crt.c in Sources */ = {isa = PBXBuildFile; fileRef = D5D8AA671B59EFB7FC2CA618 /* x509_crt.c */; };
+		27509DF13B725F56E9D0760B /* arraylist.c in Sources */ = {isa = PBXBuildFile; fileRef = 2E5F19C6A887464656EE38D4 /* arraylist.c */; };
 		28B653353E8323FA65C54A42 /* OperatorUICoordinators.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1C8C13CE90324CBBA76BC3E /* OperatorUICoordinators.swift */; };
+		28DB2877437E1DDE58035828 /* version_features.c in Sources */ = {isa = PBXBuildFile; fileRef = 2EFB724811BCC71ED545AE8C /* version_features.c */; };
+		2977AC2B5BB3CB3F6F04F6DB /* libJ2MENative.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 58C55DD523280A09C24729A9 /* libJ2MENative.a */; };
+		2A697740FE00A9C2E89D6802 /* oid.c in Sources */ = {isa = PBXBuildFile; fileRef = DAD95742495F92F2E28C1019 /* oid.c */; };
+		2A7732E6064967B7CAD8FE36 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B48252D724974BE1F052FF74 /* AVFoundation.framework */; };
+		2AF2915512A5D32448B40937 /* cipher.c in Sources */ = {isa = PBXBuildFile; fileRef = 016BBEF7160807B1F20591FE /* cipher.c */; };
+		2B1086C39605BA11A5507563 /* cmac.c in Sources */ = {isa = PBXBuildFile; fileRef = C06AFD0699F5521A156CD315 /* cmac.c */; };
+		2F3594257E5CAF0AC8C33807 /* blowfish.c in Sources */ = {isa = PBXBuildFile; fileRef = 0512A4825FF21E0989E5D420 /* blowfish.c */; };
+		347EEBB8BCC49991480D0C1B /* ecp_curves.c in Sources */ = {isa = PBXBuildFile; fileRef = 4867836EE3B016674A39D274 /* ecp_curves.c */; };
+		35882111016DA5B0A1ADCF66 /* m3g_ios.c in Sources */ = {isa = PBXBuildFile; fileRef = 615C9C6BDCCB77A95A5E39A7 /* m3g_ios.c */; };
+		371A37A994C7A515038E1CA7 /* ssl_tls.c in Sources */ = {isa = PBXBuildFile; fileRef = BB7CE03AC413DC77367F9117 /* ssl_tls.c */; };
+		3A130E210D9979C751EF593E /* utf8_string.c in Sources */ = {isa = PBXBuildFile; fileRef = 803C4C3AAFC9D8624E220CF0 /* utf8_string.c */; };
+		3AB521B574ABA79BC4C8E1CB /* md2.c in Sources */ = {isa = PBXBuildFile; fileRef = BCBFF6B1783506E624E443D7 /* md2.c */; };
 		3C42B866777FEA42CD529B95 /* OperatorKit.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 796FA895EF62DF6A509DCA55 /* OperatorKit.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		3E7C9C0CD4CFF66D7085E5A9 /* ssl_cli.c in Sources */ = {isa = PBXBuildFile; fileRef = E42D3FFECC9A9C0E686BFD12 /* ssl_cli.c */; };
+		3E9139A372EF8DBBAA743FE5 /* miniz.c in Sources */ = {isa = PBXBuildFile; fileRef = 745038984726D697F721E9FF /* miniz.c */; };
+		439E62B19A0E01749D3CC9CA /* pkcs12.c in Sources */ = {isa = PBXBuildFile; fileRef = FF01465D52D98B1FAABD898D /* pkcs12.c */; };
+		47824A97B84BEB1EAF7EDD22 /* x509_csr.c in Sources */ = {isa = PBXBuildFile; fileRef = FF342EE60BB6228103E6250A /* x509_csr.c */; };
+		481B10F50A838687CD3233B6 /* sha1.c in Sources */ = {isa = PBXBuildFile; fileRef = 5DBACDF3266CD8B447E83D8B /* sha1.c */; };
+		4A2105BE2CE8C187DDE30BB2 /* asn1parse.c in Sources */ = {isa = PBXBuildFile; fileRef = DE9D7E86AF59435ABCAFE723 /* asn1parse.c */; };
+		4A31C884B3C255EC9779906C /* J2MEJARMetadata.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4102D9D68D45094E843CF68B /* J2MEJARMetadata.swift */; };
+		4B61AA16B796A2111F258F82 /* j2me_input.c in Sources */ = {isa = PBXBuildFile; fileRef = A9F34352D404094FF1417EB9 /* j2me_input.c */; };
 		4C9DD6C0CC4DC2F8F032ED35 /* AppDelegate+Operator.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE7C8DB38D2A6B16B8609EAC /* AppDelegate+Operator.swift */; };
+		4D428BBE5F472D261FF66A7B /* J2MEScreenProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 576F507EABB75E02073422E1 /* J2MEScreenProfile.swift */; };
+		4EBCAA0A03167E0A2972217D /* error.c in Sources */ = {isa = PBXBuildFile; fileRef = 392248398CAF24372D31166B /* error.c */; };
+		4F1FA66511CFBE92110B75C2 /* J2MEGameSettingsController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4593ABD64745482A9FE199FB /* J2MEGameSettingsController.swift */; };
 		4F501EDE15C52E1E6230DB9E /* DeltaOperatorGameObserver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4327597BCB33E196164D3BB6 /* DeltaOperatorGameObserver.swift */; };
+		51B8FF63C35AE168509F50FF /* j2me_audio.m in Sources */ = {isa = PBXBuildFile; fileRef = 63BEB1EA5B33882951252D8F /* j2me_audio.m */; };
+		51BA6F5DD7347A26D6F01D82 /* hashtable.c in Sources */ = {isa = PBXBuildFile; fileRef = 72BA4ED8FE43B293207B1FDD /* hashtable.c */; };
+		524E0E2D09EB201F78232F88 /* bignum.c in Sources */ = {isa = PBXBuildFile; fileRef = D4415D13FFE1C117DE277FAC /* bignum.c */; };
+		59AEE2EDFAFB5942619197CA /* gcm.c in Sources */ = {isa = PBXBuildFile; fileRef = 2FB7BE5D08D5B4D0D7F166B5 /* gcm.c */; };
+		5D76A2D873CAF2712E16C3FB /* J2MEInputRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7EE6FC6AB0CCB590B907E29 /* J2MEInputRouter.swift */; };
+		5E355134D486E33A6AB2721C /* pkcs5.c in Sources */ = {isa = PBXBuildFile; fileRef = C123354A84C4E4A1C1DC2A49 /* pkcs5.c */; };
 		5FFDBC83E8777EB11777803A /* GamesViewController+Operator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B6FDC5A03AD5693BEFFE87C /* GamesViewController+Operator.swift */; };
+		6134CB0839A0FDB6D1B565F4 /* j2me_m3g_jni.c in Sources */ = {isa = PBXBuildFile; fileRef = FE3C90B725E99F5D34825EF4 /* j2me_m3g_jni.c */; };
+		680E29A03A84D252D8CE9D89 /* timing.c in Sources */ = {isa = PBXBuildFile; fileRef = 986774096D3AE07250C70A88 /* timing.c */; };
+		6AAB3EE4F1879E09E8B7D195 /* aesni.c in Sources */ = {isa = PBXBuildFile; fileRef = CAC5C622BDB497AAE4FADE82 /* aesni.c */; };
+		6CECCEF66A6FBC5AD801C956 /* asn1write.c in Sources */ = {isa = PBXBuildFile; fileRef = 427FA7759EB07724E8113363 /* asn1write.c */; };
+		6E531C95D813E7879A5353B4 /* interpreter.c in Sources */ = {isa = PBXBuildFile; fileRef = 23A04EFC06155AB4EB82C320 /* interpreter.c */; };
+		6E653B682402A7E3E54F6A15 /* x509_create.c in Sources */ = {isa = PBXBuildFile; fileRef = 959FBCE68878D0EBE10A8560 /* x509_create.c */; };
 		6FF8B1728BDBAF892B397F5E /* DeltaOperatorWritebackToast.swift in Sources */ = {isa = PBXBuildFile; fileRef = FCE7674E5643CDB43BC8ED32 /* DeltaOperatorWritebackToast.swift */; };
 		70FF20879DA0DCEE53D8CAED /* OperatorKit.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 796FA895EF62DF6A509DCA55 /* OperatorKit.xcframework */; };
+		734771D6B1871D44750558E1 /* J2MEFormView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AFB5B29104C95F70F35FC95 /* J2MEFormView.swift */; };
+		7694AC9CEEC5998BE776134C /* j2me_api.jar in Resources */ = {isa = PBXBuildFile; fileRef = 6CF89E1B043086EA51B5638F /* j2me_api.jar */; };
+		7B0701264C716DEA999D27ED /* x509write_crt.c in Sources */ = {isa = PBXBuildFile; fileRef = E9C48185DE578FEC2B9A096C /* x509write_crt.c */; };
 		823D998F2E566EE40025F4CD /* GBCColorPalette.swift in Sources */ = {isa = PBXBuildFile; fileRef = 823D998E2E566EE40025F4CD /* GBCColorPalette.swift */; };
 		8279ED042E53BA4F008995FA /* GBACoreSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8279ED032E53BA4F008995FA /* GBACoreSettingsView.swift */; };
 		8279ED0E2E53C76C008995FA /* NESCoreSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8279ED0D2E53C76C008995FA /* NESCoreSettingsView.swift */; };
@@ -59,14 +120,49 @@
 		82C63BDB2E57BB4700B0C812 /* UIColor+Hex.swift in Sources */ = {isa = PBXBuildFile; fileRef = 82C63BDA2E57BB4700B0C812 /* UIColor+Hex.swift */; };
 		82C83A732E4FCC030020711E /* CoreSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 82C83A722E4FCC030020711E /* CoreSettingsView.swift */; };
 		82F450AB2E6A1CD00097CE1C /* AppIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = 82F450AA2E6A1CD00097CE1C /* AppIcon.icon */; };
+		850C0F7263E085E2B7A19C63 /* md.c in Sources */ = {isa = PBXBuildFile; fileRef = F0C44BFA0F6C8B75C744A0B8 /* md.c */; };
+		85F7CF8C2082BCAF773E143C /* jit.c in Sources */ = {isa = PBXBuildFile; fileRef = 528B34D8C1AC482FF5AF6711 /* jit.c */; };
+		86CA1839303E866CE80884AB /* OpenGLES.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 96FA07EB4CEEA61339C1A01F /* OpenGLES.framework */; };
 		87343D7B985519A5890A61C6 /* libPods-DeltaPreviews.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7E3E5A45AB20C8A87754453B /* libPods-DeltaPreviews.a */; };
+		89449742D3D058410EC68CBE /* minijvm_rt.jar in Resources */ = {isa = PBXBuildFile; fileRef = C1B9A052BF3418FA167F766F /* minijvm_rt.jar */; };
+		89CC5C567D9053183D2257E2 /* pkparse.c in Sources */ = {isa = PBXBuildFile; fileRef = B39D057E1FD7309C9E33C415 /* pkparse.c */; };
 		89DAEB1EDE294B3A7C857765 /* DeltaOperatorFacade.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2157B527EA676AA703BEBF02 /* DeltaOperatorFacade.swift */; };
+		8A4895F244C34D78BCABDD1D /* J2MEInputState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6BE3D11266D2AE5C51C74446 /* J2MEInputState.swift */; };
+		920159AFE052B5C089C1B645 /* J2MEBackup.swift in Sources */ = {isa = PBXBuildFile; fileRef = 436C4510857D7B09198DD63A /* J2MEBackup.swift */; };
+		9286835CA9579A5F0CBEF2D6 /* version.c in Sources */ = {isa = PBXBuildFile; fileRef = B4DA110276A563D6F8B73656 /* version.c */; };
 		930F926748EAFE4DA261B958 /* GameCollectionViewController+Operator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D171C53E58A0B9BAF0B89D5 /* GameCollectionViewController+Operator.swift */; };
 		954A28F5338A5300C0B9497E /* OperatorSlotDataSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0654CFCA3D2CB4D35CC99F89 /* OperatorSlotDataSource.swift */; };
+		9855C42F6F7E772229D08139 /* sha512.c in Sources */ = {isa = PBXBuildFile; fileRef = A37D1D16C345556842AA207B /* sha512.c */; };
+		9A131A51263F7609033A432E /* jni_std.c in Sources */ = {isa = PBXBuildFile; fileRef = F09797FDA5F1D8157926D719 /* jni_std.c */; };
+		A021995B2818BC8B70918ABC /* ecdh.c in Sources */ = {isa = PBXBuildFile; fileRef = 85BDB1850CDFAD7E0CC674D4 /* ecdh.c */; };
+		A09612FCD65FCE7787106214 /* J2MESession.c in Sources */ = {isa = PBXBuildFile; fileRef = E170508EA4F1C42062D05610 /* J2MESession.c */; };
+		A110C97DC46D6FC2BAC4663C /* jdwp.c in Sources */ = {isa = PBXBuildFile; fileRef = A2AE40425B70E77D2EEA7F13 /* jdwp.c */; };
+		A13ABE64A4B88CCDECB059F1 /* ssl_ticket.c in Sources */ = {isa = PBXBuildFile; fileRef = 0979BC4428C92098897A6BEF /* ssl_ticket.c */; };
+		A2109E84F280A162ABF1118C /* xtea.c in Sources */ = {isa = PBXBuildFile; fileRef = 3E8AD0F547E232B454C4E9F2 /* xtea.c */; };
+		A55C6765FCA2ADD5D80D4767 /* memory_buffer_alloc.c in Sources */ = {isa = PBXBuildFile; fileRef = 5F62008D9ADFEFD7589BED2C /* memory_buffer_alloc.c */; };
+		A7F95D6C0D481DCB2A49D5F0 /* linkedlist.c in Sources */ = {isa = PBXBuildFile; fileRef = 2B22347B97C34F6CB9F38969 /* linkedlist.c */; };
+		A8A9F570F63A92834FCEF68F /* pem.c in Sources */ = {isa = PBXBuildFile; fileRef = 0ADFD8E5864F71A40A0447AE /* pem.c */; };
+		A93989322CD80637E1A25570 /* ecp.c in Sources */ = {isa = PBXBuildFile; fileRef = 67E4DFC3093A2098730552A3 /* ecp.c */; };
+		A98454736A13ED977E9E098B /* class_load.c in Sources */ = {isa = PBXBuildFile; fileRef = 28D080BFFE1A65301FDA41BE /* class_load.c */; };
+		AABAABE8676E9184447828BF /* debug.c in Sources */ = {isa = PBXBuildFile; fileRef = DC8AEA0296D966D803401381 /* debug.c */; };
 		AC1C991029F8B8C30020E6E4 /* ToastNotificationOptions.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC1C990F29F8B8C30020E6E4 /* ToastNotificationOptions.swift */; };
 		AC1C992729F9F1CF0020E6E4 /* GameViewController+ExperimentalToasts.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC1C992629F9F1CF0020E6E4 /* GameViewController+ExperimentalToasts.swift */; };
 		ACF7E30F29F743A3000FE071 /* PHPhotoLibrary+Screenshots.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACF7E30E29F743A3000FE071 /* PHPhotoLibrary+Screenshots.swift */; };
+		AD02C804DC28C553733A4D9A /* md_wrap.c in Sources */ = {isa = PBXBuildFile; fileRef = 91DEB2B14C1E6AEE4EC6B9B1 /* md_wrap.c */; };
+		AD1020260000000000000001 /* AuroraHomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD1020260000000000000002 /* AuroraHomeView.swift */; };
+		AD1020260000000000000003 /* iCloudService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD1020260000000000000004 /* iCloudService.swift */; };
+		AD1020260000000000000005 /* iCloudSyncState.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD1020260000000000000006 /* iCloudSyncState.swift */; };
+		AD61CD9110DEED9070B7123E /* pk_wrap.c in Sources */ = {isa = PBXBuildFile; fileRef = F5B984AA26B155B7FDD43690 /* pk_wrap.c */; };
+		AD94784C71FF9BE7AE13655E /* havege.c in Sources */ = {isa = PBXBuildFile; fileRef = D82B672F1FA04C72206B320D /* havege.c */; };
+		AE5DBFB6B0DACCB0372E9ED1 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 09A1626D4E60BA50925AA1CA /* QuartzCore.framework */; };
+		B268FD77892585C9C3CB0C50 /* J2MESaveStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBC7D9E8AB4276570105F4EE /* J2MESaveStore.swift */; };
+		B79B82586D4BA1768B051847 /* x509_crl.c in Sources */ = {isa = PBXBuildFile; fileRef = B91401783D126D3614E8841D /* x509_crl.c */; };
 		B8BF6056C00AB0507A06D39E /* OperatorStatusView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C31F852121CBEF08181BD23 /* OperatorStatusView.swift */; };
+		BA5A65F90E15F248FD5B8A94 /* os_posix.c in Sources */ = {isa = PBXBuildFile; fileRef = 4B0A2EC81C87BA96084BEC91 /* os_posix.c */; };
+		BC2FD6BF2E70464E628EEBBC /* ripemd160.c in Sources */ = {isa = PBXBuildFile; fileRef = 2B122D725CEDB8E6A37F07E1 /* ripemd160.c */; };
+		BC4657F50A5228DA14F89EFE /* ecdsa.c in Sources */ = {isa = PBXBuildFile; fileRef = 8601C793BD614D7FA5D81027 /* ecdsa.c */; };
+		BC4FD6830B182A6F7EA1B91D /* padlock.c in Sources */ = {isa = PBXBuildFile; fileRef = 64AE6453CB919175D66C98E1 /* padlock.c */; };
+		BD4F02601DF2CEE1F9B0736A /* class.c in Sources */ = {isa = PBXBuildFile; fileRef = A169BCAF1FC7FA79025E8F3B /* class.c */; };
 		BF00BEA625B758AA00C8607D /* SystemBIOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF00BEA525B758AA00C8607D /* SystemBIOS.swift */; };
 		BF02D5DA1DDEBB3000A5E131 /* openvgdb.sqlite in Resources */ = {isa = PBXBuildFile; fileRef = BF02D5D91DDEBB3000A5E131 /* openvgdb.sqlite */; };
 		BF04E6FF1DB8625C000F35D3 /* ControllerSkinsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF04E6FE1DB8625C000F35D3 /* ControllerSkinsViewController.swift */; };
@@ -190,9 +286,15 @@
 		BFFC46231D5984A000AF2CC6 /* LaunchViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFFC46221D5984A000AF2CC6 /* LaunchViewController.swift */; };
 		BFFC46461D59861000AF2CC6 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = BFFC46441D59861000AF2CC6 /* LaunchScreen.storyboard */; };
 		BFFC464C1D5998D600AF2CC6 /* CheatTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFFC464B1D5998D600AF2CC6 /* CheatTableViewCell.swift */; };
+		C16F7995C47AA424934AD649 /* pkwrite.c in Sources */ = {isa = PBXBuildFile; fileRef = E12AB5654E8457B75D9715F7 /* pkwrite.c */; };
+		C36739E9884A375772C1F576 /* pkcs11.c in Sources */ = {isa = PBXBuildFile; fileRef = 04B6DD4B5E1005A0B25E5960 /* pkcs11.c */; };
 		C6F24AD72D64B452002F939F /* Lu.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6F24AD62D64B452002F939F /* Lu.swift */; };
 		C6F24AD92D64B550002F939F /* PauseViewController+Lu.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6F24AD82D64B550002F939F /* PauseViewController+Lu.swift */; };
 		C6F24ADB2D64B5A0002F939F /* Lu-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = C6F24ADA2D64B5A0002F939F /* Lu-Info.plist */; };
+		C81DB9C06101A603022636A2 /* camellia.c in Sources */ = {isa = PBXBuildFile; fileRef = 36495589B550EF3627518B66 /* camellia.c */; };
+		C8BFD2CA514F8BB48447BCFA /* jvm.c in Sources */ = {isa = PBXBuildFile; fileRef = E2624296109A2046BEA783BB /* jvm.c */; };
+		C918BC8685FB9503C32FD41C /* cipher_wrap.c in Sources */ = {isa = PBXBuildFile; fileRef = F1849D170052AD697E44FD8D /* cipher_wrap.c */; };
+		C9539CAADEFE4E97BAF2B0BF /* m3g_egl_ios.m in Sources */ = {isa = PBXBuildFile; fileRef = F91D01E98CC6732DFD440A96 /* m3g_egl_ios.m */; };
 		CA0001072E60000100000007 /* ControllerSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA0001062E60000100000006 /* ControllerSettingsView.swift */; };
 		CA00010A2E6000010000000A /* SkinSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA0001092E60000100000009 /* SkinSettingsView.swift */; };
 		CA00010D2E6000010000000D /* AudioSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA00010C2E6000010000000C /* AudioSettingsView.swift */; };
@@ -204,6 +306,18 @@
 		CA0101012F8E000100000002 /* CheatIcons.plist in Resources */ = {isa = PBXBuildFile; fileRef = CA0101012F8E000100000001 /* CheatIcons.plist */; };
 		CA0101012F8E000100000003 /* CheatIcons.plist in Resources */ = {isa = PBXBuildFile; fileRef = CA0101012F8E000100000001 /* CheatIcons.plist */; };
 		CA0101012F8E000100000005 /* CheatIconPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA0101012F8E000100000004 /* CheatIconPickerView.swift */; };
+		CB4360570D7B70333F0A369E /* entropy_poll.c in Sources */ = {isa = PBXBuildFile; fileRef = DDED487AE84EA3287FC888B4 /* entropy_poll.c */; };
+		CB6990F9D973A8B38C24B7D1 /* ssl_ciphersuites.c in Sources */ = {isa = PBXBuildFile; fileRef = 7688A11FE8366F9EA63D01B6 /* ssl_ciphersuites.c */; };
+		CB708B384DFE9512295F8997 /* global.c in Sources */ = {isa = PBXBuildFile; fileRef = 39416700B69429357C3E7E00 /* global.c */; };
+		CBB10D5C1F8BBD983EB8AFEB /* j2me_ui.m in Sources */ = {isa = PBXBuildFile; fileRef = CE41A151B21A837C922B01C9 /* j2me_ui.m */; };
+		CC32B033F312E88DD21F868D /* entropy.c in Sources */ = {isa = PBXBuildFile; fileRef = B1765111CC56781BE6055186 /* entropy.c */; };
+		CC5E62F8134A4BD8FE94F6AB /* J2MEJoystickView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8DAEEF211588230C8E425E1 /* J2MEJoystickView.swift */; };
+		CDE178A8C6520870F62D22E9 /* certs.c in Sources */ = {isa = PBXBuildFile; fileRef = 9E00121B94C0A59A47A01A13 /* certs.c */; };
+		D1D3C5C4B06336199D8B0908 /* J2MELibrary.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12CB3D71FD4D0336F7BE398A /* J2MELibrary.swift */; };
+		D23102758ADD76237D76C4D0 /* ccm.c in Sources */ = {isa = PBXBuildFile; fileRef = 5340A950F3E2AA50D790E47D /* ccm.c */; };
+		D3564E74B574D500E4A3B629 /* ssl_client.c in Sources */ = {isa = PBXBuildFile; fileRef = 1BD6921AB86BF8FF31661BDE /* ssl_client.c */; };
+		D367F62176EE94F029D8EFF4 /* ecjpake.c in Sources */ = {isa = PBXBuildFile; fileRef = E370C1171B295F70DEC66581 /* ecjpake.c */; };
+		D485E7DE778AB8A51EE0082A /* J2MEGameViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49BF752BC8632741F5BB12F3 /* J2MEGameViewController.swift */; };
 		D5002BDC2DCD3ED2003418FD /* MockPurchaseManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5002BDB2DCD3ED2003418FD /* MockPurchaseManager.swift */; };
 		D5002BDE2DCD3F31003418FD /* MockDatabaseManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5002BDD2DCD3F31003418FD /* MockDatabaseManager.swift */; };
 		D5011C48281B6E8B00A0760B /* CharacterSet+Filename.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5011C47281B6E8B00A0760B /* CharacterSet+Filename.swift */; };
@@ -296,6 +410,7 @@
 		D5B7242D2E26DC6700D3E5F3 /* ZIPFoundation.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = BF07200E219A3A9500F05DA4 /* ZIPFoundation.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		D5BE1BD72D0B9CBE00D2142E /* PatreonAPI.plist in Resources */ = {isa = PBXBuildFile; fileRef = D5BE1BD62D0B9CBE00D2142E /* PatreonAPI.plist */; };
 		D5C45FEF2BE992A80009DBB0 /* AltKit in Frameworks */ = {isa = PBXBuildFile; productRef = D5C45FEE2BE992A80009DBB0 /* AltKit */; };
+		D5C6EB30EB4CFB212355BB1E /* pk.c in Sources */ = {isa = PBXBuildFile; fileRef = C4623036B9B4304833C0B377 /* pk.c */; };
 		D5C7DD012E26CF2E0048FF5C /* DeltaCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BF9F4FCE1AAD7B87004C9500 /* DeltaCore.framework */; };
 		D5C7DD022E26CF2E0048FF5C /* DeltaCore.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = BF9F4FCE1AAD7B87004C9500 /* DeltaCore.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		D5C7DD042E26CF350048FF5C /* NESDeltaCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D5C7DD032E26CF350048FF5C /* NESDeltaCore.framework */; };
@@ -349,18 +464,41 @@
 		D5F702FD2C24CE5300DCD271 /* UISceneSession+Delta.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5F702FC2C24CE5300DCD271 /* UISceneSession+Delta.swift */; };
 		D5F82FB82981D3AC00B229AF /* LegacySearchBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5F82FB72981D3AC00B229AF /* LegacySearchBar.swift */; };
 		D5FB042C2C5AF40A008329DD /* libresolv.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = D5FB042B2C5AF40A008329DD /* libresolv.tbd */; };
+		D8ECED46971F5D64D3FEF767 /* dhm.c in Sources */ = {isa = PBXBuildFile; fileRef = BD6CBF08658B81005B95A37F /* dhm.c */; };
+		DA200FE377EFD95ABAEF8104 /* ctr_drbg.c in Sources */ = {isa = PBXBuildFile; fileRef = 28CE7819EBBA474150476983 /* ctr_drbg.c */; };
+		DDDC53F925016A8891598D51 /* rsa.c in Sources */ = {isa = PBXBuildFile; fileRef = 171DEE75B36908C00AC87F45 /* rsa.c */; };
+		E1FAB415F0C8C0DB293D282D /* tinycthread.c in Sources */ = {isa = PBXBuildFile; fileRef = 678DEC89041A550A03BF9698 /* tinycthread.c */; };
+		E3789E6E6666FC76CA498964 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 05587C57739FBD814A2C1250 /* AudioToolbox.framework */; };
 		E460BA632FECFFE700E8192B /* LibraryExport.swift in Sources */ = {isa = PBXBuildFile; fileRef = E460BA622FECFFE700E8192B /* LibraryExport.swift */; };
 		E647EE152F633116000DA257 /* AchievementToast.swift in Sources */ = {isa = PBXBuildFile; fileRef = E647EE142F633115000DA257 /* AchievementToast.swift */; };
 		E65B0F932F6C65E4009B7F0A /* CheatsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E65B0F922F6C65E4009B7F0A /* CheatsView.swift */; };
 		E6955FAB2F743735001B8A75 /* CheatsButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = E6955FAA2F743735001B8A75 /* CheatsButton.swift */; };
+		E699F219E8F043AF7E95A3FD /* runtime.c in Sources */ = {isa = PBXBuildFile; fileRef = 0387433BF8E012E316490BF0 /* runtime.c */; };
 		E6A42DFB3006916800483EAB /* RetroAchievements.swift in Sources */ = {isa = PBXBuildFile; fileRef = E6A42DFA3006916800483EAB /* RetroAchievements.swift */; };
 		E6A7705F2FF2C253008FB301 /* AchievementAccount.swift in Sources */ = {isa = PBXBuildFile; fileRef = E6A7705E2FF2C253008FB301 /* AchievementAccount.swift */; };
 		E6BD34AB2F563F1A001C9D78 /* AchievementGreeting.swift in Sources */ = {isa = PBXBuildFile; fileRef = E6BD34AA2F563F1A001C9D78 /* AchievementGreeting.swift */; };
 		E6BD34AD2F587BF0001C9D78 /* AchievementGameBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = E6BD34AC2F587BF0001C9D78 /* AchievementGameBanner.swift */; };
 		E6EB10AF2F58B1C50001AAD2 /* AchievementNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = E6EB10AE2F58B1C50001AAD2 /* AchievementNotification.swift */; };
+		E72E3219AED0D9081CF99C93 /* j2me_micro3d_gl.m in Sources */ = {isa = PBXBuildFile; fileRef = 07EE39392A509FB3BABD703B /* j2me_micro3d_gl.m */; };
+		E96529E61395AE005BD80A86 /* platform.c in Sources */ = {isa = PBXBuildFile; fileRef = 254D79834CCA68689AA7F8C8 /* platform.c */; };
+		E97355E033A84111266E1FB0 /* net_sockets.c in Sources */ = {isa = PBXBuildFile; fileRef = 46655C8996840B3041A49572 /* net_sockets.c */; };
+		EB5D85A16F9AA1066462FF21 /* md4.c in Sources */ = {isa = PBXBuildFile; fileRef = AEFA4FEB78FA291453DAF9AB /* md4.c */; };
+		EE49EB90763F7FE836098D2E /* gs_instruments.sf2 in Resources */ = {isa = PBXBuildFile; fileRef = 3834C14D31A9610F99574076 /* gs_instruments.sf2 */; };
+		F449E37E42CDF52A8087717A /* ssl_srv.c in Sources */ = {isa = PBXBuildFile; fileRef = F919F0F85A924D31B26BC90D /* ssl_srv.c */; };
+		F5DA78824508467B2A98B0E7 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 22FC9517125F59AFDE0BCC42 /* UIKit.framework */; };
+		F841712CCD8464A2D0A8F409 /* miniz_wrapper.c in Sources */ = {isa = PBXBuildFile; fileRef = C79EFB19DF23953FEF8FBB0F /* miniz_wrapper.c */; };
+		FB3D7FE06FEC8F88DD3A5866 /* ssl_cache.c in Sources */ = {isa = PBXBuildFile; fileRef = DB278341097E2FBF81E4540D /* ssl_cache.c */; };
+		FF17307B13B23477EEEDCC03 /* x509write_csr.c in Sources */ = {isa = PBXBuildFile; fileRef = 533E2357FBB0F54DB877492E /* x509write_csr.c */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		AC58C36C8E11885EB9F87008 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = BFFA71CF1AAC406100EE9DD1 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 5B2DA649ED0C697BB9DDE3A4;
+			remoteInfo = J2MENative;
+		};
 		D57A819D2E29ADF3006E06E8 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = D57A81982E29ADF3006E06E8 /* GPGXDeltaCore.xcodeproj */;
@@ -594,18 +732,82 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		A130A130A130A130A130A130 /* Delta 13.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "Delta 13.xcdatamodel"; sourceTree = "<group>"; };
-		AD1020260000000000000006 /* iCloudSyncState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iCloudSyncState.swift; sourceTree = "<group>"; };
-		AD1020260000000000000004 /* iCloudService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iCloudService.swift; sourceTree = "<group>"; };
-		AD1020260000000000000002 /* AuroraHomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuroraHomeView.swift; sourceTree = "<group>"; };
+		016BBEF7160807B1F20591FE /* cipher.c */ = {isa = PBXFileReference; includeInIndex = 1; name = cipher.c; path = Experiments/J2ME/JarBox/J2MEEmulator/minijvm/utils/https/mbedtls/library/cipher.c; sourceTree = "<group>"; };
+		0387433BF8E012E316490BF0 /* runtime.c */ = {isa = PBXFileReference; includeInIndex = 1; name = runtime.c; path = Experiments/J2ME/JarBox/J2MEEmulator/minijvm/jvm/runtime.c; sourceTree = "<group>"; };
+		04B6DD4B5E1005A0B25E5960 /* pkcs11.c */ = {isa = PBXFileReference; includeInIndex = 1; name = pkcs11.c; path = Experiments/J2ME/JarBox/J2MEEmulator/minijvm/utils/https/mbedtls/library/pkcs11.c; sourceTree = "<group>"; };
+		0512A4825FF21E0989E5D420 /* blowfish.c */ = {isa = PBXFileReference; includeInIndex = 1; name = blowfish.c; path = Experiments/J2ME/JarBox/J2MEEmulator/minijvm/utils/https/mbedtls/library/blowfish.c; sourceTree = "<group>"; };
+		05587C57739FBD814A2C1250 /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
 		0654CFCA3D2CB4D35CC99F89 /* OperatorSlotDataSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OperatorSlotDataSource.swift; sourceTree = "<group>"; };
+		07AC9EA5C0842285E962DBD1 /* jvm_util.c */ = {isa = PBXFileReference; includeInIndex = 1; name = jvm_util.c; path = Experiments/J2ME/JarBox/J2MEEmulator/minijvm/jvm/jvm_util.c; sourceTree = "<group>"; };
+		07EE39392A509FB3BABD703B /* j2me_micro3d_gl.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = j2me_micro3d_gl.m; path = Experiments/J2ME/JarBox/J2MEEmulator/NativeBridge/j2me_micro3d_gl.m; sourceTree = "<group>"; };
+		0979BC4428C92098897A6BEF /* ssl_ticket.c */ = {isa = PBXFileReference; includeInIndex = 1; name = ssl_ticket.c; path = Experiments/J2ME/JarBox/J2MEEmulator/minijvm/utils/https/mbedtls/library/ssl_ticket.c; sourceTree = "<group>"; };
+		09A1626D4E60BA50925AA1CA /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
+		0ADFD8E5864F71A40A0447AE /* pem.c */ = {isa = PBXFileReference; includeInIndex = 1; name = pem.c; path = Experiments/J2ME/JarBox/J2MEEmulator/minijvm/utils/https/mbedtls/library/pem.c; sourceTree = "<group>"; };
+		0AFB5B29104C95F70F35FC95 /* J2MEFormView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = J2MEFormView.swift; path = Delta/J2ME/J2MEFormView.swift; sourceTree = "<group>"; };
 		0B6FDC5A03AD5693BEFFE87C /* GamesViewController+Operator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "GamesViewController+Operator.swift"; sourceTree = "<group>"; };
+		0F385A16BE9E461EB4C8E7A7 /* ssl_cookie.c */ = {isa = PBXFileReference; includeInIndex = 1; name = ssl_cookie.c; path = Experiments/J2ME/JarBox/J2MEEmulator/minijvm/utils/https/mbedtls/library/ssl_cookie.c; sourceTree = "<group>"; };
+		12CB3D71FD4D0336F7BE398A /* J2MELibrary.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = J2MELibrary.swift; path = Delta/J2ME/J2MELibrary.swift; sourceTree = "<group>"; };
+		1612C55AD9D71B693BFC2ED8 /* jvm_bridge.c */ = {isa = PBXFileReference; includeInIndex = 1; name = jvm_bridge.c; path = Experiments/J2ME/JarBox/J2MEEmulator/NativeBridge/jvm_bridge.c; sourceTree = "<group>"; };
+		171DEE75B36908C00AC87F45 /* rsa.c */ = {isa = PBXFileReference; includeInIndex = 1; name = rsa.c; path = Experiments/J2ME/JarBox/J2MEEmulator/minijvm/utils/https/mbedtls/library/rsa.c; sourceTree = "<group>"; };
+		1BD6921AB86BF8FF31661BDE /* ssl_client.c */ = {isa = PBXFileReference; includeInIndex = 1; name = ssl_client.c; path = Experiments/J2ME/JarBox/J2MEEmulator/minijvm/utils/https/ssl_client.c; sourceTree = "<group>"; };
 		2157B527EA676AA703BEBF02 /* DeltaOperatorFacade.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeltaOperatorFacade.swift; sourceTree = "<group>"; };
 		22506DA00971C4300AF90A35 /* Pods.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		22FC9517125F59AFDE0BCC42 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
+		23A04EFC06155AB4EB82C320 /* interpreter.c */ = {isa = PBXFileReference; includeInIndex = 1; name = interpreter.c; path = Experiments/J2ME/Generated/interpreter.c; sourceTree = "<group>"; };
+		246BCCB7FD6008A58949733B /* m3g_ios_gl.c */ = {isa = PBXFileReference; includeInIndex = 1; name = m3g_ios_gl.c; path = Experiments/J2ME/JarBox/J2MEEmulator/NativeBridge/m3g/src/m3g_ios_gl.c; sourceTree = "<group>"; };
+		254D79834CCA68689AA7F8C8 /* platform.c */ = {isa = PBXFileReference; includeInIndex = 1; name = platform.c; path = Experiments/J2ME/JarBox/J2MEEmulator/minijvm/utils/https/mbedtls/library/platform.c; sourceTree = "<group>"; };
+		28CE7819EBBA474150476983 /* ctr_drbg.c */ = {isa = PBXFileReference; includeInIndex = 1; name = ctr_drbg.c; path = Experiments/J2ME/JarBox/J2MEEmulator/minijvm/utils/https/mbedtls/library/ctr_drbg.c; sourceTree = "<group>"; };
+		28D080BFFE1A65301FDA41BE /* class_load.c */ = {isa = PBXFileReference; includeInIndex = 1; name = class_load.c; path = Experiments/J2ME/JarBox/J2MEEmulator/minijvm/jvm/class_load.c; sourceTree = "<group>"; };
+		2ABA8509B88BADD256C56EAC /* garbage.c */ = {isa = PBXFileReference; includeInIndex = 1; name = garbage.c; path = Experiments/J2ME/JarBox/J2MEEmulator/minijvm/jvm/garbage.c; sourceTree = "<group>"; };
+		2B122D725CEDB8E6A37F07E1 /* ripemd160.c */ = {isa = PBXFileReference; includeInIndex = 1; name = ripemd160.c; path = Experiments/J2ME/JarBox/J2MEEmulator/minijvm/utils/https/mbedtls/library/ripemd160.c; sourceTree = "<group>"; };
+		2B22347B97C34F6CB9F38969 /* linkedlist.c */ = {isa = PBXFileReference; includeInIndex = 1; name = linkedlist.c; path = Experiments/J2ME/JarBox/J2MEEmulator/minijvm/utils/linkedlist.c; sourceTree = "<group>"; };
+		2E5F19C6A887464656EE38D4 /* arraylist.c */ = {isa = PBXFileReference; includeInIndex = 1; name = arraylist.c; path = Experiments/J2ME/JarBox/J2MEEmulator/minijvm/utils/arraylist.c; sourceTree = "<group>"; };
+		2EFB724811BCC71ED545AE8C /* version_features.c */ = {isa = PBXFileReference; includeInIndex = 1; name = version_features.c; path = Experiments/J2ME/JarBox/J2MEEmulator/minijvm/utils/https/mbedtls/library/version_features.c; sourceTree = "<group>"; };
+		2FB7BE5D08D5B4D0D7F166B5 /* gcm.c */ = {isa = PBXFileReference; includeInIndex = 1; name = gcm.c; path = Experiments/J2ME/JarBox/J2MEEmulator/minijvm/utils/https/mbedtls/library/gcm.c; sourceTree = "<group>"; };
+		314319F41B171D051C86C7A0 /* base64.c */ = {isa = PBXFileReference; includeInIndex = 1; name = base64.c; path = Experiments/J2ME/JarBox/J2MEEmulator/minijvm/utils/https/mbedtls/library/base64.c; sourceTree = "<group>"; };
+		33FF27168245909B0F4535AA /* arc4.c */ = {isa = PBXFileReference; includeInIndex = 1; name = arc4.c; path = Experiments/J2ME/JarBox/J2MEEmulator/minijvm/utils/https/mbedtls/library/arc4.c; sourceTree = "<group>"; };
+		36495589B550EF3627518B66 /* camellia.c */ = {isa = PBXFileReference; includeInIndex = 1; name = camellia.c; path = Experiments/J2ME/JarBox/J2MEEmulator/minijvm/utils/https/mbedtls/library/camellia.c; sourceTree = "<group>"; };
+		3834C14D31A9610F99574076 /* gs_instruments.sf2 */ = {isa = PBXFileReference; includeInIndex = 1; name = gs_instruments.sf2; path = Delta/J2ME/Resources/gs_instruments.sf2; sourceTree = "<group>"; };
+		392248398CAF24372D31166B /* error.c */ = {isa = PBXFileReference; includeInIndex = 1; name = error.c; path = Experiments/J2ME/JarBox/J2MEEmulator/minijvm/utils/https/mbedtls/library/error.c; sourceTree = "<group>"; };
+		39416700B69429357C3E7E00 /* global.c */ = {isa = PBXFileReference; includeInIndex = 1; name = global.c; path = Experiments/J2ME/JarBox/J2MEEmulator/minijvm/jvm/global.c; sourceTree = "<group>"; };
+		3E8AD0F547E232B454C4E9F2 /* xtea.c */ = {isa = PBXFileReference; includeInIndex = 1; name = xtea.c; path = Experiments/J2ME/JarBox/J2MEEmulator/minijvm/utils/https/mbedtls/library/xtea.c; sourceTree = "<group>"; };
+		4102D9D68D45094E843CF68B /* J2MEJARMetadata.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = J2MEJARMetadata.swift; path = Delta/J2ME/J2MEJARMetadata.swift; sourceTree = "<group>"; };
+		427FA7759EB07724E8113363 /* asn1write.c */ = {isa = PBXFileReference; includeInIndex = 1; name = asn1write.c; path = Experiments/J2ME/JarBox/J2MEEmulator/minijvm/utils/https/mbedtls/library/asn1write.c; sourceTree = "<group>"; };
+		4327484A7BAAD33E9AD14ADF /* des.c */ = {isa = PBXFileReference; includeInIndex = 1; name = des.c; path = Experiments/J2ME/JarBox/J2MEEmulator/minijvm/utils/https/mbedtls/library/des.c; sourceTree = "<group>"; };
 		4327597BCB33E196164D3BB6 /* DeltaOperatorGameObserver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeltaOperatorGameObserver.swift; sourceTree = "<group>"; };
+		436C4510857D7B09198DD63A /* J2MEBackup.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = J2MEBackup.swift; path = Delta/J2ME/J2MEBackup.swift; sourceTree = "<group>"; };
+		4593ABD64745482A9FE199FB /* J2MEGameSettingsController.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = J2MEGameSettingsController.swift; path = Delta/J2ME/J2MEGameSettingsController.swift; sourceTree = "<group>"; };
+		463B840E959F02FAD75B5DE1 /* jni_io.c */ = {isa = PBXFileReference; includeInIndex = 1; name = jni_io.c; path = Experiments/J2ME/JarBox/J2MEEmulator/minijvm/jvm/jni_io.c; sourceTree = "<group>"; };
+		46655C8996840B3041A49572 /* net_sockets.c */ = {isa = PBXFileReference; includeInIndex = 1; name = net_sockets.c; path = Experiments/J2ME/JarBox/J2MEEmulator/minijvm/utils/https/mbedtls/library/net_sockets.c; sourceTree = "<group>"; };
+		4867836EE3B016674A39D274 /* ecp_curves.c */ = {isa = PBXFileReference; includeInIndex = 1; name = ecp_curves.c; path = Experiments/J2ME/JarBox/J2MEEmulator/minijvm/utils/https/mbedtls/library/ecp_curves.c; sourceTree = "<group>"; };
+		49BF752BC8632741F5BB12F3 /* J2MEGameViewController.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = J2MEGameViewController.swift; path = Delta/J2ME/J2MEGameViewController.swift; sourceTree = "<group>"; };
+		4B0A2EC81C87BA96084BEC91 /* os_posix.c */ = {isa = PBXFileReference; includeInIndex = 1; name = os_posix.c; path = Experiments/J2ME/JarBox/J2MEEmulator/minijvm/jvm/os_posix.c; sourceTree = "<group>"; };
+		528B34D8C1AC482FF5AF6711 /* jit.c */ = {isa = PBXFileReference; includeInIndex = 1; name = jit.c; path = Experiments/J2ME/JarBox/J2MEEmulator/minijvm/jvm/jit.c; sourceTree = "<group>"; };
+		533E2357FBB0F54DB877492E /* x509write_csr.c */ = {isa = PBXFileReference; includeInIndex = 1; name = x509write_csr.c; path = Experiments/J2ME/JarBox/J2MEEmulator/minijvm/utils/https/mbedtls/library/x509write_csr.c; sourceTree = "<group>"; };
+		5340A950F3E2AA50D790E47D /* ccm.c */ = {isa = PBXFileReference; includeInIndex = 1; name = ccm.c; path = Experiments/J2ME/JarBox/J2MEEmulator/minijvm/utils/https/mbedtls/library/ccm.c; sourceTree = "<group>"; };
+		576F507EABB75E02073422E1 /* J2MEScreenProfile.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = J2MEScreenProfile.swift; path = Delta/J2ME/J2MEScreenProfile.swift; sourceTree = "<group>"; };
+		58C55DD523280A09C24729A9 /* libJ2MENative.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libJ2MENative.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		5DBACDF3266CD8B447E83D8B /* sha1.c */ = {isa = PBXFileReference; includeInIndex = 1; name = sha1.c; path = Experiments/J2ME/JarBox/J2MEEmulator/minijvm/utils/https/mbedtls/library/sha1.c; sourceTree = "<group>"; };
+		5F62008D9ADFEFD7589BED2C /* memory_buffer_alloc.c */ = {isa = PBXFileReference; includeInIndex = 1; name = memory_buffer_alloc.c; path = Experiments/J2ME/JarBox/J2MEEmulator/minijvm/utils/https/mbedtls/library/memory_buffer_alloc.c; sourceTree = "<group>"; };
+		615C9C6BDCCB77A95A5E39A7 /* m3g_ios.c */ = {isa = PBXFileReference; includeInIndex = 1; name = m3g_ios.c; path = Experiments/J2ME/JarBox/J2MEEmulator/NativeBridge/m3g/src/m3g_ios.c; sourceTree = "<group>"; };
+		6337F69D0989EE70EF4E8673 /* sha256.c */ = {isa = PBXFileReference; includeInIndex = 1; name = sha256.c; path = Experiments/J2ME/JarBox/J2MEEmulator/minijvm/utils/https/mbedtls/library/sha256.c; sourceTree = "<group>"; };
+		63BEB1EA5B33882951252D8F /* j2me_audio.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = j2me_audio.m; path = Experiments/J2ME/Generated/j2me_audio.m; sourceTree = "<group>"; };
+		64AE6453CB919175D66C98E1 /* padlock.c */ = {isa = PBXFileReference; includeInIndex = 1; name = padlock.c; path = Experiments/J2ME/JarBox/J2MEEmulator/minijvm/utils/https/mbedtls/library/padlock.c; sourceTree = "<group>"; };
+		658306578AF02178DC7A26D9 /* jni_reflect.c */ = {isa = PBXFileReference; includeInIndex = 1; name = jni_reflect.c; path = Experiments/J2ME/JarBox/J2MEEmulator/minijvm/jvm/jni_reflect.c; sourceTree = "<group>"; };
+		678DEC89041A550A03BF9698 /* tinycthread.c */ = {isa = PBXFileReference; includeInIndex = 1; name = tinycthread.c; path = Experiments/J2ME/JarBox/J2MEEmulator/minijvm/utils/tinycthread.c; sourceTree = "<group>"; };
+		67E4DFC3093A2098730552A3 /* ecp.c */ = {isa = PBXFileReference; includeInIndex = 1; name = ecp.c; path = Experiments/J2ME/JarBox/J2MEEmulator/minijvm/utils/https/mbedtls/library/ecp.c; sourceTree = "<group>"; };
+		6BE3D11266D2AE5C51C74446 /* J2MEInputState.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = J2MEInputState.swift; path = Delta/J2ME/J2MEInputState.swift; sourceTree = "<group>"; };
+		6CF89E1B043086EA51B5638F /* j2me_api.jar */ = {isa = PBXFileReference; includeInIndex = 1; name = j2me_api.jar; path = Delta/J2ME/Resources/j2me_api.jar; sourceTree = "<group>"; };
+		6E24EA5C88303E64218FFBDC /* J2MEEmulatorView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = J2MEEmulatorView.swift; path = Delta/J2ME/J2MEEmulatorView.swift; sourceTree = "<group>"; };
+		6E716C770D6F3AB6BBDF0E69 /* d_type.c */ = {isa = PBXFileReference; includeInIndex = 1; name = d_type.c; path = Experiments/J2ME/JarBox/J2MEEmulator/minijvm/utils/d_type.c; sourceTree = "<group>"; };
+		72BA4ED8FE43B293207B1FDD /* hashtable.c */ = {isa = PBXFileReference; includeInIndex = 1; name = hashtable.c; path = Experiments/J2ME/JarBox/J2MEEmulator/minijvm/utils/hashtable.c; sourceTree = "<group>"; };
+		745038984726D697F721E9FF /* miniz.c */ = {isa = PBXFileReference; includeInIndex = 1; name = miniz.c; path = Experiments/J2ME/JarBox/J2MEEmulator/minijvm/utils/miniz.c; sourceTree = "<group>"; };
+		7688A11FE8366F9EA63D01B6 /* ssl_ciphersuites.c */ = {isa = PBXFileReference; includeInIndex = 1; name = ssl_ciphersuites.c; path = Experiments/J2ME/JarBox/J2MEEmulator/minijvm/utils/https/mbedtls/library/ssl_ciphersuites.c; sourceTree = "<group>"; };
 		796FA895EF62DF6A509DCA55 /* OperatorKit.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = OperatorKit.xcframework; sourceTree = "<group>"; };
 		7C31F852121CBEF08181BD23 /* OperatorStatusView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OperatorStatusView.swift; sourceTree = "<group>"; };
+		7CBDD278ACF28B8B590F19E5 /* m3g_core.c */ = {isa = PBXFileReference; includeInIndex = 1; name = m3g_core.c; path = Experiments/J2ME/JarBox/J2MEEmulator/NativeBridge/m3g/src/m3g_core.c; sourceTree = "<group>"; };
 		7E3E5A45AB20C8A87754453B /* libPods-DeltaPreviews.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-DeltaPreviews.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		803C4C3AAFC9D8624E220CF0 /* utf8_string.c */ = {isa = PBXFileReference; includeInIndex = 1; name = utf8_string.c; path = Experiments/J2ME/JarBox/J2MEEmulator/minijvm/utils/utf8_string.c; sourceTree = "<group>"; };
 		823D998E2E566EE40025F4CD /* GBCColorPalette.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GBCColorPalette.swift; sourceTree = "<group>"; };
 		8279ED032E53BA4F008995FA /* GBACoreSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GBACoreSettingsView.swift; sourceTree = "<group>"; };
 		8279ED0D2E53C76C008995FA /* NESCoreSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NESCoreSettingsView.swift; sourceTree = "<group>"; };
@@ -621,13 +823,48 @@
 		82C63BDA2E57BB4700B0C812 /* UIColor+Hex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIColor+Hex.swift"; sourceTree = "<group>"; };
 		82C83A722E4FCC030020711E /* CoreSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreSettingsView.swift; sourceTree = "<group>"; };
 		82F450AA2E6A1CD00097CE1C /* AppIcon.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = AppIcon.icon; sourceTree = "<group>"; };
+		85BDB1850CDFAD7E0CC674D4 /* ecdh.c */ = {isa = PBXFileReference; includeInIndex = 1; name = ecdh.c; path = Experiments/J2ME/JarBox/J2MEEmulator/minijvm/utils/https/mbedtls/library/ecdh.c; sourceTree = "<group>"; };
+		8601C793BD614D7FA5D81027 /* ecdsa.c */ = {isa = PBXFileReference; includeInIndex = 1; name = ecdsa.c; path = Experiments/J2ME/JarBox/J2MEEmulator/minijvm/utils/https/mbedtls/library/ecdsa.c; sourceTree = "<group>"; };
+		8AC660E037BF1B99D99E63D0 /* J2MENumpadView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = J2MENumpadView.swift; path = Delta/J2ME/J2MENumpadView.swift; sourceTree = "<group>"; };
+		8DB962F5CF80642171EAC3A0 /* interpreter.c */ = {isa = PBXFileReference; includeInIndex = 1; name = interpreter.c; path = Experiments/J2ME/JarBox/J2MEEmulator/minijvm/jvm/interpreter.c; sourceTree = "<group>"; };
+		8DC9C6FCB304AA13BC8EC020 /* x509.c */ = {isa = PBXFileReference; includeInIndex = 1; name = x509.c; path = Experiments/J2ME/JarBox/J2MEEmulator/minijvm/utils/https/mbedtls/library/x509.c; sourceTree = "<group>"; };
 		8ECE6641DE30D01EA30FE7F6 /* Pods-DeltaPreviews.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DeltaPreviews.release.xcconfig"; path = "Pods/Target Support Files/Pods-DeltaPreviews/Pods-DeltaPreviews.release.xcconfig"; sourceTree = "<group>"; };
+		91DEB2B14C1E6AEE4EC6B9B1 /* md_wrap.c */ = {isa = PBXFileReference; includeInIndex = 1; name = md_wrap.c; path = Experiments/J2ME/JarBox/J2MEEmulator/minijvm/utils/https/mbedtls/library/md_wrap.c; sourceTree = "<group>"; };
+		94CE94E07CFE65C23165CA46 /* jvm_util.c */ = {isa = PBXFileReference; includeInIndex = 1; name = jvm_util.c; path = Experiments/J2ME/Generated/jvm_util.c; sourceTree = "<group>"; };
+		959FBCE68878D0EBE10A8560 /* x509_create.c */ = {isa = PBXFileReference; includeInIndex = 1; name = x509_create.c; path = Experiments/J2ME/JarBox/J2MEEmulator/minijvm/utils/https/mbedtls/library/x509_create.c; sourceTree = "<group>"; };
+		96FA07EB4CEEA61339C1A01F /* OpenGLES.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGLES.framework; path = System/Library/Frameworks/OpenGLES.framework; sourceTree = SDKROOT; };
+		986774096D3AE07250C70A88 /* timing.c */ = {isa = PBXFileReference; includeInIndex = 1; name = timing.c; path = Experiments/J2ME/JarBox/J2MEEmulator/minijvm/utils/https/mbedtls/library/timing.c; sourceTree = "<group>"; };
+		9B20BE740287CC38E3677325 /* threading.c */ = {isa = PBXFileReference; includeInIndex = 1; name = threading.c; path = Experiments/J2ME/JarBox/J2MEEmulator/minijvm/utils/https/mbedtls/library/threading.c; sourceTree = "<group>"; };
 		9D171C53E58A0B9BAF0B89D5 /* GameCollectionViewController+Operator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "GameCollectionViewController+Operator.swift"; sourceTree = "<group>"; };
+		9E00121B94C0A59A47A01A13 /* certs.c */ = {isa = PBXFileReference; includeInIndex = 1; name = certs.c; path = Experiments/J2ME/JarBox/J2MEEmulator/minijvm/utils/https/mbedtls/library/certs.c; sourceTree = "<group>"; };
 		A01281C7023C0041B25963BE /* Pods-DeltaPreviews.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DeltaPreviews.debug.xcconfig"; path = "Pods/Target Support Files/Pods-DeltaPreviews/Pods-DeltaPreviews.debug.xcconfig"; sourceTree = "<group>"; };
+		A130A130A130A130A130A130 /* Delta 13.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "Delta 13.xcdatamodel"; sourceTree = "<group>"; };
+		A169BCAF1FC7FA79025E8F3B /* class.c */ = {isa = PBXFileReference; includeInIndex = 1; name = class.c; path = Experiments/J2ME/JarBox/J2MEEmulator/minijvm/jvm/class.c; sourceTree = "<group>"; };
 		A19FF50F55441BC2B2248241 /* Pods-Delta.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Delta.release.xcconfig"; path = "Pods/Target Support Files/Pods-Delta/Pods-Delta.release.xcconfig"; sourceTree = "<group>"; };
+		A2545703AC51F1C76C8DB32A /* aes.c */ = {isa = PBXFileReference; includeInIndex = 1; name = aes.c; path = Experiments/J2ME/JarBox/J2MEEmulator/minijvm/utils/https/mbedtls/library/aes.c; sourceTree = "<group>"; };
+		A2AE40425B70E77D2EEA7F13 /* jdwp.c */ = {isa = PBXFileReference; includeInIndex = 1; name = jdwp.c; path = Experiments/J2ME/JarBox/J2MEEmulator/minijvm/jvm/jdwp.c; sourceTree = "<group>"; };
+		A37D1D16C345556842AA207B /* sha512.c */ = {isa = PBXFileReference; includeInIndex = 1; name = sha512.c; path = Experiments/J2ME/JarBox/J2MEEmulator/minijvm/utils/https/mbedtls/library/sha512.c; sourceTree = "<group>"; };
+		A3DC0A51A62AF88CD9D59AF3 /* J2MEPreferences.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = J2MEPreferences.swift; path = Delta/J2ME/J2MEPreferences.swift; sourceTree = "<group>"; };
+		A7EE6FC6AB0CCB590B907E29 /* J2MEInputRouter.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = J2MEInputRouter.swift; path = Delta/J2ME/J2MEInputRouter.swift; sourceTree = "<group>"; };
+		A8DAEEF211588230C8E425E1 /* J2MEJoystickView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = J2MEJoystickView.swift; path = Delta/J2ME/J2MEJoystickView.swift; sourceTree = "<group>"; };
+		A9F34352D404094FF1417EB9 /* j2me_input.c */ = {isa = PBXFileReference; includeInIndex = 1; name = j2me_input.c; path = Experiments/J2ME/JarBox/J2MEEmulator/NativeBridge/j2me_input.c; sourceTree = "<group>"; };
 		AC1C990F29F8B8C30020E6E4 /* ToastNotificationOptions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToastNotificationOptions.swift; sourceTree = "<group>"; };
 		AC1C992629F9F1CF0020E6E4 /* GameViewController+ExperimentalToasts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "GameViewController+ExperimentalToasts.swift"; sourceTree = "<group>"; };
 		ACF7E30E29F743A3000FE071 /* PHPhotoLibrary+Screenshots.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PHPhotoLibrary+Screenshots.swift"; sourceTree = "<group>"; };
+		AD1020260000000000000002 /* AuroraHomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuroraHomeView.swift; sourceTree = "<group>"; };
+		AD1020260000000000000004 /* iCloudService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iCloudService.swift; sourceTree = "<group>"; };
+		AD1020260000000000000006 /* iCloudSyncState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iCloudSyncState.swift; sourceTree = "<group>"; };
+		AD2C7CED8CD454CF050AAA6B /* J2MEScreenConfigurationController.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = J2MEScreenConfigurationController.swift; path = Delta/J2ME/J2MEScreenConfigurationController.swift; sourceTree = "<group>"; };
+		AEFA4FEB78FA291453DAF9AB /* md4.c */ = {isa = PBXFileReference; includeInIndex = 1; name = md4.c; path = Experiments/J2ME/JarBox/J2MEEmulator/minijvm/utils/https/mbedtls/library/md4.c; sourceTree = "<group>"; };
+		B1765111CC56781BE6055186 /* entropy.c */ = {isa = PBXFileReference; includeInIndex = 1; name = entropy.c; path = Experiments/J2ME/JarBox/J2MEEmulator/minijvm/utils/https/mbedtls/library/entropy.c; sourceTree = "<group>"; };
+		B39D057E1FD7309C9E33C415 /* pkparse.c */ = {isa = PBXFileReference; includeInIndex = 1; name = pkparse.c; path = Experiments/J2ME/JarBox/J2MEEmulator/minijvm/utils/https/mbedtls/library/pkparse.c; sourceTree = "<group>"; };
+		B48252D724974BE1F052FF74 /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
+		B4DA110276A563D6F8B73656 /* version.c */ = {isa = PBXFileReference; includeInIndex = 1; name = version.c; path = Experiments/J2ME/JarBox/J2MEEmulator/minijvm/utils/https/mbedtls/library/version.c; sourceTree = "<group>"; };
+		B91401783D126D3614E8841D /* x509_crl.c */ = {isa = PBXFileReference; includeInIndex = 1; name = x509_crl.c; path = Experiments/J2ME/JarBox/J2MEEmulator/minijvm/utils/https/mbedtls/library/x509_crl.c; sourceTree = "<group>"; };
+		BB7CE03AC413DC77367F9117 /* ssl_tls.c */ = {isa = PBXFileReference; includeInIndex = 1; name = ssl_tls.c; path = Experiments/J2ME/JarBox/J2MEEmulator/minijvm/utils/https/mbedtls/library/ssl_tls.c; sourceTree = "<group>"; };
+		BBC7D9E8AB4276570105F4EE /* J2MESaveStore.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = J2MESaveStore.swift; path = Delta/J2ME/J2MESaveStore.swift; sourceTree = "<group>"; };
+		BCBFF6B1783506E624E443D7 /* md2.c */ = {isa = PBXFileReference; includeInIndex = 1; name = md2.c; path = Experiments/J2ME/JarBox/J2MEEmulator/minijvm/utils/https/mbedtls/library/md2.c; sourceTree = "<group>"; };
+		BD6CBF08658B81005B95A37F /* dhm.c */ = {isa = PBXFileReference; includeInIndex = 1; name = dhm.c; path = Experiments/J2ME/JarBox/J2MEEmulator/minijvm/utils/https/mbedtls/library/dhm.c; sourceTree = "<group>"; };
 		BF00BEA525B758AA00C8607D /* SystemBIOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemBIOS.swift; sourceTree = "<group>"; };
 		BF02D5D91DDEBB3000A5E131 /* openvgdb.sqlite */ = {isa = PBXFileReference; lastKnownFileType = file; path = openvgdb.sqlite; sourceTree = "<group>"; };
 		BF04E6FE1DB8625C000F35D3 /* ControllerSkinsViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ControllerSkinsViewController.swift; sourceTree = "<group>"; };
@@ -773,12 +1010,18 @@
 		BFFC46221D5984A000AF2CC6 /* LaunchViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LaunchViewController.swift; sourceTree = "<group>"; };
 		BFFC46451D59861000AF2CC6 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		BFFC464B1D5998D600AF2CC6 /* CheatTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CheatTableViewCell.swift; sourceTree = "<group>"; };
+		C06AFD0699F5521A156CD315 /* cmac.c */ = {isa = PBXFileReference; includeInIndex = 1; name = cmac.c; path = Experiments/J2ME/JarBox/J2MEEmulator/minijvm/utils/https/mbedtls/library/cmac.c; sourceTree = "<group>"; };
+		C123354A84C4E4A1C1DC2A49 /* pkcs5.c */ = {isa = PBXFileReference; includeInIndex = 1; name = pkcs5.c; path = Experiments/J2ME/JarBox/J2MEEmulator/minijvm/utils/https/mbedtls/library/pkcs5.c; sourceTree = "<group>"; };
 		C124B55FFADA30BF671EE4F8 /* DeltaOperatorDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeltaOperatorDelegate.swift; sourceTree = "<group>"; };
+		C1B9A052BF3418FA167F766F /* minijvm_rt.jar */ = {isa = PBXFileReference; includeInIndex = 1; name = minijvm_rt.jar; path = Delta/J2ME/Resources/minijvm_rt.jar; sourceTree = "<group>"; };
 		C1C8C13CE90324CBBA76BC3E /* OperatorUICoordinators.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OperatorUICoordinators.swift; sourceTree = "<group>"; };
+		C4623036B9B4304833C0B377 /* pk.c */ = {isa = PBXFileReference; includeInIndex = 1; name = pk.c; path = Experiments/J2ME/JarBox/J2MEEmulator/minijvm/utils/https/mbedtls/library/pk.c; sourceTree = "<group>"; };
+		C546D9EFA92E07738E8BB019 /* j2me_audio.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = j2me_audio.m; path = Experiments/J2ME/JarBox/J2MEEmulator/NativeBridge/j2me_audio.m; sourceTree = "<group>"; };
 		C6F24AD62D64B452002F939F /* Lu.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Lu.swift; sourceTree = "<group>"; };
 		C6F24AD82D64B550002F939F /* PauseViewController+Lu.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PauseViewController+Lu.swift"; sourceTree = "<group>"; };
 		C6F24ADA2D64B5A0002F939F /* Lu-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Lu-Info.plist"; sourceTree = "<group>"; };
 		C786AF1D2DDB6223BE2063CC /* Pods-Delta.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Delta.debug.xcconfig"; path = "Pods/Target Support Files/Pods-Delta/Pods-Delta.debug.xcconfig"; sourceTree = "<group>"; };
+		C79EFB19DF23953FEF8FBB0F /* miniz_wrapper.c */ = {isa = PBXFileReference; includeInIndex = 1; name = miniz_wrapper.c; path = Experiments/J2ME/JarBox/J2MEEmulator/minijvm/utils/miniz_wrapper.c; sourceTree = "<group>"; };
 		CA0001062E60000100000006 /* ControllerSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ControllerSettingsView.swift; sourceTree = "<group>"; };
 		CA0001092E60000100000009 /* SkinSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SkinSettingsView.swift; sourceTree = "<group>"; };
 		CA00010C2E6000010000000C /* AudioSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioSettingsView.swift; sourceTree = "<group>"; };
@@ -789,7 +1032,12 @@
 		CA0001262E60000100000026 /* TouchHapticsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TouchHapticsView.swift; sourceTree = "<group>"; };
 		CA0101012F8E000100000001 /* CheatIcons.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = CheatIcons.plist; sourceTree = "<group>"; };
 		CA0101012F8E000100000004 /* CheatIconPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheatIconPickerView.swift; sourceTree = "<group>"; };
+		CABDA8B0947CF31E77050D25 /* md5.c */ = {isa = PBXFileReference; includeInIndex = 1; name = md5.c; path = Experiments/J2ME/JarBox/J2MEEmulator/minijvm/utils/https/mbedtls/library/md5.c; sourceTree = "<group>"; };
+		CAC5C622BDB497AAE4FADE82 /* aesni.c */ = {isa = PBXFileReference; includeInIndex = 1; name = aesni.c; path = Experiments/J2ME/JarBox/J2MEEmulator/minijvm/utils/https/mbedtls/library/aesni.c; sourceTree = "<group>"; };
+		CE41A151B21A837C922B01C9 /* j2me_ui.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = j2me_ui.m; path = Experiments/J2ME/JarBox/J2MEEmulator/NativeBridge/j2me_ui.m; sourceTree = "<group>"; };
 		CE7C8DB38D2A6B16B8609EAC /* AppDelegate+Operator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppDelegate+Operator.swift"; sourceTree = "<group>"; };
+		CF808F9BE97DE43DA2FAE486 /* hmac_drbg.c */ = {isa = PBXFileReference; includeInIndex = 1; name = hmac_drbg.c; path = Experiments/J2ME/JarBox/J2MEEmulator/minijvm/utils/https/mbedtls/library/hmac_drbg.c; sourceTree = "<group>"; };
+		D4415D13FFE1C117DE277FAC /* bignum.c */ = {isa = PBXFileReference; includeInIndex = 1; name = bignum.c; path = Experiments/J2ME/JarBox/J2MEEmulator/minijvm/utils/https/mbedtls/library/bignum.c; sourceTree = "<group>"; };
 		D5002BDB2DCD3ED2003418FD /* MockPurchaseManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockPurchaseManager.swift; sourceTree = "<group>"; };
 		D5002BDD2DCD3F31003418FD /* MockDatabaseManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockDatabaseManager.swift; sourceTree = "<group>"; };
 		D5011C47281B6E8B00A0760B /* CharacterSet+Filename.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CharacterSet+Filename.swift"; sourceTree = "<group>"; };
@@ -919,6 +1167,7 @@
 		D5D7C20729E616CF00663793 /* FeatureContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeatureContainer.swift; sourceTree = "<group>"; };
 		D5D7C20929E61FA600663793 /* OptionToggleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OptionToggleView.swift; sourceTree = "<group>"; };
 		D5D7C20B29E624CB00663793 /* DisplayInlineKey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisplayInlineKey.swift; sourceTree = "<group>"; };
+		D5D8AA671B59EFB7FC2CA618 /* x509_crt.c */ = {isa = PBXFileReference; includeInIndex = 1; name = x509_crt.c; path = Experiments/J2ME/JarBox/J2MEEmulator/minijvm/utils/https/mbedtls/library/x509_crt.c; sourceTree = "<group>"; };
 		D5DF87472E25AA6B005CCF92 /* GPGXDeltaCore.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = GPGXDeltaCore.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		D5E12AEA2D011579000C7531 /* String+Profanity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "String+Profanity.swift"; sourceTree = "<group>"; };
 		D5E12AEC2D01163A000C7531 /* Profanity.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = Profanity.txt; sourceTree = "<group>"; };
@@ -928,8 +1177,20 @@
 		D5F702FC2C24CE5300DCD271 /* UISceneSession+Delta.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UISceneSession+Delta.swift"; sourceTree = "<group>"; };
 		D5F82FB72981D3AC00B229AF /* LegacySearchBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LegacySearchBar.swift; sourceTree = "<group>"; };
 		D5FB042B2C5AF40A008329DD /* libresolv.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libresolv.tbd; path = usr/lib/libresolv.tbd; sourceTree = SDKROOT; };
+		D82B672F1FA04C72206B320D /* havege.c */ = {isa = PBXFileReference; includeInIndex = 1; name = havege.c; path = Experiments/J2ME/JarBox/J2MEEmulator/minijvm/utils/https/mbedtls/library/havege.c; sourceTree = "<group>"; };
+		DAD95742495F92F2E28C1019 /* oid.c */ = {isa = PBXFileReference; includeInIndex = 1; name = oid.c; path = Experiments/J2ME/JarBox/J2MEEmulator/minijvm/utils/https/mbedtls/library/oid.c; sourceTree = "<group>"; };
+		DB278341097E2FBF81E4540D /* ssl_cache.c */ = {isa = PBXFileReference; includeInIndex = 1; name = ssl_cache.c; path = Experiments/J2ME/JarBox/J2MEEmulator/minijvm/utils/https/mbedtls/library/ssl_cache.c; sourceTree = "<group>"; };
 		DC866E433B3BA9AE18ABA1EC /* libPods-Delta.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-Delta.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		DC8AEA0296D966D803401381 /* debug.c */ = {isa = PBXFileReference; includeInIndex = 1; name = debug.c; path = Experiments/J2ME/JarBox/J2MEEmulator/minijvm/utils/https/mbedtls/library/debug.c; sourceTree = "<group>"; };
 		DCBF2F877CA6072880A54F35 /* DeltaOperatorUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeltaOperatorUtils.swift; sourceTree = "<group>"; };
+		DCE76AA6C3587B62C52D1D53 /* hashset.c */ = {isa = PBXFileReference; includeInIndex = 1; name = hashset.c; path = Experiments/J2ME/JarBox/J2MEEmulator/minijvm/utils/hashset.c; sourceTree = "<group>"; };
+		DDED487AE84EA3287FC888B4 /* entropy_poll.c */ = {isa = PBXFileReference; includeInIndex = 1; name = entropy_poll.c; path = Experiments/J2ME/JarBox/J2MEEmulator/minijvm/utils/https/mbedtls/library/entropy_poll.c; sourceTree = "<group>"; };
+		DE9D7E86AF59435ABCAFE723 /* asn1parse.c */ = {isa = PBXFileReference; includeInIndex = 1; name = asn1parse.c; path = Experiments/J2ME/JarBox/J2MEEmulator/minijvm/utils/https/mbedtls/library/asn1parse.c; sourceTree = "<group>"; };
+		E12AB5654E8457B75D9715F7 /* pkwrite.c */ = {isa = PBXFileReference; includeInIndex = 1; name = pkwrite.c; path = Experiments/J2ME/JarBox/J2MEEmulator/minijvm/utils/https/mbedtls/library/pkwrite.c; sourceTree = "<group>"; };
+		E170508EA4F1C42062D05610 /* J2MESession.c */ = {isa = PBXFileReference; includeInIndex = 1; name = J2MESession.c; path = Delta/J2ME/Native/J2MESession.c; sourceTree = "<group>"; };
+		E2624296109A2046BEA783BB /* jvm.c */ = {isa = PBXFileReference; includeInIndex = 1; name = jvm.c; path = Experiments/J2ME/JarBox/J2MEEmulator/minijvm/jvm/jvm.c; sourceTree = "<group>"; };
+		E370C1171B295F70DEC66581 /* ecjpake.c */ = {isa = PBXFileReference; includeInIndex = 1; name = ecjpake.c; path = Experiments/J2ME/JarBox/J2MEEmulator/minijvm/utils/https/mbedtls/library/ecjpake.c; sourceTree = "<group>"; };
+		E42D3FFECC9A9C0E686BFD12 /* ssl_cli.c */ = {isa = PBXFileReference; includeInIndex = 1; name = ssl_cli.c; path = Experiments/J2ME/JarBox/J2MEEmulator/minijvm/utils/https/mbedtls/library/ssl_cli.c; sourceTree = "<group>"; };
 		E460BA622FECFFE700E8192B /* LibraryExport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryExport.swift; sourceTree = "<group>"; };
 		E647EE142F633115000DA257 /* AchievementToast.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AchievementToast.swift; sourceTree = "<group>"; };
 		E65B0F922F6C65E4009B7F0A /* CheatsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheatsView.swift; sourceTree = "<group>"; };
@@ -939,10 +1200,29 @@
 		E6BD34AA2F563F1A001C9D78 /* AchievementGreeting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AchievementGreeting.swift; sourceTree = "<group>"; };
 		E6BD34AC2F587BF0001C9D78 /* AchievementGameBanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AchievementGameBanner.swift; sourceTree = "<group>"; };
 		E6EB10AE2F58B1C50001AAD2 /* AchievementNotification.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AchievementNotification.swift; sourceTree = "<group>"; };
+		E8F7D54D4973FC220CBDDD8B /* j2me_render.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = j2me_render.m; path = Experiments/J2ME/JarBox/J2MEEmulator/NativeBridge/j2me_render.m; sourceTree = "<group>"; };
+		E9C48185DE578FEC2B9A096C /* x509write_crt.c */ = {isa = PBXFileReference; includeInIndex = 1; name = x509write_crt.c; path = Experiments/J2ME/JarBox/J2MEEmulator/minijvm/utils/https/mbedtls/library/x509write_crt.c; sourceTree = "<group>"; };
+		F09797FDA5F1D8157926D719 /* jni_std.c */ = {isa = PBXFileReference; includeInIndex = 1; name = jni_std.c; path = Experiments/J2ME/JarBox/J2MEEmulator/minijvm/jvm/jni_std.c; sourceTree = "<group>"; };
+		F0C44BFA0F6C8B75C744A0B8 /* md.c */ = {isa = PBXFileReference; includeInIndex = 1; name = md.c; path = Experiments/J2ME/JarBox/J2MEEmulator/minijvm/utils/https/mbedtls/library/md.c; sourceTree = "<group>"; };
+		F1849D170052AD697E44FD8D /* cipher_wrap.c */ = {isa = PBXFileReference; includeInIndex = 1; name = cipher_wrap.c; path = Experiments/J2ME/JarBox/J2MEEmulator/minijvm/utils/https/mbedtls/library/cipher_wrap.c; sourceTree = "<group>"; };
+		F5B984AA26B155B7FDD43690 /* pk_wrap.c */ = {isa = PBXFileReference; includeInIndex = 1; name = pk_wrap.c; path = Experiments/J2ME/JarBox/J2MEEmulator/minijvm/utils/https/mbedtls/library/pk_wrap.c; sourceTree = "<group>"; };
+		F919F0F85A924D31B26BC90D /* ssl_srv.c */ = {isa = PBXFileReference; includeInIndex = 1; name = ssl_srv.c; path = Experiments/J2ME/JarBox/J2MEEmulator/minijvm/utils/https/mbedtls/library/ssl_srv.c; sourceTree = "<group>"; };
+		F91D01E98CC6732DFD440A96 /* m3g_egl_ios.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = m3g_egl_ios.m; path = Experiments/J2ME/JarBox/J2MEEmulator/NativeBridge/m3g/m3g_egl_ios.m; sourceTree = "<group>"; };
+		FAB3029860A79D9D311E4F3A /* bytebuf.c */ = {isa = PBXFileReference; includeInIndex = 1; name = bytebuf.c; path = Experiments/J2ME/JarBox/J2MEEmulator/minijvm/utils/bytebuf.c; sourceTree = "<group>"; };
 		FCE7674E5643CDB43BC8ED32 /* DeltaOperatorWritebackToast.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeltaOperatorWritebackToast.swift; sourceTree = "<group>"; };
+		FE3C90B725E99F5D34825EF4 /* j2me_m3g_jni.c */ = {isa = PBXFileReference; includeInIndex = 1; name = j2me_m3g_jni.c; path = Experiments/J2ME/JarBox/J2MEEmulator/NativeBridge/m3g/j2me_m3g_jni.c; sourceTree = "<group>"; };
+		FF01465D52D98B1FAABD898D /* pkcs12.c */ = {isa = PBXFileReference; includeInIndex = 1; name = pkcs12.c; path = Experiments/J2ME/JarBox/J2MEEmulator/minijvm/utils/https/mbedtls/library/pkcs12.c; sourceTree = "<group>"; };
+		FF342EE60BB6228103E6250A /* x509_csr.c */ = {isa = PBXFileReference; includeInIndex = 1; name = x509_csr.c; path = Experiments/J2ME/JarBox/J2MEEmulator/minijvm/utils/https/mbedtls/library/x509_csr.c; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		04FFF8D80CE315601FC4EEF9 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		BFFA71D41AAC406100EE9DD1 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -969,6 +1249,12 @@
 				D5C7DD192E26CF810048FF5C /* MelonDSDeltaCore.framework in Frameworks */,
 				D5C45FEF2BE992A80009DBB0 /* AltKit in Frameworks */,
 				70FF20879DA0DCEE53D8CAED /* OperatorKit.xcframework in Frameworks */,
+				2977AC2B5BB3CB3F6F04F6DB /* libJ2MENative.a in Frameworks */,
+				86CA1839303E866CE80884AB /* OpenGLES.framework in Frameworks */,
+				E3789E6E6666FC76CA498964 /* AudioToolbox.framework in Frameworks */,
+				2A7732E6064967B7CAD8FE36 /* AVFoundation.framework in Frameworks */,
+				F5DA78824508467B2A98B0E7 /* UIKit.framework in Frameworks */,
+				AE5DBFB6B0DACCB0372E9ED1 /* QuartzCore.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1006,6 +1292,124 @@
 			path = Sources;
 			sourceTree = "<group>";
 		};
+		3BE1D3946EB6578BA3DFB2CF /* J2MENative Sources */ = {
+			isa = PBXGroup;
+			children = (
+				C546D9EFA92E07738E8BB019 /* j2me_audio.m */,
+				A9F34352D404094FF1417EB9 /* j2me_input.c */,
+				07EE39392A509FB3BABD703B /* j2me_micro3d_gl.m */,
+				E8F7D54D4973FC220CBDDD8B /* j2me_render.m */,
+				CE41A151B21A837C922B01C9 /* j2me_ui.m */,
+				1612C55AD9D71B693BFC2ED8 /* jvm_bridge.c */,
+				FE3C90B725E99F5D34825EF4 /* j2me_m3g_jni.c */,
+				F91D01E98CC6732DFD440A96 /* m3g_egl_ios.m */,
+				7CBDD278ACF28B8B590F19E5 /* m3g_core.c */,
+				615C9C6BDCCB77A95A5E39A7 /* m3g_ios.c */,
+				246BCCB7FD6008A58949733B /* m3g_ios_gl.c */,
+				A169BCAF1FC7FA79025E8F3B /* class.c */,
+				28D080BFFE1A65301FDA41BE /* class_load.c */,
+				2ABA8509B88BADD256C56EAC /* garbage.c */,
+				39416700B69429357C3E7E00 /* global.c */,
+				8DB962F5CF80642171EAC3A0 /* interpreter.c */,
+				A2AE40425B70E77D2EEA7F13 /* jdwp.c */,
+				528B34D8C1AC482FF5AF6711 /* jit.c */,
+				463B840E959F02FAD75B5DE1 /* jni_io.c */,
+				658306578AF02178DC7A26D9 /* jni_reflect.c */,
+				F09797FDA5F1D8157926D719 /* jni_std.c */,
+				E2624296109A2046BEA783BB /* jvm.c */,
+				07AC9EA5C0842285E962DBD1 /* jvm_util.c */,
+				4B0A2EC81C87BA96084BEC91 /* os_posix.c */,
+				0387433BF8E012E316490BF0 /* runtime.c */,
+				2E5F19C6A887464656EE38D4 /* arraylist.c */,
+				FAB3029860A79D9D311E4F3A /* bytebuf.c */,
+				6E716C770D6F3AB6BBDF0E69 /* d_type.c */,
+				DCE76AA6C3587B62C52D1D53 /* hashset.c */,
+				72BA4ED8FE43B293207B1FDD /* hashtable.c */,
+				A2545703AC51F1C76C8DB32A /* aes.c */,
+				CAC5C622BDB497AAE4FADE82 /* aesni.c */,
+				33FF27168245909B0F4535AA /* arc4.c */,
+				DE9D7E86AF59435ABCAFE723 /* asn1parse.c */,
+				427FA7759EB07724E8113363 /* asn1write.c */,
+				314319F41B171D051C86C7A0 /* base64.c */,
+				D4415D13FFE1C117DE277FAC /* bignum.c */,
+				0512A4825FF21E0989E5D420 /* blowfish.c */,
+				36495589B550EF3627518B66 /* camellia.c */,
+				5340A950F3E2AA50D790E47D /* ccm.c */,
+				9E00121B94C0A59A47A01A13 /* certs.c */,
+				016BBEF7160807B1F20591FE /* cipher.c */,
+				F1849D170052AD697E44FD8D /* cipher_wrap.c */,
+				C06AFD0699F5521A156CD315 /* cmac.c */,
+				28CE7819EBBA474150476983 /* ctr_drbg.c */,
+				DC8AEA0296D966D803401381 /* debug.c */,
+				4327484A7BAAD33E9AD14ADF /* des.c */,
+				BD6CBF08658B81005B95A37F /* dhm.c */,
+				85BDB1850CDFAD7E0CC674D4 /* ecdh.c */,
+				8601C793BD614D7FA5D81027 /* ecdsa.c */,
+				E370C1171B295F70DEC66581 /* ecjpake.c */,
+				67E4DFC3093A2098730552A3 /* ecp.c */,
+				4867836EE3B016674A39D274 /* ecp_curves.c */,
+				B1765111CC56781BE6055186 /* entropy.c */,
+				DDED487AE84EA3287FC888B4 /* entropy_poll.c */,
+				392248398CAF24372D31166B /* error.c */,
+				2FB7BE5D08D5B4D0D7F166B5 /* gcm.c */,
+				D82B672F1FA04C72206B320D /* havege.c */,
+				CF808F9BE97DE43DA2FAE486 /* hmac_drbg.c */,
+				F0C44BFA0F6C8B75C744A0B8 /* md.c */,
+				BCBFF6B1783506E624E443D7 /* md2.c */,
+				AEFA4FEB78FA291453DAF9AB /* md4.c */,
+				CABDA8B0947CF31E77050D25 /* md5.c */,
+				91DEB2B14C1E6AEE4EC6B9B1 /* md_wrap.c */,
+				5F62008D9ADFEFD7589BED2C /* memory_buffer_alloc.c */,
+				46655C8996840B3041A49572 /* net_sockets.c */,
+				DAD95742495F92F2E28C1019 /* oid.c */,
+				64AE6453CB919175D66C98E1 /* padlock.c */,
+				0ADFD8E5864F71A40A0447AE /* pem.c */,
+				C4623036B9B4304833C0B377 /* pk.c */,
+				F5B984AA26B155B7FDD43690 /* pk_wrap.c */,
+				04B6DD4B5E1005A0B25E5960 /* pkcs11.c */,
+				FF01465D52D98B1FAABD898D /* pkcs12.c */,
+				C123354A84C4E4A1C1DC2A49 /* pkcs5.c */,
+				B39D057E1FD7309C9E33C415 /* pkparse.c */,
+				E12AB5654E8457B75D9715F7 /* pkwrite.c */,
+				254D79834CCA68689AA7F8C8 /* platform.c */,
+				2B122D725CEDB8E6A37F07E1 /* ripemd160.c */,
+				171DEE75B36908C00AC87F45 /* rsa.c */,
+				5DBACDF3266CD8B447E83D8B /* sha1.c */,
+				6337F69D0989EE70EF4E8673 /* sha256.c */,
+				A37D1D16C345556842AA207B /* sha512.c */,
+				DB278341097E2FBF81E4540D /* ssl_cache.c */,
+				7688A11FE8366F9EA63D01B6 /* ssl_ciphersuites.c */,
+				E42D3FFECC9A9C0E686BFD12 /* ssl_cli.c */,
+				0F385A16BE9E461EB4C8E7A7 /* ssl_cookie.c */,
+				F919F0F85A924D31B26BC90D /* ssl_srv.c */,
+				0979BC4428C92098897A6BEF /* ssl_ticket.c */,
+				BB7CE03AC413DC77367F9117 /* ssl_tls.c */,
+				9B20BE740287CC38E3677325 /* threading.c */,
+				986774096D3AE07250C70A88 /* timing.c */,
+				B4DA110276A563D6F8B73656 /* version.c */,
+				2EFB724811BCC71ED545AE8C /* version_features.c */,
+				8DC9C6FCB304AA13BC8EC020 /* x509.c */,
+				959FBCE68878D0EBE10A8560 /* x509_create.c */,
+				B91401783D126D3614E8841D /* x509_crl.c */,
+				D5D8AA671B59EFB7FC2CA618 /* x509_crt.c */,
+				FF342EE60BB6228103E6250A /* x509_csr.c */,
+				E9C48185DE578FEC2B9A096C /* x509write_crt.c */,
+				533E2357FBB0F54DB877492E /* x509write_csr.c */,
+				3E8AD0F547E232B454C4E9F2 /* xtea.c */,
+				1BD6921AB86BF8FF31661BDE /* ssl_client.c */,
+				2B22347B97C34F6CB9F38969 /* linkedlist.c */,
+				745038984726D697F721E9FF /* miniz.c */,
+				C79EFB19DF23953FEF8FBB0F /* miniz_wrapper.c */,
+				678DEC89041A550A03BF9698 /* tinycthread.c */,
+				803C4C3AAFC9D8624E220CF0 /* utf8_string.c */,
+				E170508EA4F1C42062D05610 /* J2MESession.c */,
+				23A04EFC06155AB4EB82C320 /* interpreter.c */,
+				63BEB1EA5B33882951252D8F /* j2me_audio.m */,
+				94CE94E07CFE65C23165CA46 /* jvm_util.c */,
+			);
+			name = "J2MENative Sources";
+			sourceTree = "<group>";
+		};
 		43183841AF258C4DC1FAC9AB /* DeltaOperator */ = {
 			isa = PBXGroup;
 			children = (
@@ -1014,6 +1418,31 @@
 			);
 			name = DeltaOperator;
 			path = External/DeltaOperator;
+			sourceTree = "<group>";
+		};
+		82830559A472A23B40FF8011 /* J2ME Integration */ = {
+			isa = PBXGroup;
+			children = (
+				6E24EA5C88303E64218FFBDC /* J2MEEmulatorView.swift */,
+				0AFB5B29104C95F70F35FC95 /* J2MEFormView.swift */,
+				49BF752BC8632741F5BB12F3 /* J2MEGameViewController.swift */,
+				4102D9D68D45094E843CF68B /* J2MEJARMetadata.swift */,
+				A8DAEEF211588230C8E425E1 /* J2MEJoystickView.swift */,
+				8AC660E037BF1B99D99E63D0 /* J2MENumpadView.swift */,
+				AD2C7CED8CD454CF050AAA6B /* J2MEScreenConfigurationController.swift */,
+				576F507EABB75E02073422E1 /* J2MEScreenProfile.swift */,
+				3834C14D31A9610F99574076 /* gs_instruments.sf2 */,
+				6CF89E1B043086EA51B5638F /* j2me_api.jar */,
+				C1B9A052BF3418FA167F766F /* minijvm_rt.jar */,
+				12CB3D71FD4D0336F7BE398A /* J2MELibrary.swift */,
+				436C4510857D7B09198DD63A /* J2MEBackup.swift */,
+				4593ABD64745482A9FE199FB /* J2MEGameSettingsController.swift */,
+				A7EE6FC6AB0CCB590B907E29 /* J2MEInputRouter.swift */,
+				A3DC0A51A62AF88CD9D59AF3 /* J2MEPreferences.swift */,
+				BBC7D9E8AB4276570105F4EE /* J2MESaveStore.swift */,
+				6BE3D11266D2AE5C51C74446 /* J2MEInputState.swift */,
+			);
+			name = "J2ME Integration";
 			sourceTree = "<group>";
 		};
 		AB84EA4BA606FA3C8B99017F /* Frameworks */ = {
@@ -1376,6 +1805,11 @@
 				22506DA00971C4300AF90A35 /* Pods.framework */,
 				DC866E433B3BA9AE18ABA1EC /* libPods-Delta.a */,
 				7E3E5A45AB20C8A87754453B /* libPods-DeltaPreviews.a */,
+				96FA07EB4CEEA61339C1A01F /* OpenGLES.framework */,
+				05587C57739FBD814A2C1250 /* AudioToolbox.framework */,
+				B48252D724974BE1F052FF74 /* AVFoundation.framework */,
+				22FC9517125F59AFDE0BCC42 /* UIKit.framework */,
+				09A1626D4E60BA50925AA1CA /* QuartzCore.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -1524,6 +1958,8 @@
 				BFFA71D81AAC406100EE9DD1 /* Products */,
 				FD1E8AE87FA2DB8793F7B937 /* Pods */,
 				43183841AF258C4DC1FAC9AB /* DeltaOperator */,
+				3BE1D3946EB6578BA3DFB2CF /* J2MENative Sources */,
+				82830559A472A23B40FF8011 /* J2ME Integration */,
 			);
 			sourceTree = "<group>";
 		};
@@ -1533,6 +1969,7 @@
 				BFFA71D71AAC406100EE9DD1 /* Delta.app */,
 				D5D7C1F129E60DFF00663793 /* libDeltaFeatures.a */,
 				D539102F29E88B6B0006B350 /* DeltaPreviews.framework */,
+				58C55DD523280A09C24729A9 /* libJ2MENative.a */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -2000,9 +2437,34 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		F07DDD9CAB5B5EB336DA378A /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
+		5B2DA649ED0C697BB9DDE3A4 /* J2MENative */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = BF074464CACB4D0B0A2D5D06 /* Build configuration list for PBXNativeTarget "J2MENative" */;
+			buildPhases = (
+				184EF29958E1CA26BF12CAAF /* Generate J2ME overlays */,
+				F07DDD9CAB5B5EB336DA378A /* Headers */,
+				60376AE571109B4DC1B3B8DD /* Sources */,
+				04FFF8D80CE315601FC4EEF9 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = J2MENative;
+			productName = J2MENative;
+			productReference = 58C55DD523280A09C24729A9 /* libJ2MENative.a */;
+			productType = "com.apple.product-type.library.static";
+		};
 		BFFA71D61AAC406100EE9DD1 /* Delta */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = BFFA71F61AAC406100EE9DD1 /* Build configuration list for PBXNativeTarget "Delta" */;
@@ -2028,6 +2490,7 @@
 				D57A82272E29AE66006E06E8 /* PBXTargetDependency */,
 				D57A82292E29AE66006E06E8 /* PBXTargetDependency */,
 				D5D7C1FC29E60EDE00663793 /* PBXTargetDependency */,
+				1701D0327A84F8C25FD6A565 /* PBXTargetDependency */,
 			);
 			name = Delta;
 			packageProductDependencies = (
@@ -2175,6 +2638,7 @@
 				BF6E70B925D2187800E41CD1 /* Systems */,
 				D539102E29E88B6B0006B350 /* DeltaPreviews */,
 				D5D7C1F029E60DFF00663793 /* DeltaFeatures */,
+				5B2DA649ED0C697BB9DDE3A4 /* J2MENative */,
 			);
 		};
 /* End PBXProject section */
@@ -2330,6 +2794,9 @@
 				BF353FF61C5D837600C1184C /* PauseMenu.storyboard in Resources */,
 				BF27CC8E1BC9FEA200A20D89 /* Assets.xcassets in Resources */,
 				D5BE1BD72D0B9CBE00D2142E /* PatreonAPI.plist in Resources */,
+				EE49EB90763F7FE836098D2E /* gs_instruments.sf2 in Resources */,
+				7694AC9CEEC5998BE776134C /* j2me_api.jar in Resources */,
+				89449742D3D058410EC68CBE /* minijvm_rt.jar in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2375,6 +2842,31 @@
 			shellPath = /bin/sh;
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Delta/Pods-Delta-resources.sh\"\n";
 			showEnvVarsInLog = 0;
+		};
+		184EF29958E1CA26BF12CAAF /* Generate J2ME overlays */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"$(SRCROOT)/Experiments/J2ME/prepare_native.py",
+				"$(SRCROOT)/Experiments/J2ME/JarBox/J2MEEmulator/minijvm/jvm/interpreter.c",
+				"$(SRCROOT)/Experiments/J2ME/JarBox/J2MEEmulator/minijvm/jvm/jvm_util.c",
+				"$(SRCROOT)/Experiments/J2ME/JarBox/J2MEEmulator/NativeBridge/j2me_audio.m",
+			);
+			name = "Generate J2ME overlays";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(SRCROOT)/Experiments/J2ME/Generated/interpreter.c",
+				"$(SRCROOT)/Experiments/J2ME/Generated/jvm_util.c",
+				"$(SRCROOT)/Experiments/J2ME/Generated/j2me_audio.m",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "/usr/bin/python3 \"$SRCROOT/Experiments/J2ME/prepare_native.py\"";
 		};
 		92EDD9C0CE3127182B2AF907 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -2470,6 +2962,120 @@
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		60376AE571109B4DC1B3B8DD /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4B61AA16B796A2111F258F82 /* j2me_input.c in Sources */,
+				E72E3219AED0D9081CF99C93 /* j2me_micro3d_gl.m in Sources */,
+				0A2E2A03214B1309FE37D546 /* j2me_render.m in Sources */,
+				CBB10D5C1F8BBD983EB8AFEB /* j2me_ui.m in Sources */,
+				6134CB0839A0FDB6D1B565F4 /* j2me_m3g_jni.c in Sources */,
+				C9539CAADEFE4E97BAF2B0BF /* m3g_egl_ios.m in Sources */,
+				230E1A99B55E082B6B5BCF50 /* m3g_core.c in Sources */,
+				35882111016DA5B0A1ADCF66 /* m3g_ios.c in Sources */,
+				154041F48EEE216B080EB9BD /* m3g_ios_gl.c in Sources */,
+				BD4F02601DF2CEE1F9B0736A /* class.c in Sources */,
+				A98454736A13ED977E9E098B /* class_load.c in Sources */,
+				045A7C4AD3C9CE1E209D3424 /* garbage.c in Sources */,
+				CB708B384DFE9512295F8997 /* global.c in Sources */,
+				A110C97DC46D6FC2BAC4663C /* jdwp.c in Sources */,
+				85F7CF8C2082BCAF773E143C /* jit.c in Sources */,
+				08FD952AF6D052DB1281335A /* jni_io.c in Sources */,
+				1B1A731433872FEE8E02BC91 /* jni_reflect.c in Sources */,
+				9A131A51263F7609033A432E /* jni_std.c in Sources */,
+				C8BFD2CA514F8BB48447BCFA /* jvm.c in Sources */,
+				BA5A65F90E15F248FD5B8A94 /* os_posix.c in Sources */,
+				E699F219E8F043AF7E95A3FD /* runtime.c in Sources */,
+				27509DF13B725F56E9D0760B /* arraylist.c in Sources */,
+				1B28F96C997F40A1D1E42A40 /* bytebuf.c in Sources */,
+				089ED05FA5E86B312FEF5C23 /* d_type.c in Sources */,
+				0464B7317458EB3E4B3539A9 /* hashset.c in Sources */,
+				51BA6F5DD7347A26D6F01D82 /* hashtable.c in Sources */,
+				24245B32F64563DD6046ED85 /* aes.c in Sources */,
+				6AAB3EE4F1879E09E8B7D195 /* aesni.c in Sources */,
+				0110032AF3BD76A042887D46 /* arc4.c in Sources */,
+				4A2105BE2CE8C187DDE30BB2 /* asn1parse.c in Sources */,
+				6CECCEF66A6FBC5AD801C956 /* asn1write.c in Sources */,
+				15F15ACFB9FE99DAB8B2A1F1 /* base64.c in Sources */,
+				524E0E2D09EB201F78232F88 /* bignum.c in Sources */,
+				2F3594257E5CAF0AC8C33807 /* blowfish.c in Sources */,
+				C81DB9C06101A603022636A2 /* camellia.c in Sources */,
+				D23102758ADD76237D76C4D0 /* ccm.c in Sources */,
+				CDE178A8C6520870F62D22E9 /* certs.c in Sources */,
+				2AF2915512A5D32448B40937 /* cipher.c in Sources */,
+				C918BC8685FB9503C32FD41C /* cipher_wrap.c in Sources */,
+				2B1086C39605BA11A5507563 /* cmac.c in Sources */,
+				DA200FE377EFD95ABAEF8104 /* ctr_drbg.c in Sources */,
+				AABAABE8676E9184447828BF /* debug.c in Sources */,
+				03B2735699876D4412C268F2 /* des.c in Sources */,
+				D8ECED46971F5D64D3FEF767 /* dhm.c in Sources */,
+				A021995B2818BC8B70918ABC /* ecdh.c in Sources */,
+				BC4657F50A5228DA14F89EFE /* ecdsa.c in Sources */,
+				D367F62176EE94F029D8EFF4 /* ecjpake.c in Sources */,
+				A93989322CD80637E1A25570 /* ecp.c in Sources */,
+				347EEBB8BCC49991480D0C1B /* ecp_curves.c in Sources */,
+				CC32B033F312E88DD21F868D /* entropy.c in Sources */,
+				CB4360570D7B70333F0A369E /* entropy_poll.c in Sources */,
+				4EBCAA0A03167E0A2972217D /* error.c in Sources */,
+				59AEE2EDFAFB5942619197CA /* gcm.c in Sources */,
+				AD94784C71FF9BE7AE13655E /* havege.c in Sources */,
+				158FF6C3F14463178804BEF7 /* hmac_drbg.c in Sources */,
+				850C0F7263E085E2B7A19C63 /* md.c in Sources */,
+				3AB521B574ABA79BC4C8E1CB /* md2.c in Sources */,
+				EB5D85A16F9AA1066462FF21 /* md4.c in Sources */,
+				07886438B00BA0827D81A712 /* md5.c in Sources */,
+				AD02C804DC28C553733A4D9A /* md_wrap.c in Sources */,
+				A55C6765FCA2ADD5D80D4767 /* memory_buffer_alloc.c in Sources */,
+				E97355E033A84111266E1FB0 /* net_sockets.c in Sources */,
+				2A697740FE00A9C2E89D6802 /* oid.c in Sources */,
+				BC4FD6830B182A6F7EA1B91D /* padlock.c in Sources */,
+				A8A9F570F63A92834FCEF68F /* pem.c in Sources */,
+				D5C6EB30EB4CFB212355BB1E /* pk.c in Sources */,
+				AD61CD9110DEED9070B7123E /* pk_wrap.c in Sources */,
+				C36739E9884A375772C1F576 /* pkcs11.c in Sources */,
+				439E62B19A0E01749D3CC9CA /* pkcs12.c in Sources */,
+				5E355134D486E33A6AB2721C /* pkcs5.c in Sources */,
+				89CC5C567D9053183D2257E2 /* pkparse.c in Sources */,
+				C16F7995C47AA424934AD649 /* pkwrite.c in Sources */,
+				E96529E61395AE005BD80A86 /* platform.c in Sources */,
+				BC2FD6BF2E70464E628EEBBC /* ripemd160.c in Sources */,
+				DDDC53F925016A8891598D51 /* rsa.c in Sources */,
+				481B10F50A838687CD3233B6 /* sha1.c in Sources */,
+				21BFA58491B192B3795ED1E6 /* sha256.c in Sources */,
+				9855C42F6F7E772229D08139 /* sha512.c in Sources */,
+				FB3D7FE06FEC8F88DD3A5866 /* ssl_cache.c in Sources */,
+				CB6990F9D973A8B38C24B7D1 /* ssl_ciphersuites.c in Sources */,
+				3E7C9C0CD4CFF66D7085E5A9 /* ssl_cli.c in Sources */,
+				0A971612236343268C007671 /* ssl_cookie.c in Sources */,
+				F449E37E42CDF52A8087717A /* ssl_srv.c in Sources */,
+				A13ABE64A4B88CCDECB059F1 /* ssl_ticket.c in Sources */,
+				371A37A994C7A515038E1CA7 /* ssl_tls.c in Sources */,
+				14D9CB2377D0219075D267A9 /* threading.c in Sources */,
+				680E29A03A84D252D8CE9D89 /* timing.c in Sources */,
+				9286835CA9579A5F0CBEF2D6 /* version.c in Sources */,
+				28DB2877437E1DDE58035828 /* version_features.c in Sources */,
+				175564D8FC6B7FC72D9E556F /* x509.c in Sources */,
+				6E653B682402A7E3E54F6A15 /* x509_create.c in Sources */,
+				B79B82586D4BA1768B051847 /* x509_crl.c in Sources */,
+				266525D34D0C1B22E7A71931 /* x509_crt.c in Sources */,
+				47824A97B84BEB1EAF7EDD22 /* x509_csr.c in Sources */,
+				7B0701264C716DEA999D27ED /* x509write_crt.c in Sources */,
+				FF17307B13B23477EEEDCC03 /* x509write_csr.c in Sources */,
+				A2109E84F280A162ABF1118C /* xtea.c in Sources */,
+				D3564E74B574D500E4A3B629 /* ssl_client.c in Sources */,
+				A7F95D6C0D481DCB2A49D5F0 /* linkedlist.c in Sources */,
+				3E9139A372EF8DBBAA743FE5 /* miniz.c in Sources */,
+				F841712CCD8464A2D0A8F409 /* miniz_wrapper.c in Sources */,
+				E1FAB415F0C8C0DB293D282D /* tinycthread.c in Sources */,
+				3A130E210D9979C751EF593E /* utf8_string.c in Sources */,
+				A09612FCD65FCE7787106214 /* J2MESession.c in Sources */,
+				6E531C95D813E7879A5353B4 /* interpreter.c in Sources */,
+				51B8FF63C35AE168509F50FF /* j2me_audio.m in Sources */,
+				003BB931CE3FCBEEB5A5F144 /* jvm_util.c in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		BFFA71D31AAC406100EE9DD1 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -2710,6 +3316,21 @@
 				CA00010A2E6000010000000A /* SkinSettingsView.swift in Sources */,
 				CA00010D2E6000010000000D /* AudioSettingsView.swift in Sources */,
 				CA0001102E60000100000010 /* VideoSettingsView.swift in Sources */,
+				2393AF595A2405AF72D79EF4 /* J2MEEmulatorView.swift in Sources */,
+				734771D6B1871D44750558E1 /* J2MEFormView.swift in Sources */,
+				D485E7DE778AB8A51EE0082A /* J2MEGameViewController.swift in Sources */,
+				4A31C884B3C255EC9779906C /* J2MEJARMetadata.swift in Sources */,
+				CC5E62F8134A4BD8FE94F6AB /* J2MEJoystickView.swift in Sources */,
+				0EE77971A66D70FCEF397FBB /* J2MENumpadView.swift in Sources */,
+				1F1EF3BA2E3BAD856BF1899A /* J2MEScreenConfigurationController.swift in Sources */,
+				4D428BBE5F472D261FF66A7B /* J2MEScreenProfile.swift in Sources */,
+				D1D3C5C4B06336199D8B0908 /* J2MELibrary.swift in Sources */,
+				920159AFE052B5C089C1B645 /* J2MEBackup.swift in Sources */,
+				4F1FA66511CFBE92110B75C2 /* J2MEGameSettingsController.swift in Sources */,
+				5D76A2D873CAF2712E16C3FB /* J2MEInputRouter.swift in Sources */,
+				234315D289F551EA2244E934 /* J2MEPreferences.swift in Sources */,
+				B268FD77892585C9C3CB0C50 /* J2MESaveStore.swift in Sources */,
+				8A4895F244C34D78BCABDD1D /* J2MEInputState.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2756,6 +3377,12 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		1701D0327A84F8C25FD6A565 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = J2MENative;
+			target = 5B2DA649ED0C697BB9DDE3A4 /* J2MENative */;
+			targetProxy = AC58C36C8E11885EB9F87008 /* PBXContainerItemProxy */;
+		};
 		D57A82172E29AE66006E06E8 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			name = DeltaCore;
@@ -2853,6 +3480,43 @@
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
+		2E1DBDD47729CEE5FA07D5BB /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				HEADER_SEARCH_PATHS = (
+					"$(SRCROOT)/Experiments/J2ME/JarBox/J2MEEmulator",
+					"$(SRCROOT)/Experiments/J2ME/JarBox/J2MEEmulator/minijvm/jvm",
+					"$(SRCROOT)/Experiments/J2ME/JarBox/J2MEEmulator/minijvm/utils",
+					"$(SRCROOT)/Experiments/J2ME/JarBox/J2MEEmulator/minijvm/utils/sljit",
+					"$(SRCROOT)/Experiments/J2ME/JarBox/J2MEEmulator/minijvm/utils/https",
+					"$(SRCROOT)/Experiments/J2ME/JarBox/J2MEEmulator/minijvm/utils/https/mbedtls/include",
+					"$(SRCROOT)/Experiments/J2ME/JarBox/J2MEEmulator/NativeBridge/m3g/inc",
+					"$(SRCROOT)/Experiments/J2ME/JarBox/J2MEEmulator/NativeBridge/m3g",
+					"$(SRCROOT)/Experiments/J2ME/JarBox/J2MEEmulator/SupportingFiles",
+					"$(SRCROOT)/Delta/J2ME/Native",
+					"$(SRCROOT)/Experiments/J2ME/JarBox/J2MEEmulator/NativeBridge",
+				);
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				OTHER_CFLAGS = (
+					"-Wno-implicit-function-declaration",
+					"-DM3G_TARGET_GENERIC",
+					"-DGLES_SILENCE_DEPRECATION",
+					"-Wno-pointer-to-int-cast",
+					"-Wno-int-to-void-pointer-cast",
+					"-Wno-incompatible-pointer-types",
+					"-Wno-int-conversion",
+				);
+				OTHER_LDFLAGS = "-ObjC";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
 		BF14D8951DE7A512002CA1BE /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -3019,6 +3683,20 @@
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = VGDVWV5J5U;
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SRCROOT)/Experiments/J2ME/JarBox/J2MEEmulator",
+					"$(SRCROOT)/Experiments/J2ME/JarBox/J2MEEmulator/minijvm/jvm",
+					"$(SRCROOT)/Experiments/J2ME/JarBox/J2MEEmulator/minijvm/utils",
+					"$(SRCROOT)/Experiments/J2ME/JarBox/J2MEEmulator/minijvm/utils/sljit",
+					"$(SRCROOT)/Experiments/J2ME/JarBox/J2MEEmulator/minijvm/utils/https",
+					"$(SRCROOT)/Experiments/J2ME/JarBox/J2MEEmulator/minijvm/utils/https/mbedtls/include",
+					"$(SRCROOT)/Experiments/J2ME/JarBox/J2MEEmulator/NativeBridge/m3g/inc",
+					"$(SRCROOT)/Experiments/J2ME/JarBox/J2MEEmulator/NativeBridge/m3g",
+					"$(SRCROOT)/Experiments/J2ME/JarBox/J2MEEmulator/SupportingFiles",
+					"$(SRCROOT)/Delta/J2ME/Native",
+					"$(SRCROOT)/Experiments/J2ME/JarBox/J2MEEmulator/NativeBridge",
+				);
 				INFOPLIST_FILE = "Delta/Supporting Files/Info.plist";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.games";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -3091,6 +3769,20 @@
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = VGDVWV5J5U;
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SRCROOT)/Experiments/J2ME/JarBox/J2MEEmulator",
+					"$(SRCROOT)/Experiments/J2ME/JarBox/J2MEEmulator/minijvm/jvm",
+					"$(SRCROOT)/Experiments/J2ME/JarBox/J2MEEmulator/minijvm/utils",
+					"$(SRCROOT)/Experiments/J2ME/JarBox/J2MEEmulator/minijvm/utils/sljit",
+					"$(SRCROOT)/Experiments/J2ME/JarBox/J2MEEmulator/minijvm/utils/https",
+					"$(SRCROOT)/Experiments/J2ME/JarBox/J2MEEmulator/minijvm/utils/https/mbedtls/include",
+					"$(SRCROOT)/Experiments/J2ME/JarBox/J2MEEmulator/NativeBridge/m3g/inc",
+					"$(SRCROOT)/Experiments/J2ME/JarBox/J2MEEmulator/NativeBridge/m3g",
+					"$(SRCROOT)/Experiments/J2ME/JarBox/J2MEEmulator/SupportingFiles",
+					"$(SRCROOT)/Delta/J2ME/Native",
+					"$(SRCROOT)/Experiments/J2ME/JarBox/J2MEEmulator/NativeBridge",
+				);
 				INFOPLIST_FILE = "Delta/Supporting Files/Info.plist";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.games";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -3254,9 +3946,54 @@
 			};
 			name = Release;
 		};
+		DD8A05530DCD8D23CBA7F630 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				HEADER_SEARCH_PATHS = (
+					"$(SRCROOT)/Experiments/J2ME/JarBox/J2MEEmulator",
+					"$(SRCROOT)/Experiments/J2ME/JarBox/J2MEEmulator/minijvm/jvm",
+					"$(SRCROOT)/Experiments/J2ME/JarBox/J2MEEmulator/minijvm/utils",
+					"$(SRCROOT)/Experiments/J2ME/JarBox/J2MEEmulator/minijvm/utils/sljit",
+					"$(SRCROOT)/Experiments/J2ME/JarBox/J2MEEmulator/minijvm/utils/https",
+					"$(SRCROOT)/Experiments/J2ME/JarBox/J2MEEmulator/minijvm/utils/https/mbedtls/include",
+					"$(SRCROOT)/Experiments/J2ME/JarBox/J2MEEmulator/NativeBridge/m3g/inc",
+					"$(SRCROOT)/Experiments/J2ME/JarBox/J2MEEmulator/NativeBridge/m3g",
+					"$(SRCROOT)/Experiments/J2ME/JarBox/J2MEEmulator/SupportingFiles",
+					"$(SRCROOT)/Delta/J2ME/Native",
+					"$(SRCROOT)/Experiments/J2ME/JarBox/J2MEEmulator/NativeBridge",
+				);
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				OTHER_CFLAGS = (
+					"-Wno-implicit-function-declaration",
+					"-DM3G_TARGET_GENERIC",
+					"-DGLES_SILENCE_DEPRECATION",
+					"-Wno-pointer-to-int-cast",
+					"-Wno-int-to-void-pointer-cast",
+					"-Wno-incompatible-pointer-types",
+					"-Wno-int-conversion",
+				);
+				OTHER_LDFLAGS = "-ObjC";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		BF074464CACB4D0B0A2D5D06 /* Build configuration list for PBXNativeTarget "J2MENative" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				2E1DBDD47729CEE5FA07D5BB /* Release */,
+				DD8A05530DCD8D23CBA7F630 /* Debug */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		BF14D8971DE7A512002CA1BE /* Build configuration list for PBXAggregateTarget "mogenerator" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

@@ -567,6 +567,7 @@ extension GamesViewController: ImportControllerDelegate
         // Some file providers identify raw ROMs as generic data rather than our
         // exported UTI. DatabaseManager still validates the actual extension.
         documentTypes.insert(UTType.data.identifier)
+        documentTypes.insert(UTType.item.identifier)
         documentTypes.insert(kUTTypeZipArchive as String)
         documentTypes.insert("com.rileytestut.delta.skin")
         

@@ -365,6 +365,7 @@ extension GameCollectionViewController
 {
     func resume(_ game: Game)
     {
+        if game.type == .j2me { launchGame(at: IndexPath(item: 0, section: 0), clearScreen: false, selectedGame: game); return }
         // All copied from self.launchGame(). We should probably refactor into common method, but too risky given time constraints.
         
         self.isResumingGame = true
@@ -575,7 +576,15 @@ private extension GameCollectionViewController
     func launchGame(at indexPath: IndexPath, clearScreen: Bool, ignoreAlreadyRunningError: Bool = false, selectedGame: Game? = nil)
     {
         self.isResumingGame = false
-        
+        let selected = selectedGame ?? self.dataSource.item(at: indexPath)
+        if selected.type == .j2me {
+            do { try self.validateLaunchingGame(selected, ignoringErrors: []) }
+            catch { J2MELibrary.showError(error.localizedDescription, from: self); return }
+            self.activeEmulatorCore?.pause()
+            J2MELibrary.launch(selected, from: self)
+            return
+        }
+
         func launchGame(ignoringErrors ignoredErrors: [Error])
         {
             let game = selectedGame ?? self.dataSource.item(at: indexPath)
@@ -847,6 +856,9 @@ private extension GameCollectionViewController
         
         switch game.type
         {
+        case .j2me:
+            return [favoriteAction, renameAction, changeArtworkAction, shareAction, settingsMenu, deleteAction]
+
         case GameType.unknown:
             return [renameAction, shareAction, settingsMenu, deleteAction]
             
@@ -1238,6 +1250,7 @@ private extension GameCollectionViewController
     
     func showSettings(for game: Game)
     {
+        if game.type == .j2me { J2MELibrary.configure(game, from: self); return }
         let gameSettingsView = GameSettingsView(game: game)
         
         let hostingController = UIHostingController(rootView: NavigationView { gameSettingsView }
@@ -1474,6 +1487,7 @@ extension GameCollectionViewController
         self._popoverSourceView = cell
                 
         return UIContextMenuConfiguration(identifier: indexPath as NSIndexPath, previewProvider: { [weak self] in
+            guard game.type != .j2me else { return nil }
             guard let self = self else { return nil }
             
             do
@@ -1590,6 +1604,7 @@ extension GameCollectionViewController {
     }
 
     func dragProviderFromAurora(for game: Game) -> NSItemProvider? {
+        guard game.type != .j2me else { return nil }
         do {
             try validateLaunchingGame(game, ignoringErrors: [])
             let provider = NSItemProvider()
@@ -1602,6 +1617,10 @@ extension GameCollectionViewController {
 
     /// Reuse the existing validation and unwind route without depending on a grid cell.
     func launchFromHome(_ game: Game) {
+        if game.type == .j2me {
+            launchGame(at: IndexPath(item: 0, section: 0), clearScreen: false, selectedGame: game)
+            return
+        }
         guard game.gameCollection?.system != nil else { return }
         if #available(iOS 26, *), Settings.opensGamesInNewWindow,
            let scene = view.window?.windowScene, scene.isStageManagerEnabled {

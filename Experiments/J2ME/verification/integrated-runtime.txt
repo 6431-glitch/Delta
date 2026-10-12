@@ -1,0 +1,30 @@
+[JVM Bridge] Screen size: 128x128, 3D render scale: 3, FPS limit: 0
+[JVM Bridge] JVM initialized successfully
+DELTA_SMOKE RMS launches=1
+DELTA_SMOKE FRAME 128x128
+DELTA_SMOKE KEY 50
+DELTA_SMOKE FRAME 128x128
+[JVM Bridge] Stop requested
+DELTA_SMOKE DESTROY
+[JVM Bridge] MIDlet finished with code 0
+[JVM Bridge] JVM destroyed, native state cleaned up
+[JVM Bridge] Screen size: 240x320, 3D render scale: 3, FPS limit: 0
+[JVM Bridge] JVM initialized successfully
+DELTA_SMOKE RMS launches=2
+DELTA_SMOKE FRAME 240x320
+[JVM Bridge] Stop requested
+DELTA_SMOKE DESTROY
+[JVM Bridge] MIDlet finished with code 0
+[JVM Bridge] JVM destroyed, native state cleaned up
+[JVM Bridge] Screen size: 240x320, 3D render scale: 3, FPS limit: 0
+[JVM Bridge] JVM initialized successfully
+DELTA_SMOKE RMS launches=3
+DELTA_SMOKE FRAME 240x320
+[JVM Bridge] Stop requested
+DELTA_SMOKE DESTROY
+[JVM Bridge] MIDlet finished with code 0
+[JVM Bridge] JVM destroyed, native state cleaned up
+[JVM Bridge] Screen size: 240x400, 3D render scale: 3, FPS limit: 0
+[JVM Bridge] JVM initialized successfully
+DELTA_SMOKE RMS launches=1
+DELTA_SMOKE FRAME 240x400

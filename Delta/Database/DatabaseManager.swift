@@ -282,7 +282,7 @@ private extension DatabaseManager
         
         self.performBackgroundTask { (context) in
             
-            for system in System.allCases
+            for system in System.coreSystems
             {
                 self.prepare(system.deltaCore, in: context)
             }
@@ -376,7 +376,26 @@ extension DatabaseManager
             var errors = Set<ImportError>()
             var identifiers = Set<String>()
             
-            for url in urls
+            let descriptorURLs = urls.filter { $0.pathExtension.lowercased() == "jad" }
+            for descriptorURL in descriptorURLs {
+                let stem = descriptorURL.deletingPathExtension().lastPathComponent.lowercased()
+                let matchingJars = urls.filter { $0.pathExtension.lowercased() == "jar" && $0.deletingPathExtension().lastPathComponent.lowercased() == stem }
+                if matchingJars.isEmpty {
+                    let request: NSFetchRequest<Game> = Game.fetchRequest()
+                    request.predicate = NSPredicate(format: "type == %@", GameType.j2me.rawValue)
+                    let matches = ((try? context.fetch(request)) ?? []).filter {
+                        let settings = $0.gameSettings as? [String: Any] ?? [:]
+                        return (settings["j2me.originalFilename"] as? String).map { URL(fileURLWithPath: $0).deletingPathExtension().lastPathComponent.lowercased() == stem } ?? false
+                    }
+                    if matches.count == 1, let game = matches.first {
+                        var settings = game.gameSettings as? [String: Any] ?? [:]
+                        settings["j2me.descriptor"] = J2MEScreenProfile.descriptorAttributes(at: descriptorURL)
+                        game.gameSettings = settings as NSDictionary
+                        identifiers.insert(game.identifier)
+                    } else { errors.insert(.unsupported(descriptorURL)) }
+                } else if matchingJars.count != 1 { errors.insert(.unsupported(descriptorURL)) }
+            }
+            for url in urls where url.pathExtension.lowercased() != "jad"
             {
                 guard FileManager.default.fileExists(atPath: url.path) else {
                     errors.insert(.doesNotExist(url))
@@ -388,7 +407,7 @@ extension DatabaseManager
                     continue
                 }
                 
-                guard System.registeredSystems.contains(system) else {
+                guard system == .j2me || System.registeredSystems.contains(system) else {
                     errors.insert(.unsupported(url))
                     continue
                 }
@@ -405,16 +424,49 @@ extension DatabaseManager
                     continue
                 }
                 
+                let javaMetadata = gameType == .j2me ? J2MEJARMetadata.read(from: url.path) : nil
+                if gameType == .j2me && javaMetadata?.className == nil {
+                    errors.insert(.invalid(url))
+                    continue
+                }
                 let filename = identifier + "." + url.pathExtension.lowercased()
                 
+                if gameType == .j2me {
+                    let request: NSFetchRequest<Game> = Game.fetchRequest()
+                    request.predicate = NSPredicate(format: "identifier == %@", identifier)
+                    if let existing = try? context.fetch(request).first {
+                        let paired = descriptorURLs.filter { $0.deletingPathExtension().lastPathComponent.lowercased() == url.deletingPathExtension().lastPathComponent.lowercased() }
+                        if paired.count == 1, let descriptor = paired.first {
+                            var settings = existing.gameSettings as? [String: Any] ?? [:]
+                            settings["j2me.descriptor"] = J2MEScreenProfile.descriptorAttributes(at: descriptor)
+                            existing.gameSettings = settings as NSDictionary
+                        }
+                        identifiers.insert(identifier)
+                        if url.standardizedFileURL != existing.fileURL.standardizedFileURL { try? FileManager.default.removeItem(at: url) }
+                        continue
+                    }
+                }
                 let game = Game(context: context)
                 game.identifier = identifier
                 game.type = gameType
                 game.filename = filename
                 
                 let databaseMetadata = self.gamesDatabase?.metadata(for: game)
-                game.name = databaseMetadata?.name ?? url.deletingPathExtension().lastPathComponent
+                game.name = javaMetadata?.midletName ?? databaseMetadata?.name ?? url.deletingPathExtension().lastPathComponent
                 game.artworkURL = databaseMetadata?.artworkURL
+                if gameType == .j2me {
+                    var settings: [String: Any] = ["j2me.originalFilename": url.lastPathComponent]
+                    let paired = descriptorURLs.filter { $0.deletingPathExtension().lastPathComponent.lowercased() == url.deletingPathExtension().lastPathComponent.lowercased() }
+                    if paired.count == 1, let descriptor = paired.first {
+                        settings["j2me.descriptor"] = J2MEScreenProfile.descriptorAttributes(at: descriptor)
+                    }
+                    game.gameSettings = settings as NSDictionary
+                    if let icon = javaMetadata?.readIcon(from: url.path), let data = icon.pngData() {
+                        let artworkURL = DatabaseManager.gamesDirectoryURL.appendingPathComponent(identifier + ".png")
+                        if !FileManager.default.fileExists(atPath: artworkURL.path), (try? data.write(to: artworkURL, options: .atomic)) != nil { game.artworkURL = artworkURL }
+                        else if FileManager.default.fileExists(atPath: artworkURL.path) { game.artworkURL = artworkURL }
+                    }
+                }
                 
                 let gameCollection = GameCollection(context: context)
                 gameCollection.identifier = gameType.rawValue
