@@ -34,3 +34,6 @@
 [submodule "External/DeltaOperator"]
 	path = External/DeltaOperator
 	url = https://github.com/epilogue-co/DeltaOperator.git
+[submodule "Experiments/J2ME/JarBox"]
+	path = Experiments/J2ME/JarBox
+	url = https://github.com/ccbkv/J2MEEmulator-iOS.git

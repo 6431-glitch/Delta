@@ -8,6 +8,13 @@
 	<string>en</string>
 	<key>CFBundleDocumentTypes</key>
 	<array>
+        <dict>
+            <key>CFBundleTypeName</key><string>Java ME Game</string>
+            <key>CFBundleTypeRole</key><string>Viewer</string>
+            <key>LSHandlerRank</key><string>Alternate</string>
+            <key>LSItemContentTypes</key>
+            <array><string>page.ducnguyen.delta.j2me</string><string>page.ducnguyen.delta.j2me.descriptor</string><string>com.sun.java-archive</string></array>
+        </dict>
 		<dict>
 			<key>CFBundleTypeName</key>
 			<string>SNES Game</string>
@@ -326,6 +333,24 @@
 	<true/>
 	<key>UTExportedTypeDeclarations</key>
 	<array>
+        <dict>
+            <key>UTTypeIdentifier</key><string>page.ducnguyen.delta.j2me</string>
+            <key>UTTypeDescription</key><string>Java ME JAR</string>
+            <key>UTTypeConformsTo</key><array><string>public.data</string></array>
+            <key>UTTypeTagSpecification</key><dict>
+                <key>public.filename-extension</key><array><string>jar</string></array>
+                <key>public.mime-type</key><string>application/java-archive</string>
+            </dict>
+        </dict>
+        <dict>
+            <key>UTTypeIdentifier</key><string>page.ducnguyen.delta.j2me.descriptor</string>
+            <key>UTTypeDescription</key><string>Java ME JAD</string>
+            <key>UTTypeConformsTo</key><array><string>public.data</string></array>
+            <key>UTTypeTagSpecification</key><dict>
+                <key>public.filename-extension</key><array><string>jad</string></array>
+                <key>public.mime-type</key><string>text/vnd.sun.j2me.app-descriptor</string>
+            </dict>
+        </dict>
 		<dict>
 			<key>UTTypeConformsTo</key>
 			<array>

@@ -76,6 +76,11 @@ private extension DeepLinkController
         {
             guard let game = try DatabaseManager.shared.viewContext.fetch(fetchRequest).first else { return false }
             
+            if game.type == .j2me {
+                J2MELibrary.launch(game, from: topViewController)
+                return true
+            }
+
             var userInfo: [DeepLink.Key: Any] = [.game: game]
             if let windowScene = self.window?.windowScene
             {

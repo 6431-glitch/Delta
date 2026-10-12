@@ -1,0 +1,27 @@
+J2ME feature expansion — 2026-10-12
+Branch: experiment/j2me
+Vendor: 8afc8d808ca22160139333d1d58138c7dca91169 (unchanged)
+
+[x] Delta Debug / arm64 / iOS 26.5 Simulator build succeeded.
+[x] Native overlays regenerate during Xcode build with Generated absent.
+[x] 18 screen-detection checks passed.
+[x] 37 backup, preferences and shared input-state checks passed.
+[x] Nokia profile delivered 208x208 and Fire -5 to the smoke MIDlet.
+[x] Manual pause held Java worker at tick 28; resume continued with one startApp.
+[x] Background pause held worker at tick 60; foreground continued the same process/session.
+[x] 30 FPS / 1x 3D settings persisted in UI and preferences.
+[x] RMS/preferences archive SHA1 matched the Harmony GameSave database record.
+[x] Export opened the system share sheet.
+[x] Reset published an empty RMS archive and preserved a recovery copy.
+[x] Recovery restored RMS bytes and republished the save archive.
+[x] Final build and git diff whitespace checks passed after exit/background cleanup.
+
+[ ] Signed two-device iCloud transfer/conflict verification.
+[ ] Physical extended gamepads, touch gestures/numeric layout editing.
+[ ] Audio/MIDI pause, representative 3D and incompatible games/error reports.
+
+Simulator automation did not reliably send pan gestures. Device verification remains
+required; no gesture success is claimed. The unsigned build cannot verify signed
+CloudKit/keychain authentication. See README.md for access paths and limitations.
+
+[x] PR publication checks: fresh generic arm64 Simulator build and all 55 focused checks passed again on 2026-10-12.

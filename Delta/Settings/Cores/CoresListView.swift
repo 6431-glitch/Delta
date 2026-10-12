@@ -38,6 +38,7 @@ struct CoresListView: View
     {
         switch system
         {
+        case .j2me: EmptyView()
         case .nes: NESCoreSettingsView()
         case .genesis: GenesisCoreSettingsView()
         case .snes: SNESCoreSettingsView()
