@@ -83,6 +83,25 @@ public class Game: _Game, GameProtocol
         }
     }
     
+    /// Separate Aurora banner artwork, stored relative to the current app sandbox.
+    @objc public var backdropURL: URL? {
+        get {
+            willAccessValue(forKey: "backdropURL")
+            let storedURL = primitiveValue(forKey: "backdropURL") as? URL
+            didAccessValue(forKey: "backdropURL")
+            guard let storedURL, storedURL.isFileURL else { return storedURL }
+            return URL(fileURLWithPath: storedURL.lastPathComponent, relativeTo: DatabaseManager.gamesDirectoryURL)
+        }
+        set {
+            willChangeValue(forKey: "backdropURL")
+            let storedURL = newValue.map { url in
+                url.isFileURL ? URL(fileURLWithPath: url.lastPathComponent, relativeTo: DatabaseManager.gamesDirectoryURL) : url
+            }
+            setPrimitiveValue(storedURL, forKey: "backdropURL")
+            didChangeValue(forKey: "backdropURL")
+        }
+    }
+
     var settings: [Setting: Any] {
         get {
             let gameSettings = self.gameSettings as? [String: Any] ?? [:]
@@ -220,7 +239,7 @@ extension Game: Syncable
     }
     
     public var syncableKeys: Set<AnyKeyPath> {
-        return [\Game.artworkURL, \Game.filename, \Game.name, \Game.type, \Game.isFavorite]
+        return [\Game.artworkURL, \Game.backdropURL, \Game.filename, \Game.name, \Game.type, \Game.isFavorite]
     }
     
     public var syncableFiles: Set<File> {
@@ -236,6 +255,10 @@ extension Game: Syncable
         }
         
         let artworkFile = File(identifier: "artwork", fileURL: artworkURL)
+        var artworkFiles: Set<File> = [artworkFile]
+        if let backdropURL = self.backdropURL, backdropURL.isFileURL {
+            artworkFiles.insert(File(identifier: "backdrop", fileURL: backdropURL))
+        }
                 
         switch self.identifier
         {
@@ -244,7 +267,7 @@ extension Game: Syncable
             let bios9File = File(identifier: "bios9", fileURL: MelonDSEmulatorBridge.shared.bios9URL)
             let firmwareFile = File(identifier: "firmware", fileURL: MelonDSEmulatorBridge.shared.firmwareURL)
             
-            return [artworkFile, bios7File, bios9File, firmwareFile]
+            return artworkFiles.union([bios7File, bios9File, firmwareFile])
             
         case Game.melonDSDSiBIOSIdentifier:
             let bios7File = File(identifier: "bios7", fileURL: MelonDSEmulatorBridge.shared.dsiBIOS7URL)
@@ -254,11 +277,11 @@ extension Game: Syncable
             // DSi NAND is ~240MB, so don't sync for now until Harmony can selectively download files.
             // let nandFile = File(identifier: "nand", fileURL: MelonDSEmulatorBridge.shared.dsiNANDURL)
             
-            return [artworkFile, bios7File, bios9File, firmwareFile]
+            return artworkFiles.union([bios7File, bios9File, firmwareFile])
             
         default:
             let gameFile = File(identifier: "game", fileURL: self.fileURL)
-            return [artworkFile, gameFile]
+            return artworkFiles.union([gameFile])
         }
     }
     

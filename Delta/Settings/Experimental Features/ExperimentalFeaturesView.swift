@@ -38,14 +38,6 @@ struct ExperimentalFeaturesView: View
     var body: some View {
         Form {
             Section {
-            } header: {
-                if !PurchaseManager.shared.isExperimentalFeaturesAvailable
-                {
-                    VStack(spacing: 0) {
-                        BecomePatronButton()
-                        Text(" ") // Newline
-                    }
-                }
             } footer: {
                 Text("These features have been added by contributors to the open-source Delta project on GitHub and are currently being tested.\n\nYou may encounter bugs when using these features.")
                     .font(.subheadline)

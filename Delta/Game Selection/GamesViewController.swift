@@ -7,6 +7,9 @@
 //
 
 import UIKit
+import UniformTypeIdentifiers
+import ImageIO
+import SDWebImage
 import CoreData
 import MobileCoreServices
 
@@ -61,6 +64,15 @@ class GamesViewController: UIViewController
     }
     
     private var hasRecentlyPlayed: Bool = false
+    private var auroraModel: AuroraHomeModel?
+    private var auroraController: UIViewController?
+    private var auroraArtworkImporter: ImportController?
+    private var auroraArtworkSelection: (id: NSManagedObjectID, kind: AuroraArtworkKind)?
+    private var showingAuroraHome = true
+
+    override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
+        return AppOrientation.current.mask
+    }
     
     weak var activeEmulatorCore: EmulatorCore? {
         didSet
@@ -250,6 +262,7 @@ extension GamesViewController
         self.prepareSearchController()
         
         self.updateTheme()
+        self.installAuroraHome()
     }
     
     override func viewWillAppear(_ animated: Bool)
@@ -273,11 +286,17 @@ extension GamesViewController
         }
         
         self.sync()
+        self.auroraModel?.refresh()
+        self.updateAuroraVisibility()
     }
-    
+
     override func viewDidAppear(_ animated: Bool)
     {
         super.viewDidAppear(animated)
+        if #available(iOS 26, *), showingAuroraHome {
+            auroraModel?.orientation = AppOrientation.current
+            self.applyAppOrientation(AppOrientation.current)
+        }
         
         let whatsNewVersion = UserDefaults.standard.previousWhatsNewVersion ?? "0"
         let isUpdatedWhatsNew = (whatsNewVersion.compare(UserDefaults.whatsNewVersion, options: .numeric) == .orderedAscending)
@@ -445,6 +464,7 @@ private extension GamesViewController
     
     func updateSections(animated: Bool)
     {
+        defer { self.updateAuroraVisibility() }
         let hasRecentlyPlayed = self.recentlyPlayedFetchedResultsController.fetchedObjects?.count ?? 0 > 0
         self.hasRecentlyPlayed = hasRecentlyPlayed
         
@@ -534,9 +554,19 @@ private extension GamesViewController
 /// Importing
 extension GamesViewController: ImportControllerDelegate
 {
+    func importControllerDidCancel(_ importController: ImportController) {
+        if importController === auroraArtworkImporter {
+            auroraArtworkImporter = nil
+            auroraArtworkSelection = nil
+        }
+    }
+
     private func makeImportController() -> ImportController
     {
         var documentTypes = Set(System.registeredSystems.map { $0.gameType.rawValue })
+        // Some file providers identify raw ROMs as generic data rather than our
+        // exported UTI. DatabaseManager still validates the actual extension.
+        documentTypes.insert(UTType.data.identifier)
         documentTypes.insert(kUTTypeZipArchive as String)
         documentTypes.insert("com.rileytestut.delta.skin")
         
@@ -563,6 +593,12 @@ extension GamesViewController: ImportControllerDelegate
     
     func importController(_ importController: ImportController, didImportItemsAt urls: Set<URL>, errors: [Error])
     {
+        if importController === auroraArtworkImporter, let selection = auroraArtworkSelection {
+            auroraArtworkImporter = nil
+            auroraArtworkSelection = nil
+            saveAuroraArtwork(at: urls.first, selection: selection, errors: errors)
+            return
+        }
         for error in errors
         {
             print(error)
@@ -869,5 +905,199 @@ extension GamesViewController: UIAdaptivePresentationControllerDelegate
     func presentationControllerDidDismiss(_ presentationController: UIPresentationController)
     {
         self.sync()
+    }
+}
+
+
+// MARK: - Aurora home integration
+private extension GamesViewController {
+    func pickAuroraArtwork(for id: NSManagedObjectID, kind: AuroraArtworkKind) {
+        guard auroraModel?.isPreview != true else {
+            auroraModel?.orientationError = String(localized: "Import a game into your library before changing its artwork.")
+            return
+        }
+        guard presentedViewController == nil,
+              let game = try? DatabaseManager.shared.viewContext.existingObject(with: id) as? Game else { return }
+        let picker = ImportController(documentTypes: [UTType.image.identifier])
+        picker.allowsMultipleSelection = false
+        picker.delegate = self
+        picker.importOptions = [PhotoLibraryImportOption(presentingViewController: self), ClipboardImportOption()]
+        if kind == .cover {
+            picker.importOptions?.append(GamesDatabaseImportOption(searchText: game.name, presentingViewController: self))
+        }
+        // The action originates in SwiftUI, so anchor the iPad source menu in its host view.
+        picker.sourceView = auroraController?.view ?? view
+        auroraArtworkSelection = (id, kind)
+        auroraArtworkImporter = picker
+        present(picker, animated: true, completion: nil)
+    }
+
+    func saveAuroraArtwork(at url: URL?, selection: (id: NSManagedObjectID, kind: AuroraArtworkKind), errors: [Error]) {
+        guard let url else {
+            auroraModel?.orientationError = errors.first?.localizedDescription ?? String(localized: "No image was imported.")
+            return
+        }
+        // Decode only a bounded thumbnail, even if the source photo is very large.
+        DispatchQueue.global(qos: .userInitiated).async {
+            do {
+                defer { if url.isFileURL { try? FileManager.default.removeItem(at: url) } }
+                let data: Data?
+                if url.isFileURL {
+                    guard let source = CGImageSourceCreateWithURL(url as CFURL, nil),
+                          let thumbnail = CGImageSourceCreateThumbnailAtIndex(source, 0, [
+                            kCGImageSourceCreateThumbnailFromImageAlways: true,
+                            kCGImageSourceCreateThumbnailWithTransform: true,
+                            kCGImageSourceThumbnailMaxPixelSize: selection.kind == .cover ? 1000 : 2560
+                          ] as CFDictionary) else {
+                        throw NSError(domain: "AuroraArtwork", code: 1, userInfo: [NSLocalizedDescriptionKey: String(localized: "Choose a supported image file.")])
+                    }
+                    let image = UIImage(cgImage: thumbnail)
+                    data = selection.kind == .cover ? image.pngData() : image.jpegData(compressionQuality: 0.9)
+                    guard data != nil else { throw CocoaError(.fileWriteUnknown) }
+                } else {
+                    // The existing cover database returns remote URLs; backdrops are imported locally.
+                    guard selection.kind == .cover else { throw CocoaError(.fileReadUnsupportedScheme) }
+                    data = nil
+                }
+                DatabaseManager.shared.performBackgroundTask { context in
+                    do {
+                        guard let game = try context.existingObject(with: selection.id) as? Game, !game.isDeleted else { return }
+                        let destination: URL
+                        if let data {
+                            destination = selection.kind == .cover ? DatabaseManager.artworkURL(for: game) :
+                                DatabaseManager.gamesDirectoryURL.appendingPathComponent(game.identifier + "-backdrop.jpg")
+                            try data.write(to: destination, options: .atomic)
+                        } else { destination = url }
+                        if selection.kind == .cover { game.artworkURL = destination }
+                        else { game.backdropURL = destination }
+                        try context.save()
+                        // Stable filenames still need a record update when only the image bytes change.
+                        SyncManager.shared.recordController?.updateRecord(for: game)
+                        DispatchQueue.main.async { [weak self] in self?.refreshAuroraArtwork(at: destination) }
+                    } catch {
+                        DispatchQueue.main.async { [weak self] in self?.auroraModel?.orientationError = error.localizedDescription }
+                    }
+                }
+            } catch {
+                DispatchQueue.main.async { [weak self] in self?.auroraModel?.orientationError = error.localizedDescription }
+            }
+        }
+    }
+
+    func resetAuroraBackdrop(for id: NSManagedObjectID) {
+        DatabaseManager.shared.performBackgroundTask { context in
+            do {
+                guard let game = try context.existingObject(with: id) as? Game else { return }
+                let previousURL = game.backdropURL
+                game.backdropURL = nil
+                try context.save()
+                SyncManager.shared.recordController?.updateRecord(for: game)
+                if let previousURL, previousURL.isFileURL { try? FileManager.default.removeItem(at: previousURL) }
+                DispatchQueue.main.async { [weak self] in self?.refreshAuroraArtwork(at: previousURL) }
+            } catch {
+                DispatchQueue.main.async { [weak self] in self?.auroraModel?.orientationError = error.localizedDescription }
+            }
+        }
+    }
+
+    func refreshAuroraArtwork(at url: URL?) {
+        let refresh = { [weak self] in
+            self?.auroraModel?.artworkRevision = UUID()
+            self?.auroraModel?.refresh()
+        }
+        if let url, let manager = SDWebImageManager.shared(), let key = manager.cacheKey(for: url) {
+            manager.imageCache.removeImage(forKey: key, withCompletion: refresh)
+        } else { refresh() }
+    }
+
+    func installAuroraHome() {
+        guard #available(iOS 26, *) else { return }
+        let model = AuroraHomeModel()
+        model.importGames = { [weak self] in self?.importFiles() }
+        model.gameActions = { [weak self, weak model] id, source in
+            let artwork: [UIMenuElement] = [
+                UIAction(title: String(localized: "Change Cover"), image: UIImage(systemName: "rectangle.portrait")) { _ in self?.pickAuroraArtwork(for: id, kind: .cover) },
+                UIAction(title: String(localized: "Change Backdrop"), image: UIImage(systemName: "photo")) { _ in self?.pickAuroraArtwork(for: id, kind: .backdrop) }
+            ]
+            if model?.isPreview == true {
+                return [UIMenu(title: String(localized: "Artwork"), children: artwork)]
+            }
+            guard let game = try? DatabaseManager.shared.viewContext.existingObject(with: id) as? Game,
+                  !game.isDeleted,
+                  let controller = self?.pageViewController.viewControllers?.first as? GameCollectionViewController else { return [] }
+            var choices = artwork
+            if game.backdropURL != nil {
+                choices.append(UIAction(title: String(localized: "Use Cover as Backdrop"), image: UIImage(systemName: "arrow.uturn.backward")) { _ in self?.resetAuroraBackdrop(for: id) })
+            }
+            controller.activeEmulatorCore = self?.activeEmulatorCore
+            return controller.actionsFromAurora(for: game, sourceView: source, artworkActions: choices)
+        }
+        model.dragProvider = { [weak self, weak model] id in
+            guard model?.isPreview != true,
+                  let game = try? DatabaseManager.shared.viewContext.existingObject(with: id) as? Game,
+                  let controller = self?.pageViewController.viewControllers?.first as? GameCollectionViewController else { return nil }
+            return controller.dragProviderFromAurora(for: game)
+        }
+        model.changeOrientation = { [weak self] orientation in self?.applyAppOrientation(orientation) }
+        model.tabChanged = { [weak self] in
+            self?.setNeedsUpdateOfSupportedInterfaceOrientations()
+            self?.navigationController?.setNeedsUpdateOfSupportedInterfaceOrientations()
+        }
+        model.launch = { [weak self, weak model] id in
+            if model?.isPreview == true {
+                model?.orientationError = String(localized: "Preview artwork has no game ROM. Import a game in the live library to play.")
+                return
+            }
+            guard let self, let game = try? DatabaseManager.shared.viewContext.existingObject(with: id) as? Game,
+                  let controller = self.pageViewController.viewControllers?.first as? GameCollectionViewController else { return }
+            controller.activeEmulatorCore = self.activeEmulatorCore
+            controller.launchFromHome(game)
+        }
+        model.favorite = { [weak self, weak model] id in
+            if model?.isPreview == true { model?.togglePreviewFavorite(id); return }
+            guard let game = try? DatabaseManager.shared.viewContext.existingObject(with: id) as? Game,
+                  let controller = self?.pageViewController.viewControllers?.first as? GameCollectionViewController else { return }
+            controller.favoriteFromHome(game)
+        }
+        self.auroraModel = model
+        let host = UIHostingController(rootView: AuroraLibraryTabs(model: model))
+        host.view.backgroundColor = .clear
+        self.addChild(host)
+        host.view.translatesAutoresizingMaskIntoConstraints = false
+        self.view.addSubview(host.view)
+        NSLayoutConstraint.activate([
+            host.view.leadingAnchor.constraint(equalTo: self.view.leadingAnchor),
+            host.view.trailingAnchor.constraint(equalTo: self.view.trailingAnchor),
+            host.view.topAnchor.constraint(equalTo: self.view.topAnchor),
+            host.view.bottomAnchor.constraint(equalTo: self.view.bottomAnchor)
+        ])
+        host.didMove(toParent: self)
+        self.auroraController = host
+        model.refresh()
+        self.updateAuroraVisibility()
+    }
+
+    func updateAuroraVisibility() {
+        guard auroraController != nil else { return }
+        auroraController?.view.isHidden = !showingAuroraHome
+        placeholderView.accessibilityElementsHidden = showingAuroraHome
+        if let container = pageViewController.view.superview, container !== view {
+            container.accessibilityElementsHidden = showingAuroraHome
+        }
+        if showingAuroraHome {
+            navigationItem.searchController = nil
+            navigationController?.setNavigationBarHidden(true, animated: false)
+            navigationController?.setToolbarHidden(true, animated: false)
+            pageControl.isHidden = true
+            view.bringSubviewToFront(auroraController!.view)
+        }
+    }
+
+    func applyAppOrientation(_ orientation: AppOrientation) {
+        AppOrientation.apply(orientation) { [weak self] error in
+            DispatchQueue.main.async {
+                self?.auroraModel?.orientationError = error.localizedDescription
+            }
+        }
     }
 }

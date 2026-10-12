@@ -20,6 +20,13 @@ struct FastForwardSpeed: RawRepresentable
         self.rawValue = rawValue
     }
     
+    /// Same resolution for the pause menu label and the actual emulator rate.
+    static func resolvedRate(for game: Game, core: DeltaCoreProtocol, useGamePreference: Bool = true) -> Double {
+        let gameSpeed = useGamePreference ? game.settings[.fastForwardSpeed] as? Double : nil
+        let speed = gameSpeed ?? Settings.features.customFastForward[game.type]?.rawValue ?? core.supportedRates.upperBound
+        return Settings.features.customFastForward.allowUnrestrictedSpeeds ? speed : min(speed, core.supportedRates.upperBound)
+    }
+
     static func speeds(in range: ClosedRange<Double>) -> [FastForwardSpeed]
     {
         var range = range

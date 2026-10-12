@@ -271,9 +271,6 @@ public extension PatreonAPI
                 
                 completion(.success(()))
                 
-                Task<Void, Never> {
-                    await PurchaseManager.shared.update()
-                }
             }
             catch
             {
@@ -292,9 +289,6 @@ public extension PatreonAPI
                 let account = try result.get()
                 try account.managedObjectContext?.save()
                 
-                Task<Void, Never> {
-                    await PurchaseManager.shared.update()
-                }
             }
             catch
             {

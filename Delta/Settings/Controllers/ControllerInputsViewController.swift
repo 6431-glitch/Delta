@@ -50,15 +50,15 @@ class ControllerInputsViewController: UIViewController
     }
     
     override var shouldAutorotate: Bool {
-        return false
+        return AppOrientation.current != .automatic
     }
     
     override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
-        return .portrait
+        return AppOrientation.current == .automatic ? .portrait : AppOrientation.current.mask
     }
     
     override var preferredInterfaceOrientationForPresentation: UIInterfaceOrientation {
-        return .portrait
+        return AppOrientation.current == .landscape ? .landscapeRight : .portrait
     }
         
     override func viewDidLoad()
