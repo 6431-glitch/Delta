@@ -5,4 +5,3 @@ MIDlet-Vendor: Delta Experiment
 MIDlet-1: Delta Smoke,,DeltaSmoke
 MicroEdition-Configuration: CLDC-1.1
 MicroEdition-Profile: MIDP-2.0
-

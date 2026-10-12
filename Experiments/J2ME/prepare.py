@@ -11,7 +11,7 @@ shutil.copytree(root / 'JarBox', output, ignore=shutil.ignore_patterns('.git', '
 for ui in (root / 'Aurora').glob('*.swift'):
     destination = output / 'J2MEEmulator' / ('JARMetadata.swift' if ui.name == 'JARMetadata.swift' else 'UI/' + ui.name)
     shutil.copy2(ui, destination)
-project = output / 'J2MEEmulator.xcodeproj/project.pbxproj' 
+project = output / 'J2MEEmulator.xcodeproj/project.pbxproj'
 s = project.read_text().replace('appstore.wp.ifresh.jar-box.app', 'page.ducnguyen.Delta.J2MESmoke')
 s = s.replace('INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;', 'INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;\n\t\t\t\tINFOPLIST_KEY_UIFileSharingEnabled = YES;\n\t\t\t\tINFOPLIST_KEY_CFBundleDisplayName = "Delta J2ME";')
 s = s.replace('\t\t\t\tResources/jars/j2me_api.jar,', '\t\t\t\tResources/jars/delta_smoke.jar,\n\t\t\t\tResources/jars/j2me_api.jar,')
@@ -32,7 +32,7 @@ sources = output / 'api-sources.txt'
 sources.write_text('\n'.join(str(p) for p in sorted((output / 'j2me_api/src').rglob('*.java'))))
 subprocess.run(['javac', '--release', '8', '-cp', str(jars / 'minijvm_rt.jar'), '-d', str(api_classes), '@' + str(sources)], check=True)
 subprocess.run(['jar', 'cf', str(jars / 'j2me_api.jar'), '-C', str(api_classes), '.'], check=True)
-classes = output / 'smoke-classes' 
+classes = output / 'smoke-classes'
 classes.mkdir()
 subprocess.run(['javac', '--release', '8', '-cp', f'{jars / "minijvm_rt.jar"}:{jars / "j2me_api.jar"}', '-d', str(classes), str(root / 'Smoke/DeltaSmoke.java')], check=True)
 subprocess.run(['jar', 'cfm', str(jars / 'delta_smoke.jar'), str(root / 'Smoke/MANIFEST.MF'), '-C', str(classes), '.'], check=True)
