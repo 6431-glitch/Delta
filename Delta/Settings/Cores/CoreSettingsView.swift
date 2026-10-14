@@ -26,7 +26,7 @@ extension CoreSettingsView
     var body: some View {
         Form {
             Section {
-                if let metadata = system.deltaCore.metadata
+                if let metadata = system.deltaCore?.metadata
                 {
                     ForEach(DeltaCoreMetadata.Key.allCases, id: \.self) { key in
                         if let item = metadata[key]

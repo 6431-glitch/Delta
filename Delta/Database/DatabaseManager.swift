@@ -284,7 +284,7 @@ private extension DatabaseManager
             
             for system in System.coreSystems
             {
-                self.prepare(system.deltaCore, in: context)
+                if let core = system.deltaCore { self.prepare(core, in: context) }
             }
             
             do

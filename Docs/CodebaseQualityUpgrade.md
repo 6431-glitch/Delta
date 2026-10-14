@@ -18,7 +18,7 @@ This plan proposes incremental changes. It does not authorize a rewrite of nativ
 - [x] Complete the initial architecture assessment.
 - [x] Draft the upgrade sequence, acceptance criteria, and verification requirements.
 - [ ] Phase 0 — establish a reproducible baseline.
-- [ ] Phase 1 — centralize system descriptors and capabilities.
+- [x] Phase 1 — centralize system descriptors and capabilities.
 - [ ] Phase 2 — extract session and launch coordination.
 - [ ] Phase 3 — isolate storage, import, and sync contracts.
 - [ ] Phase 4 — enforce module boundaries and separate host services.
@@ -70,14 +70,14 @@ Acceptance: another developer can reproduce setup and run the documented checks.
 
 Starting points: `Delta/Systems/System.swift`, `Delta/Systems/DeltaCoreProtocol+Delta.swift`, core settings, fast-forward settings, and achievements mapping.
 
-- [ ] Introduce stable system descriptors for identity, metadata, supported content recognition, runtime selection, and storage policy.
-- [ ] Add a registry with duplicate-ID validation and an explicit unsupported-system result.
-- [ ] Keep release/BETA/LITE availability in composition policy rather than scattered feature logic.
-- [ ] Separate presentation metadata and settings-view factories from domain descriptors.
-- [ ] Model optional capabilities such as save states, cheats, fast-forward, palettes, networking, and secondary cartridges.
-- [ ] Distinguish engine support from per-game or policy restrictions, including achievement hardcore mode.
-- [ ] Migrate file recognition and system metadata first; migrate remaining switches feature by feature.
-- [ ] Replace assumptions that every system has a Delta core with explicit runtime selection or optional capability access.
+- [x] Introduce stable system descriptors for identity, metadata, supported content recognition, runtime selection, and storage policy.
+- [x] Add a registry with duplicate-ID validation and an explicit unsupported-system result.
+- [x] Keep release/BETA/LITE availability in composition policy rather than scattered feature logic.
+- [x] Separate presentation metadata and settings-view factories from domain descriptors.
+- [x] Model optional capabilities such as save states, cheats, fast-forward, palettes, networking, and secondary cartridges.
+- [x] Distinguish engine support from per-game or policy restrictions, including achievement hardcore mode.
+- [x] Migrate file recognition and system metadata first; migrate remaining switches feature by feature.
+- [x] Replace assumptions that every system has a Delta core with explicit runtime selection or optional capability access.
 
 Acceptance: existing IDs and preferences still resolve correctly. Unknown systems and unsupported actions produce controlled results. A fake system can be registered and discovered without adding cases to shared metadata/recognition logic. J2ME cannot accidentally enter the failing `deltaCore` path through migrated APIs.
 
@@ -188,3 +188,5 @@ Counts are baseline indicators, not stand-alone quality targets. Reduced file si
 Baseline evidence and outstanding gates: [QualityBaseline.md](QualityBaseline.md).
 
 | 2026-10-14 | Phase 0 automation delivered on `quality/phase-0-baseline` | Debug arm64 Simulator build, six sync contracts, artwork/replacement/snapshot/audio fixtures, schema migrations, 16 Nuke checks passed | Runtime/device/performance baseline remains open; Phase 0 is not fully accepted |
+
+| 2026-10-14 | Phase 1 descriptor/capability seam | Ten SwiftPM contracts and existing fixture suite passed; full Debug arm64 Simulator build passed | Legacy System enum remains a compatibility facade; runtime and storage adapters follow in subsequent phases |

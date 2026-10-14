@@ -636,11 +636,11 @@ private extension SaveStatesViewController
 
     func makeCompatibilityPredicate(filter: Filter) -> NSPredicate
     {
-        if let system = System(gameType: self.game.type)
+        if let core = System(gameType: self.game.type)?.deltaCore
         {
-            let predicate = NSPredicate(format: "%K == %@ AND %K == %@", #keyPath(SaveState.game), self.game, #keyPath(SaveState.coreIdentifier), system.deltaCore.identifier)
+            let predicate = NSPredicate(format: "%K == %@ AND %K == %@", #keyPath(SaveState.game), self.game, #keyPath(SaveState.coreIdentifier), core.identifier)
             
-            if let version = system.deltaCore.version
+            if let version = core.version
             {
                 let filterPredicate: NSPredicate
                 switch filter
