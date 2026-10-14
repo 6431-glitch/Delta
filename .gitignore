@@ -33,3 +33,6 @@ xcuserdata
 
 ## Project-Specific
 Delta.playground
+
+# Local quality validation logs
+.quality-*.log
