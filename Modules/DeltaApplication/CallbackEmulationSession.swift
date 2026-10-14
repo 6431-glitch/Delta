@@ -1,7 +1,5 @@
 import Foundation
-#if canImport(DeltaDomain)
 import DeltaDomain
-#endif
 
 /// Native callbacks finish asynchronously; lease release follows save checkpoint and dismissal.
 @MainActor public final class CallbackEmulationSession: EmulationSession

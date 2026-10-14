@@ -88,10 +88,13 @@ private extension GameViewController
 class GameViewController: DeltaCore.GameViewController
 {
     private(set) var runtimeSession: DeltaCoreSessionAdapter?
+    private var sessionRegistration: UUID?
 
     /// Assumed to be Delta.Game instance
     override var game: GameProtocol? {
         willSet {
+            if let token = sessionRegistration { EmulationServices.sessions.remove(token) }
+            sessionRegistration = nil
             self.stopRepeatingButtons()
             self.emulatorCore?.removeObserver(self, forKeyPath: #keyPath(EmulatorCore.state), context: &kvoContext)
             
@@ -103,6 +106,7 @@ class GameViewController: DeltaCore.GameViewController
             self.emulatorCore?.addObserver(self, forKeyPath: #keyPath(EmulatorCore.state), options: [.old], context: &kvoContext)
             
             let game = self.game as? Game
+            if let game, let runtimeSession { sessionRegistration = EmulationServices.sessions.register(gameIdentifier: game.identifier, session: runtimeSession) }
             NotificationCenter.default.addObserver(self, selector: #selector(GameViewController.managedObjectContextDidChange(with:)), name: .NSManagedObjectContextObjectsDidChange, object: game?.managedObjectContext)
             
             self.emulatorCore?.saveHandler = { [weak self] _ in self?.updateGameSave() }

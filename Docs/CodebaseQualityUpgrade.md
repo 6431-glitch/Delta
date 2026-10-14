@@ -21,7 +21,7 @@ This plan proposes incremental changes. It does not authorize a rewrite of nativ
 - [x] Phase 1 — centralize system descriptors and capabilities.
 - [x] Phase 2 — extract session and launch coordination (code/build/contracts; runtime smoke gate remains open).
 - [x] Phase 3 — isolate storage, import, and sync contracts (live sync gate remains open).
-- [ ] Phase 4 — enforce module boundaries and separate host services.
+- [x] Phase 4 — enforce shared module boundaries and inject Apple host services (native binary split remains deferred).
 - [ ] Phase 5 — strengthen concurrency, diagnostics, and performance verification.
 - [ ] Phase 6 — demonstrate extension readiness and finish documentation.
 
@@ -117,16 +117,16 @@ Acceptance: extracted launch/import/save services do not import Harmony or concr
 
 Prerequisite: the contracts and adapters from earlier phases work in the existing app target.
 
-- [ ] Create enforceable domain/application targets and move only dependency-clean code into them.
-- [ ] Inject audio/video services into runtime construction; retain existing render paths during migration.
-- [ ] Move `GameView` ownership and attachment into presentation adapters.
-- [ ] Split Apple audio/video implementations from shared session contracts.
-- [ ] Define neutral audio/video descriptors where required by the selected portability scope.
-- [ ] Encapsulate Objective-C/native bridges behind adapters; isolate associated-object state where portability requires it.
-- [ ] Make DeltaOperator consume narrow library and active-session services instead of discovering gameplay controllers.
-- [ ] Update preview dependencies to use injectable implementations for migrated services.
-- [ ] Add dependency checks preventing forbidden imports and module cycles.
-- [ ] Document the retained role of Xcode projects, CocoaPods, SPM, submodules, and binary frameworks; consolidate only where it removes a demonstrated problem.
+- [x] Create enforceable domain/application targets and move only dependency-clean code into them.
+- [x] Inject audio/video services into runtime construction; retain existing render paths during migration.
+- [x] Move `GameView` ownership and attachment into presentation adapters.
+- [x] Keep Apple audio/video implementations behind the independently compiled shared session contracts; retain the native backend compatibility API.
+- [ ] Split native audio/video into separate binary targets and define neutral media descriptors when a host port is selected (not implemented).
+- [x] Encapsulate Objective-C/native bridges behind adapters; isolate associated-object state where portability requires it.
+- [x] Make DeltaOperator consume narrow library and active-session services instead of discovering gameplay controllers.
+- [x] Verify preview dependencies; align its minimum deployment target. Extracted services use injectable test implementations.
+- [x] Add dependency checks preventing forbidden imports and module cycles.
+- [x] Document the retained role of Xcode projects, CocoaPods, SPM, submodules, and binary frameworks; consolidate only where it removes a demonstrated problem.
 
 Acceptance: domain/application targets compile without UIKit, concrete emulator bridges, or managed models. Presentation no longer imports vendor bridges in migrated flows. Module checks enforce the agreed direction. App resources and native linking still work in supported configurations.
 
@@ -194,3 +194,7 @@ Baseline evidence and outstanding gates: [QualityBaseline.md](QualityBaseline.md
 | 2026-10-14 | Phase 2 launch preflight, session ownership/drivers, vendor configuration and main-save extraction | Nineteen SwiftPM contracts and existing fixtures passed; Debug arm64 Simulator build passed | UIKit continues to own console presentation and multi-scene prompts; gameplay/save completion smoke tests remain pending |
 
 | 2026-10-14 | Phase 3 storage artifacts, metadata inspectors, sidecar/replacement adapters and stable-ID runtime persistence | Twenty-five SwiftPM contracts, full fixture/schema/Nuke integration suite and Debug arm64 Simulator build passed | Existing Core Data/Harmony implementations remain behind app adapters; live cloud behavior still requires signed devices |
+
+| 2026-10-14 | Phase 4 linked modules, dependency checks, native rendering injection, Operator delegate service and preview alignment | Twenty-seven SwiftPM tests, rendering adapter checks, existing fixture suite, full app and preview Debug arm64 Simulator builds passed | Native backend remains Apple-only; Operator observer UI glue and physical hardware verification remain |
+
+Current boundaries: [ModuleBoundaries.md](ModuleBoundaries.md).

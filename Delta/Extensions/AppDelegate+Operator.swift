@@ -39,7 +39,7 @@ private extension AppDelegate
                 return facade
             }
 
-            let facade = DeltaOperatorFacade()
+            let facade = DeltaOperatorFacade(library: OperatorLibraryAdapter())
             objc_setAssociatedObject(self, &operatorFacadeKey, facade, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
             return facade
         }

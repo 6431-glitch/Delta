@@ -5,8 +5,8 @@ import PackageDescription
 // continues to build through Delta.xcworkspace.
 let package = Package(
     name: "DeltaSyncContracts",
-    platforms: [.macOS(.v13)],
-    products: [],
+    platforms: [.iOS(.v17), .macOS(.v13)],
+    products: [.library(name: "DeltaDomain", targets: ["DeltaDomain"]), .library(name: "DeltaApplication", targets: ["DeltaApplication"])],
     targets: [
         .target(name: "DeltaApplication", dependencies: ["DeltaDomain"], path: "Modules/DeltaApplication"),
         .testTarget(name: "DeltaApplicationTests", dependencies: ["DeltaApplication", "DeltaDomain"], path: "Tests/DeltaApplicationTests"),
