@@ -10,6 +10,13 @@ import DeltaCore
 {
     static let ownership = SessionOwnership()
     static let sessions = ActiveSessionRegistry()
+    static var pendingJavaPreparation: LaunchPreparation?
+    static weak var pendingJavaSurface: AnyObject?
+    static func cancelPendingJavaLaunch(ownedBy surface: AnyObject)
+    {
+        guard pendingJavaSurface === surface else { return }
+        pendingJavaPreparation?.cancel()
+    }
     static let javaScope = "runtime.javaME"
     static var isJavaActive: Bool { ownership.isActive(scope: javaScope) }
 
@@ -28,7 +35,16 @@ import DeltaCore
                 }
                 guard requiredFilesAvailable else { throw EmulationError.missingRequiredFiles }
             })
-        return try coordinator.prepare(gameIdentifier: game.identifier)
+        let operation = UUID()
+        QualityDiagnostics.event("launch.preflight", operation: operation)
+        do {
+            let prepared = try coordinator.prepare(gameIdentifier: game.identifier)
+            QualityDiagnostics.event("launch.ready", operation: operation)
+            return prepared
+        } catch {
+            QualityDiagnostics.failure("launch.rejected", error: error, operation: operation)
+            throw error
+        }
     }
 }
 

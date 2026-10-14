@@ -22,7 +22,7 @@ This plan proposes incremental changes. It does not authorize a rewrite of nativ
 - [x] Phase 2 — extract session and launch coordination (code/build/contracts; runtime smoke gate remains open).
 - [x] Phase 3 — isolate storage, import, and sync contracts (live sync gate remains open).
 - [x] Phase 4 — enforce shared module boundaries and inject Apple host services (native binary split remains deferred).
-- [ ] Phase 5 — strengthen concurrency, diagnostics, and performance verification.
+- [x] Phase 5 — strengthen concurrency and diagnostics (device performance comparison remains pending).
 - [ ] Phase 6 — demonstrate extension readiness and finish documentation.
 
 Only check off a task when its acceptance criteria have passed. Update this document in the same change that completes the task. Record validation evidence and remaining limitations in the delivery log below.
@@ -132,14 +132,14 @@ Acceptance: domain/application targets compile without UIKit, concrete emulator 
 
 ## Phase 5 — strengthen concurrency, diagnostics, and performance verification
 
-- [ ] Document main-actor presentation, repository queue ownership, native engine threads, render callbacks, and shutdown ordering.
-- [ ] Audit `@unchecked Sendable` in changed boundaries and justify each retained declaration.
-- [ ] Introduce cancellation and completion ownership for extracted asynchronous operations.
-- [ ] Define typed errors for unsupported content, unavailable capabilities, missing artifacts, unavailable saves, and runtime failure.
-- [ ] Use consistent diagnostic categories and operation identifiers in changed flows, avoiding personal game paths or credentials in logs.
-- [ ] Add deterministic tests for invalid state transitions, interrupted launch, sync readiness, save failure, and session cleanup.
-- [ ] Measure launch latency, frame pacing, audio stability, and memory for representative affected engines against Phase 0.
-- [ ] Introduce formatting/static checks incrementally in touched code; record legacy exceptions instead of creating unrelated formatting churn.
+- [x] Document main-actor presentation, repository queue ownership, native engine threads, render callbacks, and shutdown ordering.
+- [x] Audit `@unchecked Sendable` in changed boundaries and justify each retained declaration.
+- [x] Introduce cancellation and completion ownership for extracted asynchronous operations.
+- [x] Define typed errors for unsupported content, unavailable capabilities, missing artifacts, unavailable saves, and runtime failure.
+- [x] Use consistent diagnostic categories and operation identifiers in changed flows, avoiding personal game paths or credentials in logs.
+- [x] Add deterministic tests for invalid state transitions, interrupted launch, sync readiness, save failure, and session cleanup.
+- [ ] Measure launch latency, frame pacing, audio stability, and memory against the unrecorded Phase 0 device baseline (still pending).
+- [x] Introduce formatting/static checks incrementally in touched code; record legacy exceptions instead of creating unrelated formatting churn.
 
 Acceptance: changed asynchronous flows have explicit ownership and failure behavior. Any performance regression is investigated against measured baselines before rollout. Validation does not claim thread safety solely because a type is marked Sendable.
 
@@ -198,3 +198,7 @@ Baseline evidence and outstanding gates: [QualityBaseline.md](QualityBaseline.md
 | 2026-10-14 | Phase 4 linked modules, dependency checks, native rendering injection, Operator delegate service and preview alignment | Twenty-seven SwiftPM tests, rendering adapter checks, existing fixture suite, full app and preview Debug arm64 Simulator builds passed | Native backend remains Apple-only; Operator observer UI glue and physical hardware verification remain |
 
 Current boundaries: [ModuleBoundaries.md](ModuleBoundaries.md).
+
+| 2026-10-14 | Phase 5 cancellation/exactly-once preparation, immutable native-worker request, private diagnostics and actor-owned JIT transitions | Twenty-nine SwiftPM tests and fixture suite passed; shared modules passed complete concurrency checking with warnings as errors; Debug arm64 Simulator build passed | No new unchecked Sendable declarations; performance/device comparison remains pending |
+
+Execution contracts: [ConcurrencyAndValidation.md](ConcurrencyAndValidation.md).

@@ -1,4 +1,3 @@
-import DeltaApplication
 //
 //  DatabaseManager.swift
 //  Delta
@@ -7,6 +6,7 @@ import DeltaApplication
 //  Copyright © 2015 Riley Testut. All rights reserved.
 //
 
+import DeltaApplication
 import Foundation
 import CoreData
 

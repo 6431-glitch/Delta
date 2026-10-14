@@ -32,6 +32,8 @@
 /* End PBXAggregateTarget section */
 
 /* Begin PBXBuildFile section */
+		12CF56185C178E16068D1817 /* QualityDiagnostics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EABE8B8164FEC383EBC758D /* QualityDiagnostics.swift */; };
+		C3A1F62F328D6D9533A1CFF4 /* JavaRuntimeAdapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5468C0CF6F793C3EDC54DDED /* JavaRuntimeAdapter.swift */; };
 		46A80284B5B682887C5A60B7 /* OperatorLibraryAdapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE80453CDF6A4AA0E45222F4 /* OperatorLibraryAdapter.swift */; };
 		A0D1A0000000000000000005 /* DeltaApplication in Frameworks */ = {isa = PBXBuildFile; productRef = A0D1A0000000000000000004 /* DeltaApplication */; };
 		A0D1A0000000000000000003 /* DeltaDomain in Frameworks */ = {isa = PBXBuildFile; productRef = A0D1A0000000000000000002 /* DeltaDomain */; };
@@ -749,6 +751,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		9EABE8B8164FEC383EBC758D /* QualityDiagnostics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Delta/Emulation/Adapters/QualityDiagnostics.swift"; sourceTree = SOURCE_ROOT; };
+		5468C0CF6F793C3EDC54DDED /* JavaRuntimeAdapter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Delta/Emulation/Adapters/JavaRuntimeAdapter.swift"; sourceTree = SOURCE_ROOT; };
 		DE80453CDF6A4AA0E45222F4 /* OperatorLibraryAdapter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Delta/Emulation/Adapters/OperatorLibraryAdapter.swift"; sourceTree = SOURCE_ROOT; };
 		87BE0FE31038C51B12E8A47F /* JavaGamePersistenceAdapter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Delta/Emulation/Adapters/JavaGamePersistenceAdapter.swift"; sourceTree = SOURCE_ROOT; };
 		F6EA7AA2E25B3495F014DC17 /* ContentImportAdapter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Delta/Emulation/Adapters/ContentImportAdapter.swift"; sourceTree = SOURCE_ROOT; };
@@ -1991,6 +1995,8 @@
 		BFFA71CE1AAC406100EE9DD1 = {
 			isa = PBXGroup;
 			children = (
+				9EABE8B8164FEC383EBC758D /* QualityDiagnostics.swift */,
+				5468C0CF6F793C3EDC54DDED /* JavaRuntimeAdapter.swift */,
 				DE80453CDF6A4AA0E45222F4 /* OperatorLibraryAdapter.swift */,
 				87BE0FE31038C51B12E8A47F /* JavaGamePersistenceAdapter.swift */,
 				F6EA7AA2E25B3495F014DC17 /* ContentImportAdapter.swift */,
@@ -3147,6 +3153,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				12CF56185C178E16068D1817 /* QualityDiagnostics.swift in Sources */,
+				C3A1F62F328D6D9533A1CFF4 /* JavaRuntimeAdapter.swift in Sources */,
 				46A80284B5B682887C5A60B7 /* OperatorLibraryAdapter.swift in Sources */,
 				E40A6E12F79B1A89172A3048 /* JavaGamePersistenceAdapter.swift in Sources */,
 				CE48E751D406387BF45B48BB /* ContentImportAdapter.swift in Sources */,

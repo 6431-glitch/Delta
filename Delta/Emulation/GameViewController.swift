@@ -2772,11 +2772,8 @@ private extension GameViewController
     @objc func didEnableJIT(with notification: Notification)
     {
         DispatchQueue.main.async {
-            self.showJITEnabledAlert()
-        }
-        
-        DispatchQueue.global(qos: .utility).async {
             guard let core = self.emulatorCore else { return }
+            self.showJITEnabledAlert()
             CoreConfigurationAdapter.enableJIT(core, pause: { self.pauseEmulation() }, resume: { self.resumeEmulation() })
         }
     }

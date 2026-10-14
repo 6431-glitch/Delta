@@ -1,4 +1,5 @@
 import DeltaDomain
+import DeltaApplication
 import UIKit
 import DeltaCore
 
@@ -56,19 +57,33 @@ import DeltaCore
         let lease: SessionOwnership.Lease
         do { lease = try EmulationServices.ownership.acquire(scope: EmulationServices.javaScope) }
         catch { showError(error.localizedDescription, from: presenter); return }
-        J2MESaveStore.restoreIfNeeded(game) { result in
+        let objectID = game.objectID
+        let context = game.managedObjectContext
+        let preparation = LaunchPreparation { [weak presenter] operation, result in
+            if EmulationServices.pendingJavaPreparation?.identifier == operation {
+                EmulationServices.pendingJavaPreparation = nil
+                EmulationServices.pendingJavaSurface = nil
+            }
             do { try result.get() }
             catch {
                 EmulationServices.ownership.release(lease)
-                showError("Could not restore Java saves: \(error.localizedDescription)", from: presenter)
+                if (error as? EmulationError) != .cancelled, let presenter {
+                    QualityDiagnostics.failure("java.restore.failed", error: error, operation: operation)
+                    showError("Could not restore Java saves: \(error.localizedDescription)", from: presenter)
+                }
                 return
             }
-            guard !game.isDeleted, presenter.viewIfLoaded?.window != nil, presenter.presentedViewController == nil else {
+            guard let presenter, presenter.viewIfLoaded?.window != nil, presenter.presentedViewController == nil,
+                  let restoredGame = try? context?.existingObject(with: objectID) as? Game, !restoredGame.isDeleted else {
                 EmulationServices.ownership.release(lease)
                 return
             }
-            presentGame(game, lease: lease, from: presenter)
+            QualityDiagnostics.event("java.present", operation: operation)
+            presentGame(restoredGame, lease: lease, from: presenter)
         }
+        EmulationServices.pendingJavaPreparation = preparation
+        EmulationServices.pendingJavaSurface = presenter
+        J2MESaveStore.restoreIfNeeded(game) { [weak preparation] result in preparation?.complete(result) }
     }
     private static func presentGame(_ game: Game, lease: SessionOwnership.Lease, from presenter: UIViewController) {
         let automatic = automaticScreen(for: game)
