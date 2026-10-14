@@ -15,3 +15,12 @@
 Aurora is now the Library tab. The original Library actions are exposed through Game Actions in Aurora; see [unified Library progress](LIBRARY.md).
 
 Verification: final arm64 build passes. `Tests/ArtworkMigration/verify.swift` migrated a temporary Delta 12 SQLite store to Delta 13, preserved its cover and favorite, then persisted and reset its backdrop independently. The test uses generic managed objects and does not exercise app image decoding or live sync. Cover/Backdrop menus were inspected in portrait and landscape. The real source picker presented Photos, Clipboard, cover database, and Files; Files rendered but CUA could not interact with its UI (`noWindowsAvailable`). End-to-end photo/file selection, app relaunch after image replacement, and signed two-device sync remain unverified.
+
+## Mixed cover proportions
+
+- [x] Preserve the actual artwork aspect ratio in grid, carousel, recent games and hero thumbnails.
+- [x] Keep selected carousel covers aligned with the leading safe edge as their width changes.
+- [x] Resolve dimensions through Nuke completion, with no disk reads during scrolling/layout.
+- [x] Verify square, 3:4, tall and landscape fit geometry and Simulator compilation.
+
+Validation: nine geometry checks passed (square, 3:4, 2:3, 4:3, invalid dimensions/ratios and empty bounds). Delta Debug arm64 generic iOS Simulator build passed. Image dimensions arrive from Nuke off the layout path; size changes animate with Reduce Motion respected. Visual Simulator/device verification remains pending.

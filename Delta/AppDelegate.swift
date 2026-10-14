@@ -60,6 +60,35 @@ enum AppOrientation: String, CaseIterable {
     }
 }
 
+// Shared by console and Java ME pause menus; uses the same app-wide preference as Library.
+extension AppOrientation {
+    static func presentPicker(from controller: UIViewController, sourceView: UIView? = nil,
+                              onChange: @escaping () -> Void = {}) {
+        let picker = UIAlertController(title: String(localized: "Orientation"), message: nil, preferredStyle: .actionSheet)
+        for orientation in allCases {
+            let title = orientation == current ? "✓ " + orientation.title : orientation.title
+            picker.addAction(UIAlertAction(title: title, style: .default) { [weak controller] _ in
+                apply(orientation) { error in
+                    DispatchQueue.main.async {
+                        guard let controller, controller.presentedViewController == nil else { return }
+                        let alert = UIAlertController(title: String(localized: "Unable to Change Orientation"),
+                                                      message: error.localizedDescription, preferredStyle: .alert)
+                        alert.addAction(UIAlertAction(title: String(localized: "OK"), style: .default))
+                        controller.present(alert, animated: true)
+                    }
+                }
+                onChange()
+            })
+        }
+        picker.addAction(UIAlertAction(title: String(localized: "Cancel"), style: .cancel))
+        let anchor = sourceView ?? controller.view!
+        picker.popoverPresentationController?.sourceView = anchor
+        picker.popoverPresentationController?.sourceRect = CGRect(x: anchor.bounds.midX, y: anchor.bounds.midY, width: 1, height: 1)
+        picker.popoverPresentationController?.permittedArrowDirections = []
+        controller.present(picker, animated: true)
+    }
+}
+
 private extension CFNotificationName
 {
     static let altstoreRequestAppState: CFNotificationName = CFNotificationName("com.altstore.RequestAppState.com.rileytestut.Delta" as CFString)

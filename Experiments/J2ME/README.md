@@ -32,7 +32,7 @@ The preparation script repairs an upstream Canvas bug: the first full paint used
 - [ ] Stress repeated sessions in the same process and verify no surviving VM threads.
 - [ ] Test on a signed physical iPhone, then test representative permitted games and audio/3D.
 - [x] Integrate a dedicated runtime/session controller, JAR/JAD imports, Library platform selection, phone controls, and per-game RMS storage into Delta.
-- [ ] Resolve pause/resume and save-state capability before exposing Delta's gameplay actions.
+- [x] Resolve pause/resume and save-state capability: cooperative pause works; VM save states remain unsupported and omitted.
 
 ## Test your own JAR
 
@@ -52,7 +52,7 @@ The Files picker allows generic file types because some providers label `.jar` a
 
 ## Aurora gameplay UI
 
-Selected designs: option 1 in landscape and option 2 in portrait. The local UIKit overlays are applied by `prepare.py`; the pinned vendor source remains unchanged. The game viewport preserves each MIDlet's configured aspect ratio. Landscape places the directional pad and L/R soft keys left, with the full keypad right. Portrait stacks the viewport, directional pad/soft keys, and keypad. The center of the directional pad sends Fire/5; dragging supports eight directions. Canvas commands appear in the native game menu rather than covering number keys. The menu deliberately exposes no pause or save-state action while those engine capabilities remain unresolved.
+Selected designs: option 1 in landscape and option 2 in portrait. The local UIKit overlays are applied by `prepare.py`; the pinned vendor source remains unchanged. The game viewport preserves each MIDlet's configured aspect ratio. Landscape places the directional pad and L/R soft keys left, with the full keypad right. Portrait stacks the viewport, directional pad/soft keys, and keypad. Separate Up, Down, Left, Right and center Select buttons send phone keys 2/8/4/6/5 with key repeat. Canvas commands appear in the native game menu rather than covering number keys. The Pause button opens a native sheet with Continue, Screenshot sharing and Home. Phone commands and touch-layout editing remain in the secondary menu. Save State, Load State and Speed are omitted at the user's request.
 
 - [x] Implement both adaptive layouts, Aurora control surfaces, and pressed-key feedback.
 - [x] Preserve keypad press/repeat/release and native Canvas command actions.

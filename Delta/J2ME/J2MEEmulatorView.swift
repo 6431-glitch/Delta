@@ -13,6 +13,7 @@ class J2MEEmulatorView: UIView {
     // J2ME virtual canvas size
     var canvasWidth: Int = 240
     var canvasHeight: Int = 320
+    private(set) var displayedFrame: CGImage?
 
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -43,6 +44,7 @@ class J2MEEmulatorView: UIView {
     func displayImage(_ cgImage: CGImage) {
         DispatchQueue.main.async { [weak self] in
             guard let self else { return }
+            self.displayedFrame = cgImage
             self.layer.contents = cgImage
             self.onFrame?(cgImage)
             if let cb = self.onFirstFrame {

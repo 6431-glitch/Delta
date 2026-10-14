@@ -21,7 +21,6 @@ import GBCDeltaCore
 import Roxas
 import Harmony
 
-import SDWebImage
 
 extension GameCollectionViewController
 {
@@ -373,8 +372,8 @@ extension GameCollectionViewController
         if let activeEmulatorCore = self.activeEmulatorCore, !activeEmulatorCore.isWirelessMultiplayerActive
         {
             let fetchRequest = SaveState.rst_fetchRequest() as! NSFetchRequest<SaveState>
-            fetchRequest.predicate = NSPredicate(format: "%K == %@ AND %K == %d", #keyPath(SaveState.game), game, #keyPath(SaveState.type), SaveStateType.auto.rawValue)
-            fetchRequest.sortDescriptors = [NSSortDescriptor(key: #keyPath(SaveState.creationDate), ascending: true)]
+            fetchRequest.predicate = NSPredicate(format: "%K == %@ AND %K IN %@", #keyPath(SaveState.game), game, #keyPath(SaveState.type), [SaveStateType.auto.rawValue, SaveStateType.main.rawValue])
+            fetchRequest.sortDescriptors = [NSSortDescriptor(key: #keyPath(SaveState.modifiedDate), ascending: true)]
             
             do
             {
@@ -617,8 +616,8 @@ private extension GameCollectionViewController
                         if let activeEmulatorCore = self.activeEmulatorCore, !activeEmulatorCore.isWirelessMultiplayerActive
                         {
                             let fetchRequest = SaveState.rst_fetchRequest() as! NSFetchRequest<SaveState>
-                            fetchRequest.predicate = NSPredicate(format: "%K == %@ AND %K == %d", #keyPath(SaveState.game), game, #keyPath(SaveState.type), SaveStateType.auto.rawValue)
-                            fetchRequest.sortDescriptors = [NSSortDescriptor(key: #keyPath(SaveState.creationDate), ascending: true)]
+                            fetchRequest.predicate = NSPredicate(format: "%K == %@ AND %K IN %@", #keyPath(SaveState.game), game, #keyPath(SaveState.type), [SaveStateType.auto.rawValue, SaveStateType.main.rawValue])
+                            fetchRequest.sortDescriptors = [NSSortDescriptor(key: #keyPath(SaveState.modifiedDate), ascending: true)]
                             
                             do
                             {
@@ -1072,11 +1071,7 @@ private extension GameCollectionViewController
         {
             self.dataSource.prefetchItemCache.removeObject(forKey: game)
             
-            if let cacheManager = SDWebImageManager.shared()
-            {
-                let cacheKey = cacheManager.cacheKey(for: imageURL)
-                cacheManager.imageCache.removeImage(forKey: cacheKey)
-            }
+            ArtworkImagePipeline.invalidate(imageURL)
             
             DatabaseManager.shared.performBackgroundTask { (context) in
                 let temporaryGame = context.object(with: game.objectID) as! Game
@@ -1367,8 +1362,10 @@ extension GameCollectionViewController: SaveStatesViewControllerDelegate
         self.activeSaveState = saveState
         
         self.dismiss(animated: true) {
-            let indexPath = self.dataSource.fetchedResultsController.indexPath(forObject: saveStatesViewController.game)!
-            self.launchGame(at: indexPath, clearScreen: false, ignoreAlreadyRunningError: true)
+            // Aurora can open a game from any platform while the backing grid
+            // is still showing another collection. Launch the explicit game.
+            self.launchGame(at: IndexPath(item: 0, section: 0), clearScreen: false,
+                            ignoreAlreadyRunningError: true, selectedGame: saveStatesViewController.game)
         }
     }
 }

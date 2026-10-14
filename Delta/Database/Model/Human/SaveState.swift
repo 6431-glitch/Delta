@@ -17,11 +17,50 @@ import Harmony
     case quick
     case general
     case locked
+    case main
+}
+
+enum SaveStateRules {
+    static func historyLimit(_ value: Int?) -> Int { min(20, max(0, value ?? 5)) }
+    static func normalizedTags(_ values: [String]) -> [String] {
+        var seen = Set<String>()
+        return Array(values.map { String($0.trimmingCharacters(in: .whitespacesAndNewlines).replacingOccurrences(of: "|", with: "").prefix(32)) }
+            .filter { !$0.isEmpty && seen.insert($0.lowercased()).inserted }.prefix(8))
+    }
+}
+
+struct MainSaveClock {
+    private var seconds: TimeInterval = 0
+    private var gameID: String?
+    mutating func advance(seconds delta: TimeInterval, gameID: String, active: Bool) -> Bool {
+        if self.gameID != gameID { self.gameID = gameID; seconds = 0 }
+        guard active, delta.isFinite, delta > 0 else { return false }
+        seconds += delta
+        guard seconds >= 300 else { return false }
+        seconds.formTruncatingRemainder(dividingBy: 300)
+        return true
+    }
 }
 
 @objc(SaveState)
 public class SaveState: _SaveState, SaveStateProtocol
 {
+    @NSManaged public var tagsRaw: String?
+    @NSManaged public var sortPosition: Double
+
+    var tags: [String] {
+        get { (tagsRaw ?? "").split(separator: "|").map(String.init) }
+        set {
+            let normalized = SaveStateRules.normalizedTags(newValue)
+            tagsRaw = normalized.isEmpty ? nil : "|" + normalized.joined(separator: "|") + "|"
+        }
+    }
+
+    static func autosaveLimit(for game: Game) -> Int {
+        let settings = game.gameSettings as? [String: Any] ?? [:]
+        return SaveStateRules.historyLimit((settings["saveStates.autosaveLimit"] as? NSNumber)?.intValue)
+    }
+
     public static let localizedDateFormatter: DateFormatter = {
         let dateFormatter = DateFormatter()
         dateFormatter.timeStyle = .short
@@ -111,7 +150,7 @@ extension SaveState: Syncable
     }
     
     public var syncableKeys: Set<AnyKeyPath> {
-        return [\SaveState.creationDate, \SaveState.filename, \SaveState.modifiedDate, \SaveState.name, \SaveState.type, \SaveState.coreIdentifier, \SaveState.coreVersion]
+        return [\SaveState.creationDate, \SaveState.filename, \SaveState.modifiedDate, \SaveState.name, \SaveState.type, \SaveState.coreIdentifier, \SaveState.coreVersion, \SaveState.tagsRaw, \SaveState.sortPosition]
     }
     
     public var syncableFiles: Set<File> {

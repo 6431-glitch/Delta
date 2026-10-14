@@ -16,7 +16,7 @@ enum J2MEGameLayoutMode {
 
 // MARK: - J2MEGameViewController
 
-class J2MEGameViewController: UIViewController {
+class J2MEGameViewController: UIViewController, UIAdaptivePresentationControllerDelegate {
     static var isSessionActive = false
     var saveDirectory: URL!
     var gameIdentifier = ""
@@ -137,7 +137,7 @@ class J2MEGameViewController: UIViewController {
         NotificationCenter.default.addObserver(self, selector: #selector(suspendForInactivity), name: UIApplication.willResignActiveNotification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(activateSession), name: UIApplication.didBecomeActiveNotification, object: nil)
         input.preferences = preferences
-        input.onPause = { [weak self] in self?.togglePause() }
+        input.onPause = { [weak self] in self?.showPauseMenu() }
         input.startControllers()
         pauseLabel.text = "Paused"
         pauseLabel.font = .systemFont(ofSize: 22, weight: .semibold)
@@ -201,15 +201,15 @@ class J2MEGameViewController: UIViewController {
             button.addTarget(self, action: #selector(softKeyDown(_:)), for: .touchDown)
             button.addTarget(self, action: #selector(softKeyUp(_:)), for: [.touchUpInside, .touchUpOutside, .touchCancel])
         }
-        for (button, symbol, label) in [(backButton, "xmark", "Exit game"), (menuButton, "ellipsis", "Game menu")] {
+        for (button, symbol, label) in [(backButton, "pause.fill", "Pause menu"), (menuButton, "ellipsis", "Game menu")] {
             J2MEAuroraKey.style(button)
             button.setImage(UIImage(systemName: symbol, withConfiguration: UIImage.SymbolConfiguration(pointSize: 20, weight: .semibold)), for: .normal)
             button.accessibilityLabel = label
             button.layer.cornerRadius = 22
         }
-        backButton.addTarget(self, action: #selector(backTapped), for: .touchUpInside)
+        backButton.addTarget(self, action: #selector(showPauseMenu), for: .touchUpInside)
         menuButton.showsMenuAsPrimaryAction = true
-        menuButton.menu = UIMenu(children: [UIAction(title: "Exit Game", image: UIImage(systemName: "xmark"), attributes: .destructive) { [weak self] _ in self?.backTapped() }])
+        menuButton.menu = UIMenu(children: [UIAction(title: "Home", image: UIImage(systemName: "house")) { [weak self] _ in self?.backTapped() }])
         emulatorView.layer.cornerRadius = 14
         emulatorView.clipsToBounds = true
         emulatorView.layer.borderWidth = 1
@@ -240,7 +240,7 @@ class J2MEGameViewController: UIViewController {
             numpadView?.frame = CGRect(x: right.midX - keypadWidth / 2, y: right.midY - keypadHeight / 2, width: keypadWidth, height: keypadHeight)
         } else {
             let keypadHeight: CGFloat = 200
-            let pad: CGFloat = safe.height < 700 ? 132 : 144
+            let pad: CGFloat = 144
             let top = safe.minY + 60
             let available = safe.maxY - top - keypadHeight - pad - 32
             let height = min(available, (safe.width - 32) / ratio)
@@ -343,6 +343,13 @@ class J2MEGameViewController: UIViewController {
         do { try FileManager.default.createDirectory(at: saveDirectory, withIntermediateDirectories: true) }
         catch { runtimeError = "Could not create this game's save folder: \(error.localizedDescription)"; return }
 
+        // HD JARs retain logical Canvas/image sizes for collision and movement.
+        // Only their backing pixels and the framebuffer use the denser scale.
+        let artworkAttributes = J2MEJARMetadata.read(from: jarPath)?.attributes ?? [:]
+        let requestedScale = Int(artworkAttributes["Delta-J2ME-Render-Scale"] ?? "1") ?? 1
+        let requestedAssetScale = Int(artworkAttributes["Delta-J2ME-Asset-Scale"] ?? "1") ?? 1
+        let outputScale = min(max(1, min(3, requestedScale)), max(1, 2048 / max(canvasWidth, canvasHeight)))
+        delta_j2me_configure_2d(Int32(outputScale), Int32(max(1, min(3, requestedAssetScale))))
         let initResult = jvm_bridge_init(resRoot, saveRoot, jarPath,
                                          Int32(canvasWidth),
                                          Int32(canvasHeight),
@@ -363,6 +370,47 @@ class J2MEGameViewController: UIViewController {
         if runResult != 0 && runtimeError == nil { runtimeError = "This MIDlet could not run (\(runResult)). It may require unsupported phone APIs." }
         print("[Swift] MIDlet run result: \(runResult)")
         jvm_bridge_destroy()
+    }
+
+    @objc private func showPauseMenu() {
+        guard !runtimeTerminated, !exiting, !editingControls, presentedViewController == nil else { return }
+        userPaused = true
+        updatePause()
+        let panel = J2MEPausePanel(title: appName)
+        panel.onContinue = { [weak self] in self?.continueGame() }
+        panel.onHome = { [weak self] in self?.backTapped() }
+        panel.onScreenshot = { [weak self] in self?.shareScreenshot() }
+        present(panel, animated: true)
+        panel.presentationController?.delegate = self
+    }
+
+    private func continueGame() {
+        userPaused = false
+        updatePause()
+        refreshMenu()
+    }
+
+    func presentationControllerDidDismiss(_ presentationController: UIPresentationController) {
+        continueGame()
+    }
+
+    private func shareScreenshot() {
+        let image: UIImage
+        if formView.isHidden, listView.isHidden, let frame = emulatorView.displayedFrame {
+            image = UIImage(cgImage: frame)
+        } else {
+            // Native Java forms/lists do not have a Canvas framebuffer.
+            let target: UIView = !formView.isHidden ? formView : !listView.isHidden ? listView : emulatorView
+            image = UIGraphicsImageRenderer(bounds: target.bounds).image { _ in
+                target.drawHierarchy(in: target.bounds, afterScreenUpdates: true)
+            }
+        }
+        let share = UIActivityViewController(activityItems: [image], applicationActivities: nil)
+        share.completionWithItemsHandler = { [weak self] _, _, _, _ in self?.continueGame() }
+        share.popoverPresentationController?.sourceView = backButton
+        share.popoverPresentationController?.sourceRect = backButton.bounds
+        present(share, animated: true)
+        share.presentationController?.delegate = self
     }
 
     @objc private func backTapped() {
@@ -411,7 +459,7 @@ class J2MEGameViewController: UIViewController {
                 })
             }
         }
-        actions.append(UIAction(title: userPaused ? "Resume Game" : "Pause Game", image: UIImage(systemName: userPaused ? "play" : "pause")) { [weak self] _ in self?.togglePause() })
+        actions.append(UIAction(title: "Pause Menu", image: UIImage(systemName: "pause")) { [weak self] _ in self?.showPauseMenu() })
         actions.append(UIAction(title: editingControls ? "Done Editing Layout" : "Edit Touch Layout", image: UIImage(systemName: "hand.draw")) { [weak self] _ in
             guard let self else { return }
             self.editingControls.toggle()
@@ -426,9 +474,9 @@ class J2MEGameViewController: UIViewController {
                 self.view.setNeedsLayout()
             })
         }
-        actions.append(UIAction(title: "Exit Game", image: UIImage(systemName: "xmark"), attributes: .destructive) { [weak self] _ in self?.backTapped() })
+        actions.append(UIAction(title: "Home", image: UIImage(systemName: "house")) { [weak self] _ in self?.backTapped() })
         menuButton.menu = UIMenu(children: actions)
-        backButton.accessibilityLabel = "Exit game"
+        backButton.accessibilityLabel = "Pause menu"
     }
     private func rebuildEditor() {
         // Keep recognizer views stable across layout passes, including touch-down
@@ -441,7 +489,7 @@ class J2MEGameViewController: UIViewController {
                 continue
             }
             let overlay = UILabel(frame: pair.1.frame)
-            overlay.text = pair.0.capitalized + "\nDrag / Pinch / Tap"
+            overlay.text = (pair.0 == "joystick" ? "Direction Pad" : pair.0.capitalized) + "\nDrag / Pinch / Tap"
             overlay.numberOfLines = 2; overlay.textAlignment = .center
             overlay.font = .systemFont(ofSize: 12, weight: .bold); overlay.textColor = .white
             overlay.backgroundColor = J2MEAuroraKey.purple.withAlphaComponent(0.35)
@@ -601,6 +649,91 @@ let j2meGameUICallback: @convention(c) (Int32, UnsafePointer<CChar>?) -> Void = 
         case Int32(J2ME_UI_ACTION_SHOW_LIST):    vc.showListView()
         case Int32(J2ME_UI_ACTION_SHOW_ALERT):   vc.showAlert()
         default: break
+        }
+    }
+}
+
+/// Native sheet follows the console pause menu's action hierarchy.
+private final class J2MEPausePanel: UIViewController {
+    var onContinue: (() -> Void)?
+    var onHome: (() -> Void)?
+    var onScreenshot: (() -> Void)?
+    private let gameTitle: String
+    override var supportedInterfaceOrientations: UIInterfaceOrientationMask { AppOrientation.current.mask }
+
+    init(title: String) {
+        gameTitle = title
+        super.init(nibName: nil, bundle: nil)
+        modalPresentationStyle = .pageSheet
+    }
+    required init?(coder: NSCoder) { fatalError() }
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        overrideUserInterfaceStyle = .dark
+        view.backgroundColor = UIColor(red: 0.07, green: 0.04, blue: 0.13, alpha: 1)
+        let scroll = UIScrollView()
+        scroll.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(scroll)
+        let content = UIStackView()
+        content.axis = .vertical
+        content.spacing = 12
+        content.translatesAutoresizingMaskIntoConstraints = false
+        scroll.addSubview(content)
+        NSLayoutConstraint.activate([
+            scroll.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 20),
+            scroll.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
+            scroll.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 24),
+            scroll.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -24),
+            content.topAnchor.constraint(equalTo: scroll.contentLayoutGuide.topAnchor),
+            content.bottomAnchor.constraint(equalTo: scroll.contentLayoutGuide.bottomAnchor, constant: -20),
+            content.leadingAnchor.constraint(equalTo: scroll.contentLayoutGuide.leadingAnchor),
+            content.trailingAnchor.constraint(equalTo: scroll.contentLayoutGuide.trailingAnchor),
+            content.widthAnchor.constraint(equalTo: scroll.frameLayoutGuide.widthAnchor)
+        ])
+        let title = UILabel()
+        title.text = gameTitle
+        title.font = .preferredFont(forTextStyle: .title2)
+        title.adjustsFontForContentSizeCategory = true
+        title.textColor = .white
+        title.numberOfLines = 2
+        content.addArrangedSubview(title)
+        let subtitle = UILabel()
+        subtitle.text = "Paused"
+        subtitle.textColor = .secondaryLabel
+        subtitle.font = .preferredFont(forTextStyle: .subheadline)
+        content.addArrangedSubview(subtitle)
+        for (label, symbol, action) in [("Continue", "play.fill", 0), ("Screenshot", "camera", 1), ("Orientation", AppOrientation.current.symbol, 3), ("Home", "house", 2)] {
+            let button = J2MEAuroraButton(type: .system)
+            J2MEAuroraKey.style(button)
+            var config = UIButton.Configuration.plain()
+            config.title = action == 3 ? String(localized: "Orientation") + " · " + AppOrientation.current.title : label
+            config.image = UIImage(systemName: symbol)
+            config.imagePadding = 12
+            config.contentInsets = NSDirectionalEdgeInsets(top: 16, leading: 20, bottom: 16, trailing: 20)
+            button.configuration = config
+            button.contentHorizontalAlignment = .leading
+            if action == 0 { button.backgroundColor = J2MEAuroraKey.purple }
+            button.addAction(UIAction { [weak self, weak button] _ in
+                guard let self else { return }
+                if action == 3 {
+                    AppOrientation.presentPicker(from: self, sourceView: button) { [weak button] in
+                        var updated = button?.configuration
+                        updated?.title = String(localized: "Orientation") + " · " + AppOrientation.current.title
+                        updated?.image = UIImage(systemName: AppOrientation.current.symbol)
+                        button?.configuration = updated
+                    }
+                    return
+                }
+                let callback = action == 0 ? self.onContinue : action == 1 ? self.onScreenshot : self.onHome
+                self.dismiss(animated: true) { callback?() }
+            }, for: .touchUpInside)
+            content.addArrangedSubview(button)
+        }
+        if let sheet = sheetPresentationController {
+            sheet.detents = [.medium(), .large()]
+            sheet.prefersGrabberVisible = true
+            sheet.preferredCornerRadius = 28
         }
     }
 }

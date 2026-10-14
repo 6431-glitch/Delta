@@ -315,8 +315,61 @@ class GameViewController: DeltaCore.GameViewController
         self.automaticallyPausesWhileInactive = Settings.pauseWhileInactive
     }
     
+    private var mainSaveTimer: Timer?
+    private var mainSaveClock = MainSaveClock()
+    private var mainSaveLastTick = Date()
+
+    private func startMainSaveTimer() {
+        guard mainSaveTimer == nil else { return }
+        mainSaveLastTick = Date()
+        mainSaveTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in
+            guard let self else { return }
+            let now = Date()
+            let delta = min(2, max(0, now.timeIntervalSince(self.mainSaveLastTick)))
+            self.mainSaveLastTick = now
+            guard let game = self.game as? Game else { return }
+            let active = self.viewIfLoaded?.window != nil && self.presentedViewController == nil &&
+                UIApplication.shared.applicationState == .active && self.emulatorCore?.state == .running &&
+                self.emulatorCore?.isWirelessMultiplayerActive == false
+            guard self.mainSaveClock.advance(seconds: delta, gameID: game.identifier, active: active) else { return }
+            self.checkpointMainSave(game)
+        }
+    }
+
+    private func checkpointMainSave(_ game: Game) {
+        guard pauseEmulation() else { return }
+        defer { resumeEmulation() }
+        let id = game.objectID
+        let context = DatabaseManager.shared.newBackgroundContext()
+        context.performAndWait {
+            do {
+                guard let game = try context.existingObject(with: id) as? Game else { return }
+                let request = SaveState.fetchRequest(for: game, type: .main)
+                request.sortDescriptors = [NSSortDescriptor(key: #keyPath(SaveState.modifiedDate), ascending: false)]
+                let existing = try context.fetch(request)
+                let main = existing.first ?? SaveState(context: context)
+                main.game = game; main.type = .main; main.name = String(localized: "Main Save")
+                // Cloud conflicts must not leave several active main slots.
+                for duplicate in existing.dropFirst() { duplicate.type = .general }
+                guard self.update(main) else { if main.isInserted { context.delete(main) }; return }
+                let limit = SaveState.autosaveLimit(for: game)
+                let historyRequest = SaveState.fetchRequest(for: game, type: .auto)
+                historyRequest.sortDescriptors = [NSSortDescriptor(key: #keyPath(SaveState.modifiedDate), ascending: false)]
+                if limit > 0 {
+                    let history = SaveState(context: context)
+                    history.game = game; history.type = .auto
+                    if !self.update(history, with: main) { context.delete(history) }
+                }
+                let history = try context.fetch(historyRequest)
+                for old in history.dropFirst(limit) { context.delete(old) }
+                try context.save()
+            } catch { print("Main Save failed: \(error)") }
+        }
+    }
+
     deinit
     {
+        mainSaveTimer?.invalidate()
         stopRepeatingButtons()
         self.emulatorCore?.removeObserver(self, forKeyPath: #keyPath(EmulatorCore.state), context: &kvoContext)
     }
@@ -534,6 +587,7 @@ extension GameViewController
         }
         
         self.startGameActivity()
+        self.startMainSaveTimer()
         
         if let scene = UIApplication.shared.externalDisplayScene, Settings.supportsExternalDisplays
         {
@@ -1170,6 +1224,9 @@ extension GameViewController: SaveStatesViewControllerDelegate
         
         guard let emulatorCore = self.emulatorCore, emulatorCore.state != .stopped, !emulatorCore.isWirelessMultiplayerActive else { return }
         
+        let historyLimit = SaveState.autosaveLimit(for: game)
+        guard historyLimit > 0 else { return }
+
         // If pausedSaveState exists and has already been saved, don't update auto save state
         // This prevents us from filling our auto save state slots with the same save state
         let savedPausedSaveState = self.pausedSaveState?.isSaved ?? false
@@ -1189,8 +1246,9 @@ extension GameViewController: SaveStatesViewControllerDelegate
             do
             {
                 let saveStates = try fetchRequest.execute()
-                
-                if let saveState = saveStates.first, saveStates.count >= 2
+                for old in saveStates.dropLast(historyLimit) { backgroundContext.delete(old) }
+                let retained = Array(saveStates.suffix(historyLimit))
+                if let saveState = retained.first, retained.count >= historyLimit
                 {
                     // If there are two or more auto save states, update the oldest one
                     self.update(saveState, with: self.pausedSaveState)
@@ -1206,7 +1264,7 @@ extension GameViewController: SaveStatesViewControllerDelegate
                     saveState.type = .auto
                     saveState.game = game
                     
-                    self.update(saveState, with: self.pausedSaveState)
+                    if !self.update(saveState, with: self.pausedSaveState) { backgroundContext.delete(saveState) }
                 }
             }
             catch
@@ -1218,7 +1276,7 @@ extension GameViewController: SaveStatesViewControllerDelegate
         }
     }
     
-    private func update(_ saveState: SaveState, with replacementSaveState: SaveStateProtocol? = nil)
+    @discardableResult private func update(_ saveState: SaveState, with replacementSaveState: SaveStateProtocol? = nil) -> Bool
     {
         let isRunning = (self.emulatorCore?.state == .running)
         
@@ -1227,54 +1285,36 @@ extension GameViewController: SaveStatesViewControllerDelegate
             self.pauseEmulation()
         }
         
-        if let replacementSaveState = replacementSaveState
-        {
-            do
-            {
-                if FileManager.default.fileExists(atPath: saveState.fileURL.path)
-                {
-                    // Don't use replaceItem(), since that removes the original file as well
-                    try FileManager.default.removeItem(at: saveState.fileURL)
-                }
-                
-                try FileManager.default.copyItem(at: replacementSaveState.fileURL, to: saveState.fileURL)
+        defer { if isRunning { self.resumeEmulation() } }
+        guard let core = self.emulatorCore, core.state != .stopped else { return false }
+        let staged = FileManager.default.uniqueTemporaryURL()
+        defer { try? FileManager.default.removeItem(at: staged) }
+        do {
+            if let replacementSaveState {
+                try FileManager.default.copyItem(at: replacementSaveState.fileURL, to: staged)
+            } else {
+                core.saveSaveState(to: staged)
             }
-            catch
-            {
-                print(error)
+            let image = core.videoManager.snapshot()?.pngData()
+            try GameFileReplacement.replace(source: staged, destination: saveState.fileURL) {
+                if let image { try image.write(to: saveState.imageFileURL, options: .atomic) }
             }
+        } catch {
+            print("Save state write failed: \(error)")
+            return false
         }
-        else
-        {
-            self.emulatorCore?.saveSaveState(to: saveState.fileURL)
-        }
-        
-        if let snapshot = self.emulatorCore?.videoManager.snapshot(), let data = snapshot.pngData()
-        {
-            do
-            {
-                try data.write(to: saveState.imageFileURL, options: [.atomicWrite])
-            }
-            catch
-            {
-                print(error)
-            }
-        }
-        
+
         saveState.modifiedDate = Date()
         saveState.coreIdentifier = self.emulatorCore?.deltaCore.identifier
         saveState.coreVersion = self.emulatorCore?.deltaCore.version
         
         if ExperimentalFeatures.shared.toastNotifications.stateSaveEnabled,
-           saveState.type != .auto
+           saveState.type != .auto && saveState.type != .main
         {
             self.presentExperimentalToastView(NSLocalizedString("Saved Save State", comment: ""))
         }
         
-        if isRunning
-        {
-            self.resumeEmulation()
-        }
+        return true
     }
     
     private func load(_ saveState: SaveStateProtocol)
@@ -1296,7 +1336,7 @@ extension GameViewController: SaveStatesViewControllerDelegate
             
             do
             {
-                try FileManager.default.moveItem(at: saveState.fileURL, to: temporaryURL)
+                try FileManager.default.copyItem(at: saveState.fileURL, to: temporaryURL)
                 temporarySaveState = DeltaCore.SaveState(fileURL: temporaryURL, gameType: saveState.gameType)
             }
             catch
@@ -1347,8 +1387,15 @@ extension GameViewController: SaveStatesViewControllerDelegate
     {
         let updatingExistingSaveState = FileManager.default.fileExists(atPath: saveState.fileURL.path)
         
-        self.update(saveState)
-        
+        guard self.update(saveState) else {
+            if saveState.isInserted { saveState.managedObjectContext?.delete(saveState) }
+            DispatchQueue.main.async { [weak saveStatesViewController] in
+                let alert = UIAlertController(title: String(localized: "Unable to Save State"), message: String(localized: "The state could not be written. Your previous save was preserved. Check available storage and try again."), preferredStyle: .alert)
+                alert.addAction(UIAlertAction(title: String(localized: "OK"), style: .default))
+                saveStatesViewController?.present(alert, animated: true)
+            }
+            return
+        }
         // Dismiss if updating an existing save state.
         // If creating a new one, don't dismiss.
         if updatingExistingSaveState
@@ -1633,7 +1680,7 @@ extension GameViewController
                     saveState.type = .quick
                     saveState.game = game
                     
-                    self.update(saveState)
+                    if !self.update(saveState) { backgroundContext.delete(saveState) }
                 }
             }
             catch

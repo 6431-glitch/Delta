@@ -9,7 +9,7 @@
 import UIKit
 import ImageIO
 
-import SDWebImage
+import Nuke
 
 import Roxas
 
@@ -31,7 +31,11 @@ class LoadImageURLOperation: RSTLoadOperation<UIImage, NSURL>, @unchecked Sendab
         return !self.url.isFileURL
     }
     
-    private var downloadOperation: SDWebImageOperation?
+    private let taskLock = NSLock()
+    private var downloadOperation: ImageTask?
+    private var didFinish = false
+    // Only accessed on the main queue, as required by UIApplication.
+    private var backgroundTask = UIBackgroundTaskIdentifier.invalid
     
     init(url: URL)
     {
@@ -44,7 +48,12 @@ class LoadImageURLOperation: RSTLoadOperation<UIImage, NSURL>, @unchecked Sendab
     {
         super.cancel()
         
-        self.downloadOperation?.cancel()
+        taskLock.lock()
+        let task = downloadOperation
+        downloadOperation = nil
+        taskLock.unlock()
+        task?.cancel()
+        DispatchQueue.main.async { self.endBackgroundTask() }
         
         if self.isAsynchronous
         {
@@ -56,7 +65,7 @@ class LoadImageURLOperation: RSTLoadOperation<UIImage, NSURL>, @unchecked Sendab
     {
         let callback = { (image: UIImage?, error: Error?) in
             
-            if let image = image, !self.isCancelled
+            if self.url.isFileURL, let image = image, !self.isCancelled
             {
                 // Force decompression of image
                 UIGraphicsBeginImageContextWithOptions(CGSize(width: 1, height: 1), true, 1.0)
@@ -95,17 +104,42 @@ class LoadImageURLOperation: RSTLoadOperation<UIImage, NSURL>, @unchecked Sendab
     
     private func loadRemoteImage(completion: @escaping (UIImage?, Error?) -> Void)
     {
-        let manager = SDWebImageManager.shared()
-        
-        self.downloadOperation = manager?.downloadImage(with: self.url, options: [.retryFailed, .continueInBackground], progress: nil, completed: { (image, error, cacheType, finished, imageURL) in
-            if let error = error
-            {
-                completion(nil, .downloadFailed(error))
+        DispatchQueue.main.async {
+            guard !self.isCancelled else { return }
+            self.backgroundTask = UIApplication.shared.beginBackgroundTask { [weak self] in self?.cancel() }
+            let task = ArtworkImagePipeline.shared.loadImage(with: ArtworkImagePipeline.request(for: self.url)) { result in
+                self.taskLock.lock()
+                self.downloadOperation = nil
+                self.taskLock.unlock()
+                self.endBackgroundTask()
+                switch result {
+                case .success(let response): completion(response.image, nil)
+                case .failure(let error): completion(nil, .downloadFailed(error))
+                }
             }
-            else
-            {
-                completion(image, nil)
+            self.taskLock.lock()
+            if self.isCancelled {
+                self.taskLock.unlock()
+                task.cancel()
+                self.endBackgroundTask()
+            } else {
+                self.downloadOperation = task
+                self.taskLock.unlock()
             }
-        })
+        }
+    }
+
+    private func endBackgroundTask() {
+        guard backgroundTask != .invalid else { return }
+        UIApplication.shared.endBackgroundTask(backgroundTask)
+        backgroundTask = .invalid
+    }
+
+    override func finish() {
+        taskLock.lock()
+        guard !didFinish else { taskLock.unlock(); return }
+        didFinish = true
+        taskLock.unlock()
+        super.finish()
     }
 }

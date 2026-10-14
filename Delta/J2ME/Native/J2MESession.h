@@ -7,4 +7,6 @@ void delta_j2me_set_paused(int paused);
 void delta_j2me_set_property(const char *key, const char *value);
 const char *delta_j2me_get_property(const char *key);
 void delta_j2me_audio_pause(int paused);
+// Opt-in supersampled 2D framebuffer and high-density JAR assets.
+void delta_j2me_configure_2d(int outputScale, int assetScale);
 #endif
