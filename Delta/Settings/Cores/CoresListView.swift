@@ -46,6 +46,14 @@ struct CoresListView: View
             .ds: { AnyView(MelonDSCoreSettingsView().ignoresSafeArea()) }
         ]
         if let destination = destinations[system] { destination() }
-        else { EmptyView() }
+        else {
+            Form {
+                if let core = system.deltaCore {
+                    LabeledContent("Core", value: core.name)
+                    if let version = core.version { LabeledContent("Version", value: version) }
+                } else { Text("No core is available for this system.") }
+            }
+            .navigationTitle(system.localizedName)
+        }
     }
 }

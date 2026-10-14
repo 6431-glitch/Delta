@@ -358,6 +358,12 @@ private extension System
         case .n64: return [.a, .b, .up, .down, .left, .right, .analogStickUp, .analogStickDown, .analogStickLeft, .analogStickRight, .cUp, .cDown, .cLeft, .cRight, .l, .r, .z, .start] as [N64GameInput]
         case .ds: return [.a, .b, .x, .y, .up, .down, .left, .right, .l, .r, .start, .select] as [MelonDSGameInput]
         case .genesis: return [.a, .b, .c, .x, .y, .z, .up, .down, .left, .right, .start, .mode] as [GPGXGameInput]
+        default:
+            guard let core = deltaCore,
+                  let url = core.resourceBundle.url(forResource: "Standard", withExtension: "deltamapping"),
+                  let mapping = try? DeltaCore.GameControllerInputMapping(fileURL: url) else { return [] }
+            let inputs = mapping.supportedControllerInputs.compactMap { mapping.input(forControllerInput: $0) }.map { AnyInput($0) }
+            return Set(inputs).sorted { $0.stringValue < $1.stringValue }.map { $0 as Input }
         }
     }
 }

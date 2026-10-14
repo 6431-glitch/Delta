@@ -10,17 +10,17 @@ enum ContentImportAdapter
     static func inspect(_ url: URL, descriptorURL: URL? = nil) throws -> ImportInspection
     {
         let inspector = JavaContentInspector(descriptorURL: descriptorURL)
-        let coordinator = ImportCoordinator(registry: BuiltInSystems.registry,
+        let coordinator = ImportCoordinator(registry: System.registry,
             inspectors: ["page.ducnguyen.delta.j2me": inspector],
             isReadable: { FileManager.default.isReadableFile(atPath: $0.path) })
         return try coordinator.inspect(url)
     }
     static func validateReplacement(_ url: URL, systemIdentifier: String) throws
     {
-        guard BuiltInSystems.registry.system(fileExtension: url.pathExtension)?.identifier == systemIdentifier else {
+        guard System.registry.system(fileExtension: url.pathExtension)?.identifier == systemIdentifier else {
             throw NSError(domain: "GameReplacement", code: 1, userInfo: [NSLocalizedDescriptionKey: String(localized: "Choose a raw game file for the same platform. ZIP archives are not supported for replacement.")])
         }
-        if BuiltInSystems.registry.system(identifier: systemIdentifier)?.runtime == .javaME {
+        if System.registry.system(identifier: systemIdentifier)?.runtime == .javaME {
             guard let metadata = J2MEJARMetadata.read(from: url.path), let name = metadata.className,
                   J2MEZIPReader.extractEntry(zipPath: url.path, entryName: name.replacingOccurrences(of: ".", with: "/") + ".class") != nil else {
                 throw NSError(domain: "GameReplacement", code: 2, userInfo: [NSLocalizedDescriptionKey: String(localized: "The selected JAR does not contain a valid MIDlet.")])
@@ -69,7 +69,7 @@ enum ContentImportAdapter
 
     static func reuseExisting(identifier: String, source url: URL, descriptors descriptorURLs: Set<URL>, context: NSManagedObjectContext) -> Game?
     {
-        guard BuiltInSystems.registry.system(fileExtension: url.pathExtension)?.runtime == .javaME else { return nil }
+        guard System.registry.system(fileExtension: url.pathExtension)?.runtime == .javaME else { return nil }
         let request: NSFetchRequest<Game> = Game.fetchRequest()
         request.predicate = NSPredicate(format: "identifier == %@", identifier)
         guard let existing = try? context.fetch(request).first else { return nil }

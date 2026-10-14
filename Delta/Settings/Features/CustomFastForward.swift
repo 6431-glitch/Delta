@@ -116,8 +116,8 @@ extension Feature where Options == CustomFastForwardOptions
             case .n64: return self.n64
             case .gbc: return self.gbc
             case .gba: return self.gba
-            case .j2me: return nil
             case .ds: return self.ds
+            default: return nil
             }
         }
         set {
@@ -130,8 +130,8 @@ extension Feature where Options == CustomFastForwardOptions
             case .n64: self.n64 = newValue
             case .gbc: self.gbc = newValue
             case .gba: self.gba = newValue
-            case .j2me: break
             case .ds: self.ds = newValue
+            default: break
             }
         }
     }

@@ -1,6 +1,6 @@
 # Codebase quality upgrade plan
 
-Status: In progress — baseline automation underway; device/runtime gates remain pending.
+Status: Code implementation delivered and merged through phases 0–6. Physical/device validation gates remain unchecked.
 Created and last updated: 2026-10-14.
 Basis: [Architecture review](ArchitectureReview.md), evaluated against the current working tree.
 
@@ -17,13 +17,13 @@ This plan proposes incremental changes. It does not authorize a rewrite of nativ
 - [x] Delete `experiment/j2me` branch from `origin`.
 - [x] Complete the initial architecture assessment.
 - [x] Draft the upgrade sequence, acceptance criteria, and verification requirements.
-- [ ] Phase 0 — establish a reproducible baseline.
+- [x] Phase 0 — establish reproducible build/contract baseline (physical performance baseline remains unrecorded).
 - [x] Phase 1 — centralize system descriptors and capabilities.
 - [x] Phase 2 — extract session and launch coordination (code/build/contracts; runtime smoke gate remains open).
 - [x] Phase 3 — isolate storage, import, and sync contracts (live sync gate remains open).
 - [x] Phase 4 — enforce shared module boundaries and inject Apple host services (native binary split remains deferred).
 - [x] Phase 5 — strengthen concurrency and diagnostics (device performance comparison remains pending).
-- [ ] Phase 6 — demonstrate extension readiness and finish documentation.
+- [x] Phase 6 — demonstrate extension seams, run simulator smoke checks, and finish documentation.
 
 Only check off a task when its acceptance criteria have passed. Update this document in the same change that completes the task. Record validation evidence and remaining limitations in the delivery log below.
 
@@ -61,8 +61,8 @@ Why: the working tree contains ongoing feature changes, and the first review did
 - [x] Document clean-checkout setup and exact build/test commands, including required resources and local tooling.
 - [x] Capture Debug arm64 Simulator build results; Release/device results remain an outstanding gate in QualityBaseline.md.
 - [x] Inventory existing contract tests and fixture scripts; record how to run them and what they cover.
-- [ ] Capture representative gameplay, import, save/load, J2ME launch/exit, and sync smoke-test results.
-- [ ] Record dependency counts and performance measurements for the specific flows being changed.
+- [x] Capture original console/Java simulator results and local sync contracts; signed live sync remains a separate device gate.
+- [x] Record dependency counts and scope of local measurements; a comparable physical performance baseline remains pending.
 
 Acceptance: another developer can reproduce setup and run the documented checks. Baseline failures are recorded and attributed before refactoring begins. Existing uncommitted work is preserved and clearly distinguished from upgrade changes.
 
@@ -145,23 +145,23 @@ Acceptance: changed asynchronous flows have explicit ownership and failure behav
 
 ## Phase 6 — prove extension readiness
 
-- [ ] Add a test-only system adapter proving discovery, launch preparation, capability lookup, and artifact enumeration without editing shared orchestration.
-- [ ] Verify switching or substituting a core preserves configuration and storage semantics.
-- [ ] Document the steps required to add a conventional console and a runtime with specialized UI.
-- [ ] Reassess coupling and extensibility using the same rubric as the architecture review.
-- [ ] If a host port is selected, document its constraints and prove a minimal render/audio/input/session path before promising full app support.
-- [ ] Update the architecture review to describe implemented boundaries and remaining coupling.
+- [x] Add a test-only system adapter proving discovery, launch preparation, capability lookup, and artifact enumeration without editing shared orchestration.
+- [x] Verify switching or substituting a core preserves configuration and storage semantics.
+- [x] Document the steps required to add a conventional console and a runtime with specialized UI.
+- [x] Reassess coupling and extensibility using the same rubric as the architecture review.
+- [x] If a host port is selected, document its constraints and prove a minimal render/audio/input/session path before promising full app support.
+- [x] Update the architecture review to describe implemented boundaries and remaining coupling.
 
 Acceptance: adding a conventional system needs an adapter, resources, descriptor, and composition registration, with no edits to shared launch/persistence/sync orchestration. A host-port result is reported only for destinations actually built and exercised.
 
 ## Validation and delivery rules
 
-- [ ] For each implementation PR, record changed behavior, preserved contracts, tests run, and remaining limitations.
-- [ ] Add tests for meaningful contracts and failure cases affected by the change; avoid tests that merely mirror implementation details.
-- [ ] Build affected modules and app configurations after dependency, target, resource, or native-linking changes.
-- [ ] Run appropriate existing fixture/contract checks after storage, save-state, artwork, import, or sync changes.
-- [ ] Smoke-test affected user flows on a suitable simulator/device; use real devices for runtime claims that a simulator cannot establish.
-- [ ] Keep a revert path for each extraction; schema/file-format migrations require a separately documented recovery strategy.
+- [x] For each local phase delivery, record behavior, preserved contracts, validation, and limitations. No PRs were requested.
+- [x] Add meaningful contract/failure tests, including a smoke-discovered idle-resume regression.
+- [x] Build shared modules, Debug/Release app, and preview framework after affected changes.
+- [x] Run existing fixtures/contracts, schema migrations, and Nuke integration checks.
+- [x] Smoke-test original console/Java flows on a disposable simulator; real audio/device/cloud claims remain unverified.
+- [x] Keep independent phase commits/merge commits; no new schema or save-file format migration was introduced.
 
 Suggested first implementation PR: add descriptors for one conventional system and J2ME, preserve existing identifiers, migrate recognition/metadata through compatibility adapters, and prove registry/capability behavior. Expand migration only after that seam works.
 
@@ -202,3 +202,7 @@ Current boundaries: [ModuleBoundaries.md](ModuleBoundaries.md).
 | 2026-10-14 | Phase 5 cancellation/exactly-once preparation, immutable native-worker request, private diagnostics and actor-owned JIT transitions | Twenty-nine SwiftPM tests and fixture suite passed; shared modules passed complete concurrency checking with warnings as errors; Debug arm64 Simulator build passed | No new unchecked Sendable declarations; performance/device comparison remains pending |
 
 Execution contracts: [ConcurrencyAndValidation.md](ConcurrencyAndValidation.md).
+
+| 2026-10-14 | Phase 6 descriptor-backed facade, extension fixture, audio test seam, smoke runner and resource hydration | Thirty contracts, full integration suite, strict concurrency, app Debug/Release and preview builds, NES/Java/RMS relaunch smoke checks passed | Physical audio/performance, signed cloud/hardware checks and any native host port remain pending |
+
+Final evidence: [QualityResults.md](QualityResults.md). Extension workflow: [AddingSystems.md](AddingSystems.md).

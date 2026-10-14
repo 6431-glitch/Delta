@@ -2,7 +2,25 @@
 
 Reviewed: 2026-10-14. Scope: current working tree, including ongoing local changes.
 
-Follow-up: [Codebase quality upgrade plan](CodebaseQualityUpgrade.md) drafted on 2026-10-14. Implementation has not started; its checklists track the proposed work.
+## Post-upgrade assessment — 2026-10-14
+
+The code upgrade introduces separately linked DeltaDomain/DeltaApplication modules, descriptor-backed systems, shared preflight/lifecycle/storage contracts, native service injection, and explicit asynchronous ownership. See [QualityResults.md](QualityResults.md) for implemented changes, verification, and remaining gates.
+
+| Area | Initial estimate | Current estimate |
+| --- | --- | --- |
+| Conventional console extension | 6/10 | 7/10 |
+| Different runtime family | 3/10 | 5/10 |
+| Shared logic on another Apple host | 3/10 | 4/10 |
+| Shared logic outside Apple | 1/10 | 2/10 |
+| Testability/substitution | 4/10 | 7/10 |
+
+These remain architectural estimates, not measured port effort. No host port or device performance improvement is claimed. Legacy UI singletons, native Apple media types, and Operator observer scene glue remain. Thirty contracts, the fixture suite, builds, and limited simulator smoke checks support the new seams.
+
+## Historical baseline review
+
+The findings and line references below describe the initial checkout before the upgrade; they are retained as baseline evidence, not a description of every current file.
+
+Follow-up: [Codebase quality upgrade plan](CodebaseQualityUpgrade.md) now tracks delivered code and remaining validation gates.
 
 Verdict: **5/10 overall extensibility**. Delta has a useful emulator adapter architecture, but much of the application remains one compilation unit with concrete core knowledge, global services, and presentation mixed into orchestration. Adding another conventional console is feasible; adding a different runtime or another host OS requires substantially more work.
 

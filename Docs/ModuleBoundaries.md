@@ -10,7 +10,7 @@ Updated 2026-10-14.
 
 The iOS app links both as local SwiftPM products from the root package. Their sources are not also compiled into the app target. `Scripts/Quality/boundaries.py` checks imports, forbidden managed/UI/global types, and concrete core imports in migrated presentation. SwiftPM's dependency graph enforces the one-way module relationship.
 
-App adapters under `Delta/Emulation/Adapters` implement Core Data/Harmony repositories, Java metadata/persistence, native configuration/artifact lookup, and Operator library integration. Existing screens can still use legacy services while migrations proceed; the boundary check is deliberately scoped to extracted services and migrated presentation.
+App adapters under `Delta/Emulation/Adapters` implement Core Data/Harmony repositories, Java metadata/persistence, native configuration/artifact lookup, and Operator library integration. System is now a descriptor-backed struct with generic fallbacks rather than a closed enum. Existing screens can still use legacy services while migrations proceed; the boundary check is deliberately scoped to extracted services and migrated presentation.
 
 ## Apple backend compatibility
 
@@ -18,7 +18,7 @@ DeltaCore remains the Apple backend. `EmulatorRenderingServices` injects audio/v
 
 `EmulatorCore+Presentation.swift` owns the public GameView attachment facade. VideoManager's weak view collection is now the single source of attachment state; EmulatorCore no longer keeps a duplicate collection or inspects scene/window properties in its input loop.
 
-Concrete managers and AVAudioFormat remain part of DeltaCore's compatibility API. This extraction does **not** make the native framework portable outside Apple platforms or put audio/video into separate binary targets. A host port would need further backend separation and neutral media descriptors. No host port is selected in this upgrade.
+EmulatorCore.audioManager now exposes EmulatorAudioManaging rather than the concrete class; AudioManager is the default implementation. Common app callers compile against the interface, but clients requiring a concrete AudioManager must cast explicitly and rebuild. The controller has an overridable construction hook so hosts/tests can inject services. AVAudioFormat remains in the Apple backend API. This extraction does **not** make the native framework portable outside Apple platforms or put audio/video into separate binary targets. A host port would need further backend separation and neutral media descriptors. No host port is selected in this upgrade.
 
 ## Operator and previews
 

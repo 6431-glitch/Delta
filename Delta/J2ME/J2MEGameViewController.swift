@@ -19,6 +19,9 @@ enum J2MEGameLayoutMode {
 // MARK: - J2MEGameViewController
 
 class J2MEGameViewController: UIViewController, UIAdaptivePresentationControllerDelegate {
+    #if DEBUG
+    private var qualitySmokeFailure: String?
+    #endif
     var sessionLease: SessionOwnership.Lease?
     private lazy var runtimeSession = CallbackEmulationSession(start: { [weak self] in self?.runGameAsynchronously() }, pause: { paused in
         delta_j2me_set_paused(paused ? 1 : 0)
@@ -171,7 +174,13 @@ class J2MEGameViewController: UIViewController, UIAdaptivePresentationController
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         navigationController?.setNavigationBarHidden(true, animated: false)
-        if !didStart { didStart = true; startGame() }
+        if !didStart {
+            didStart = true
+            startGame()
+            #if DEBUG
+            if QualitySmokeDriver.enabled { runQualitySmoke() }
+            #endif
+        }
     }
 
     // MARK: - Adaptive Aurora layout
@@ -347,9 +356,48 @@ class J2MEGameViewController: UIViewController, UIAdaptivePresentationController
         dismiss(animated: true) {
             if let lease = self.sessionLease { EmulationServices.ownership.release(lease) }
             self.sessionLease = nil
+            #if DEBUG
+            if QualitySmokeDriver.enabled {
+                let archive = DatabaseManager.gamesDirectoryURL.appendingPathComponent(self.gameIdentifier + ".sav")
+                let passed = self.runtimeError == nil && self.qualitySmokeFailure == nil && !EmulationServices.isJavaActive && FileManager.default.fileExists(atPath: archive.path)
+                QualitySmokeDriver.record(runtime: "java", passed: passed, detail: self.runtimeError ?? self.qualitySmokeFailure ?? "Import, frame, native pause/resume, shutdown and save checkpoint")
+            }
+            #endif
             if let error = self.runtimeError, let presenter { J2MELibrary.showError(error, from: presenter) }
         }
     }
+
+    #if DEBUG
+    private func runQualitySmoke() {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2) { [weak self] in
+            guard let self else { return }
+            guard let frame = self.emulatorView.displayedFrame else {
+                self.qualitySmokeFailure = "No rendered frame"
+                QualitySmokeDriver.record(runtime: "java", passed: false, detail: "No rendered frame")
+                self.backTapped(); return
+            }
+            if let directory = try? QualitySmokeDriver.directory(), let data = UIImage(cgImage: frame).pngData() {
+                try? data.write(to: directory.appendingPathComponent("java-frame.png"))
+            }
+            self.userPaused = true; self.updatePause()
+            guard delta_j2me_is_paused() != 0 else {
+                self.qualitySmokeFailure = "Native pause failed"
+                QualitySmokeDriver.record(runtime: "java", passed: false, detail: "Native pause failed")
+                self.backTapped(); return
+            }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1) { [weak self] in
+                guard let self else { return }
+                self.userPaused = false; self.updatePause()
+                guard delta_j2me_is_paused() == 0 else {
+                    self.qualitySmokeFailure = "Native resume failed"
+                QualitySmokeDriver.record(runtime: "java", passed: false, detail: "Native resume failed")
+                    self.backTapped(); return
+                }
+                self.backTapped()
+            }
+        }
+    }
+    #endif
 
     @objc private func showPauseMenu() {
         guard !runtimeTerminated, !exiting, !editingControls, presentedViewController == nil else { return }

@@ -27,7 +27,7 @@ import DeltaCore
         let systemIdentifier = game.type.rawValue
         let runtimeAvailable = System(gameType: game.type)?.descriptor.runtime == .javaME || Delta.core(for: game.type) != nil
         let requiredFilesAvailable = CoreConfigurationAdapter.requiredFilesAvailable(for: game)
-        let coordinator = LaunchCoordinator(registry: BuiltInSystems.registry, repository: adapter, saves: adapter,
+        let coordinator = LaunchCoordinator(registry: System.registry, repository: adapter, saves: adapter,
             isReadable: { FileManager.default.isReadableFile(atPath: $0.path) },
             validateRuntime: { _ in
                 guard runtimeAvailable else {
