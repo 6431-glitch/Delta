@@ -15,8 +15,6 @@ import RegexBuilder
 // Access UIWindowScene.isStageManagerEnabled
 @_spi(Internal) import DeltaCore
 
-import MelonDSDeltaCore
-import GBCDeltaCore
 
 import Roxas
 import Harmony
@@ -286,41 +284,8 @@ extension GameCollectionViewController
                 destinationViewController.game = game
             }
             
-            if let emulatorBridge = destinationViewController.emulatorCore?.deltaCore.emulatorBridge as? GBCEmulatorBridge
-            {
-                if let preferredPalette = Settings.preferredGBColorPalette
-                {
-                    emulatorBridge.backgroundPalette = preferredPalette.palettes.0
-                    emulatorBridge.spritePalette = preferredPalette.palettes.1
-                    emulatorBridge.foregroundPalette = preferredPalette.palettes.2
-                }
-                else
-                {
-                    emulatorBridge.backgroundPalette = nil
-                    emulatorBridge.spritePalette = nil
-                    emulatorBridge.foregroundPalette = nil
-                }
-            }
+            CoreConfigurationAdapter.configure(destinationViewController.emulatorCore, game: game)
 
-            if let emulatorBridge = destinationViewController.emulatorCore?.deltaCore.emulatorBridge as? MelonDSEmulatorBridge
-            {
-                //TODO: Update this to work with multiple processes by retrieving emulatorBridge directly from emulatorCore.
-                
-                if game.identifier == Game.melonDSDSiBIOSIdentifier
-                {
-                    emulatorBridge.systemType = .dsi
-                }
-                else
-                {
-                    emulatorBridge.systemType = .ds
-                }
-                
-                emulatorBridge.isJITEnabled = ProcessInfo.processInfo.isJITAvailable
-                emulatorBridge.isWFCEnabled = true
-                emulatorBridge.gbaGameURL = game.secondaryGame?.fileURL
-                emulatorBridge.wfcDNS = Settings.preferredWFCServer
-            }
-            
             if let saveState = self.activeSaveState /* && self.isResumingGame */ // activeSaveState can be non-nil even when not resuming game.
             {
                 // Must be synchronous or else there will be a flash of black
@@ -576,6 +541,11 @@ private extension GameCollectionViewController
     {
         self.isResumingGame = false
         let selected = selectedGame ?? self.dataSource.item(at: indexPath)
+        do { _ = try EmulationServices.prepare(selected) }
+        catch {
+            self.present(UIAlertController(title: NSLocalizedString("Could Not Launch Game", comment: ""), error: error), animated: true)
+            return
+        }
         if selected.type == .j2me {
             do { try self.validateLaunchingGame(selected, ignoringErrors: []) }
             catch { J2MELibrary.showError(error.localizedDescription, from: self); return }
@@ -764,30 +734,8 @@ private extension GameCollectionViewController
             }
         }
         
-        if game.type == .ds && Settings.preferredCore(for: .ds) == MelonDS.core
-        {
-            if game.identifier == Game.melonDSDSiBIOSIdentifier
-            {
-                guard
-                    FileManager.default.fileExists(atPath: MelonDSEmulatorBridge.shared.dsiBIOS7URL.path) &&
-                    FileManager.default.fileExists(atPath: MelonDSEmulatorBridge.shared.dsiBIOS9URL.path) &&
-                    FileManager.default.fileExists(atPath: MelonDSEmulatorBridge.shared.dsiFirmwareURL.path) &&
-                    FileManager.default.fileExists(atPath: MelonDSEmulatorBridge.shared.dsiNANDURL.path)
-                else { throw LaunchError.biosNotFound }
-            }
-            else if game.identifier == Game.melonDSBIOSIdentifier
-            {
-                guard
-                    FileManager.default.fileExists(atPath: MelonDSEmulatorBridge.shared.bios7URL.path) &&
-                    FileManager.default.fileExists(atPath: MelonDSEmulatorBridge.shared.bios9URL.path) &&
-                    FileManager.default.fileExists(atPath: MelonDSEmulatorBridge.shared.firmwareURL.path)
-                else { throw LaunchError.biosNotFound }
-            }
-            else
-            {
-                // BIOS files are only required to emulate DS(i) home screen.
-            }
-        }
+        guard CoreConfigurationAdapter.requiredFilesAvailable(for: game) else { throw LaunchError.biosNotFound }
+
     }
 }
 
@@ -1291,22 +1239,8 @@ private extension GameCollectionViewController
             gameViewController.previewImage = UIImage(contentsOfFile: previewSaveState.imageFileURL.path)
         }
         
-        if let emulatorBridge = gameViewController.emulatorCore?.deltaCore.emulatorBridge as? MelonDSEmulatorBridge
-        {
-            //TODO: Update this to work with multiple processes by retrieving emulatorBridge directly from emulatorCore.
+        CoreConfigurationAdapter.configure(gameViewController.emulatorCore, game: game, preview: true)
 
-            if game.identifier == Game.melonDSDSiBIOSIdentifier
-            {
-                emulatorBridge.systemType = .dsi
-            }
-            else
-            {
-                emulatorBridge.systemType = .ds
-            }
-
-            emulatorBridge.isJITEnabled = ProcessInfo.processInfo.isJITAvailable
-        }
-        
         return gameViewController
     }
     

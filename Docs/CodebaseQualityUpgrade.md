@@ -19,7 +19,7 @@ This plan proposes incremental changes. It does not authorize a rewrite of nativ
 - [x] Draft the upgrade sequence, acceptance criteria, and verification requirements.
 - [ ] Phase 0 — establish a reproducible baseline.
 - [x] Phase 1 — centralize system descriptors and capabilities.
-- [ ] Phase 2 — extract session and launch coordination.
+- [x] Phase 2 — extract session and launch coordination (code/build/contracts; runtime smoke gate remains open).
 - [ ] Phase 3 — isolate storage, import, and sync contracts.
 - [ ] Phase 4 — enforce module boundaries and separate host services.
 - [ ] Phase 5 — strengthen concurrency, diagnostics, and performance verification.
@@ -85,15 +85,15 @@ Acceptance: existing IDs and preferences still resolve correctly. Unknown system
 
 Starting points: `GameViewController`, `GameCollectionViewController`, `DeepLinkController`, and `J2MELibrary`.
 
-- [ ] Define the smallest shared session lifecycle: prepare/start, pause/resume, stop, state, and error/completion reporting.
-- [ ] Define legal state transitions and idempotent cleanup behavior, including failed preparation and interrupted launch.
-- [ ] Wrap existing DeltaCore and J2ME behavior in separate adapters.
-- [ ] Move active-session ownership out of view controller static state.
-- [ ] Make single-session limits explicit for engines that share native bridge state.
-- [ ] Extract a launch coordinator with injected repository, save-readiness, configuration, and session-factory dependencies.
-- [ ] Route library selection and deep links through the same validation and preparation workflow.
-- [ ] Move palette, DS/DSi, JIT, networking, secondary cartridge, and graphics configuration into adapters.
-- [ ] Extract save orchestration from gameplay controllers while keeping presentation in the UI layer.
+- [x] Define the smallest shared session lifecycle: prepare/start, pause/resume, stop, state, and error/completion reporting.
+- [x] Define legal state transitions and idempotent cleanup behavior, including failed preparation and interrupted launch.
+- [x] Wrap existing DeltaCore and J2ME behavior in separate adapters.
+- [x] Move active-session ownership out of view controller static state.
+- [x] Make single-session limits explicit for engines that share native bridge state.
+- [x] Extract shared launch preflight with injected repository, save-readiness, and runtime-validation dependencies; runtime lifecycle drivers receive injected callbacks.
+- [x] Route library selection and deep links through the same validation and preparation workflow.
+- [x] Move palette, DS/DSi, JIT, networking, secondary cartridge, and graphics configuration into adapters.
+- [x] Extract save orchestration from gameplay controllers while keeping presentation in the UI layer.
 
 Acceptance: launch coordination is testable without a view controller or real database. Normal console and J2ME launch, failure, pause, exit, and save completion paths retain behavior. Unsupported capabilities are handled explicitly. Native bridges are not treated as independently instantiable unless verified.
 
@@ -190,3 +190,5 @@ Baseline evidence and outstanding gates: [QualityBaseline.md](QualityBaseline.md
 | 2026-10-14 | Phase 0 automation delivered on `quality/phase-0-baseline` | Debug arm64 Simulator build, six sync contracts, artwork/replacement/snapshot/audio fixtures, schema migrations, 16 Nuke checks passed | Runtime/device/performance baseline remains open; Phase 0 is not fully accepted |
 
 | 2026-10-14 | Phase 1 descriptor/capability seam | Ten SwiftPM contracts and existing fixture suite passed; full Debug arm64 Simulator build passed | Legacy System enum remains a compatibility facade; runtime and storage adapters follow in subsequent phases |
+
+| 2026-10-14 | Phase 2 launch preflight, session ownership/drivers, vendor configuration and main-save extraction | Nineteen SwiftPM contracts and existing fixtures passed; Debug arm64 Simulator build passed | UIKit continues to own console presentation and multi-scene prompts; gameplay/save completion smoke tests remain pending |

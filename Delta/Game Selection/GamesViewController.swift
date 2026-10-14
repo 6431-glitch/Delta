@@ -1144,7 +1144,7 @@ private extension GamesViewController {
     func pickReplacementGameFile(for id: NSManagedObjectID) {
         guard presentedViewController == nil else { return }
         guard let game = try? DatabaseManager.shared.viewContext.existingObject(with: id) as? Game else { return }
-        guard !J2MEGameViewController.isSessionActive, activeEmulatorCore?.game.fileURL != game.fileURL else {
+        guard !EmulationServices.isJavaActive, activeEmulatorCore?.game.fileURL != game.fileURL else {
             auroraModel?.orientationError = String(localized: "Close the running game before replacing its file.")
             return
         }

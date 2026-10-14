@@ -25,7 +25,7 @@ extension UIViewController
     }
 }
 
-struct DeepLinkController
+@MainActor struct DeepLinkController
 {
     let window: UIWindow?
     
@@ -75,6 +75,7 @@ private extension DeepLinkController
         do
         {
             guard let game = try DatabaseManager.shared.viewContext.fetch(fetchRequest).first else { return false }
+            _ = try EmulationServices.prepare(game)
             
             if game.type == .j2me {
                 J2MELibrary.launch(game, from: topViewController)

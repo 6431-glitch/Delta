@@ -10,10 +10,6 @@ import UIKit
 import Photos
 
 import DeltaCore
-import GBADeltaCore
-import N64DeltaCore
-import MelonDSDeltaCore
-import GPGXDeltaCore
 
 import Roxas
 import AltKit
@@ -91,6 +87,8 @@ private extension GameViewController
 
 class GameViewController: DeltaCore.GameViewController
 {
+    private(set) var runtimeSession: DeltaCoreSessionAdapter?
+
     /// Assumed to be Delta.Game instance
     override var game: GameProtocol? {
         willSet {
@@ -101,6 +99,7 @@ class GameViewController: DeltaCore.GameViewController
             NotificationCenter.default.removeObserver(self, name: .NSManagedObjectContextDidSave, object: game?.managedObjectContext)
         }
         didSet {
+            self.runtimeSession = self.emulatorCore.map { DeltaCoreSessionAdapter(core: $0) }
             self.emulatorCore?.addObserver(self, forKeyPath: #keyPath(EmulatorCore.state), options: [.old], context: &kvoContext)
             
             let game = self.game as? Game
@@ -295,10 +294,10 @@ class GameViewController: DeltaCore.GameViewController
         NotificationCenter.default.addObserver(self, selector: #selector(GameViewController.deepLinkControllerWillLaunchGame(with:)), name: .deepLinkControllerWillLaunchGame, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(GameViewController.deepLinkControllerLaunchGame(with:)), name: .deepLinkControllerLaunchGame, object: nil)
         
-        NotificationCenter.default.addObserver(self, selector: #selector(GameViewController.didActivateGyro(with:)), name: GBA.didActivateGyroNotification, object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(GameViewController.didDeactivateGyro(with:)), name: GBA.didDeactivateGyroNotification, object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(GameViewController.didConnectOnline(with:)), name: MelonDS.didConnectToWFCNotification, object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(GameViewController.didDisconnectFromOnline(with:)), name: MelonDS.didDisconnectFromWFCNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(GameViewController.didActivateGyro(with:)), name: CoreConfigurationAdapter.gyroActivated, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(GameViewController.didDeactivateGyro(with:)), name: CoreConfigurationAdapter.gyroDeactivated, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(GameViewController.didConnectOnline(with:)), name: CoreConfigurationAdapter.onlineConnected, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(GameViewController.didDisconnectFromOnline(with:)), name: CoreConfigurationAdapter.onlineDisconnected, object: nil)
         
         NotificationCenter.default.addObserver(self, selector: #selector(GameViewController.emulationDidQuit(with:)), name: EmulatorCore.emulationDidQuitNotification, object: nil)
         
@@ -341,30 +340,8 @@ class GameViewController: DeltaCore.GameViewController
         defer { resumeEmulation() }
         let id = game.objectID
         let context = DatabaseManager.shared.newBackgroundContext()
-        context.performAndWait {
-            do {
-                guard let game = try context.existingObject(with: id) as? Game else { return }
-                let request = SaveState.fetchRequest(for: game, type: .main)
-                request.sortDescriptors = [NSSortDescriptor(key: #keyPath(SaveState.modifiedDate), ascending: false)]
-                let existing = try context.fetch(request)
-                let main = existing.first ?? SaveState(context: context)
-                main.game = game; main.type = .main; main.name = String(localized: "Main Save")
-                // Cloud conflicts must not leave several active main slots.
-                for duplicate in existing.dropFirst() { duplicate.type = .general }
-                guard self.update(main) else { if main.isInserted { context.delete(main) }; return }
-                let limit = SaveState.autosaveLimit(for: game)
-                let historyRequest = SaveState.fetchRequest(for: game, type: .auto)
-                historyRequest.sortDescriptors = [NSSortDescriptor(key: #keyPath(SaveState.modifiedDate), ascending: false)]
-                if limit > 0 {
-                    let history = SaveState(context: context)
-                    history.game = game; history.type = .auto
-                    if !self.update(history, with: main) { context.delete(history) }
-                }
-                let history = try context.fetch(historyRequest)
-                for old in history.dropFirst(limit) { context.delete(old) }
-                try context.save()
-            } catch { print("Main Save failed: \(error)") }
-        }
+        MainSaveStore.checkpoint(objectID: id, context: context,
+            writeState: { self.update($0) }, copyState: { self.update($0, with: $1) })
     }
 
     deinit
@@ -581,7 +558,7 @@ extension GameViewController
     {
         super.viewDidAppear(animated)
         
-        if self.emulatorCore?.deltaCore == MelonDS.core, ProcessInfo.processInfo.isJITAvailable
+        if CoreConfigurationAdapter.supportsJIT(self.emulatorCore), ProcessInfo.processInfo.isJITAvailable
         {
             self.showJITEnabledAlert()
         }
@@ -767,7 +744,7 @@ extension GameViewController
                 
                 self._isLoadingSaveState = false
                 
-                if self.emulatorCore?.deltaCore == MelonDS.core, ProcessInfo.processInfo.isJITAvailable
+                if CoreConfigurationAdapter.supportsJIT(self.emulatorCore), ProcessInfo.processInfo.isJITAvailable
                 {
                     self.transitionCoordinator?.animate(alongsideTransition: nil, completion: { (context) in
                         self.showJITEnabledAlert()
@@ -807,7 +784,7 @@ extension GameViewController
         
         if let emulatorCore = self.emulatorCore, emulatorCore.state == .paused
         {
-            emulatorCore.resume()
+            try? runtimeSession?.resume()
         }
     }
     
@@ -1989,30 +1966,7 @@ extension GameViewController: GameViewControllerDelegate
     
     func gameViewController(_ gameViewController: DeltaCore.GameViewController, optionsFor game: GameProtocol) -> [EmulatorCore.Option: Any]
     {
-        if let game = game as? Game, game.type == .n64
-        {
-            if let useOpenGLES2 = game.settings[.openGLES2] as? Bool, useOpenGLES2
-            {
-                return [.openGLES2: true]
-            }
-            else
-            {
-                return [:]
-            }
-        }
-        else
-        {
-            var options: [EmulatorCore.Option: Any] = [.metal: ExperimentalFeatures.shared.metal.isEnabled]
-            
-            if #available(iOS 18, macOS 15, *), ProcessInfo.processInfo.isiOSAppOnMac
-            {
-                // macOS 15 Sequoia no longer supports rendering bitmap CIImages with OpenGL ES,
-                // so always render with Metal.
-                options[.metal] = true
-            }
-            
-            return options
-        }
+        return CoreConfigurationAdapter.renderingOptions(for: game)
     }
 }
 
@@ -2299,7 +2253,7 @@ private extension GameViewController
             {
                 var message = NSLocalizedString("Please restart this game to apply your changes.", comment: "")
                 
-                if FileManager.default.fileExists(atPath: MelonDSEmulatorBridge.shared.firmwareURL.path)
+                if CoreConfigurationAdapter.firmwareExists
                 {
                     message += "\n\n"
                     message += NSLocalizedString("You may need to also “Erase Nintendo WFC Configuration” in-game.", comment: "")
@@ -2307,10 +2261,7 @@ private extension GameViewController
                 
                 let alertController = UIAlertController(title: NSLocalizedString("Restart Required", comment: ""), message: message, preferredStyle: .alert)
                 alertController.addAction(UIAlertAction(title: NSLocalizedString("Restart", comment: ""), style: .destructive) { _ in
-                    if let emulatorBridge = self.emulatorCore?.deltaCore.emulatorBridge as? MelonDSEmulatorBridge
-                    {
-                        emulatorBridge.wfcDNS = preferredWFCServer
-                    }
+                    CoreConfigurationAdapter.setWirelessServer(preferredWFCServer, for: self.emulatorCore)
                     
                     self.emulatorCore?.stop()
                     self.emulatorCore?.start()
@@ -2821,50 +2772,8 @@ private extension GameViewController
         }
         
         DispatchQueue.global(qos: .utility).async {
-            guard let emulatorCore = self.emulatorCore, let emulatorBridge = emulatorCore.deltaCore.emulatorBridge as? MelonDSEmulatorBridge, !emulatorBridge.isJITEnabled
-            else { return }
-            
-            guard emulatorCore.state != .stopped else {
-                // Emulator core is not running, which means we can set
-                // isJITEnabled to true without resetting the core.
-                emulatorBridge.isJITEnabled = true
-                return
-            }
-            
-            let isVideoEnabled = emulatorCore.videoManager.isEnabled
-            emulatorCore.videoManager.isEnabled = false
-            
-            let isRunning = (emulatorCore.state == .running)
-            if isRunning
-            {
-                self.pauseEmulation()
-            }
-            
-            let temporaryFileURL = FileManager.default.uniqueTemporaryURL()
-            
-            let saveState = emulatorCore.saveSaveState(to: temporaryFileURL)
-            emulatorCore.stop()
-            
-            emulatorBridge.isJITEnabled = true
-            
-            emulatorCore.start()
-            emulatorCore.pause()
-            
-            do
-            {
-                try emulatorCore.load(saveState)
-            }
-            catch
-            {
-                print("Failed to load save state after enabling JIT.", error)
-            }
-            
-            if isRunning
-            {
-                self.resumeEmulation()
-            }
-            
-            emulatorCore.videoManager.isEnabled = isVideoEnabled
+            guard let core = self.emulatorCore else { return }
+            CoreConfigurationAdapter.enableJIT(core, pause: { self.pauseEmulation() }, resume: { self.resumeEmulation() })
         }
     }
     
