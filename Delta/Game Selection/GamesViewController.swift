@@ -1160,24 +1160,11 @@ private extension GamesViewController {
             defer { try? FileManager.default.removeItem(at: importedURL) }
             do {
                 guard let game = try context.existingObject(with: id) as? Game, !game.isDeleted else { throw CocoaError(.managedObjectReferentialIntegrity) }
-                guard GameType(fileExtension: importedURL.pathExtension.lowercased()) == game.type else {
-                    throw NSError(domain: "GameReplacement", code: 1, userInfo: [NSLocalizedDescriptionKey: String(localized: "Choose a raw game file for the same platform. ZIP archives are not supported for replacement.")])
-                }
-                if game.type == .j2me {
-                    guard let metadata = J2MEJARMetadata.read(from: importedURL.path), let name = metadata.className,
-                          J2MEZIPReader.extractEntry(zipPath: importedURL.path, entryName: name.replacingOccurrences(of: ".", with: "/") + ".class") != nil else {
-                        throw NSError(domain: "GameReplacement", code: 2, userInfo: [NSLocalizedDescriptionKey: String(localized: "The selected JAR does not contain a valid MIDlet.")])
-                    }
-                }
+                try ContentImportAdapter.validateReplacement(importedURL, systemIdentifier: game.type.rawValue)
                 let destination = game.fileURL
                 do {
                     try GameFileReplacement.replace(source: importedURL, destination: destination) {
-                        if game.type == .j2me {
-                            var settings = game.gameSettings as? [String: Any] ?? [:]
-                            settings.removeValue(forKey: "j2me.descriptor")
-                            settings["j2me.originalFilename"] = importedURL.lastPathComponent
-                            game.gameSettings = settings as NSDictionary
-                        }
+                        ContentImportAdapter.updateReplacementConfiguration(game, source: importedURL)
                         try context.save()
                     }
                 } catch { context.rollback(); throw error }

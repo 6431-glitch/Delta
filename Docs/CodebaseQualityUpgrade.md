@@ -20,7 +20,7 @@ This plan proposes incremental changes. It does not authorize a rewrite of nativ
 - [ ] Phase 0 — establish a reproducible baseline.
 - [x] Phase 1 — centralize system descriptors and capabilities.
 - [x] Phase 2 — extract session and launch coordination (code/build/contracts; runtime smoke gate remains open).
-- [ ] Phase 3 — isolate storage, import, and sync contracts.
+- [x] Phase 3 — isolate storage, import, and sync contracts (live sync gate remains open).
 - [ ] Phase 4 — enforce module boundaries and separate host services.
 - [ ] Phase 5 — strengthen concurrency, diagnostics, and performance verification.
 - [ ] Phase 6 — demonstrate extension readiness and finish documentation.
@@ -101,15 +101,15 @@ Acceptance: launch coordination is testable without a view controller or real da
 
 Starting points: `DatabaseManager`, `Game`, `GameSave`, `SyncManager`, and J2ME save/import helpers.
 
-- [ ] Introduce immutable game descriptors and stable IDs for application-service inputs and outputs.
-- [ ] Add a narrow repository contract; keep Core Data objects inside persistence-owned execution boundaries.
-- [ ] Extract import recognition and validation into per-system handlers behind common orchestration.
-- [ ] Define artifact descriptions for ROMs, normal saves, RTC, firmware, save states, and directory-based runtime data.
-- [ ] Move concrete core file discovery into adapters; preserve existing artifact identifiers and paths.
-- [ ] Add a save-readiness interface so launch logic does not inspect Harmony records.
-- [ ] Keep Harmony/Core Data integration behind repository/sync adapters, including any managed-model conformance needed internally.
-- [ ] Consolidate file replacement and deletion workflows with explicit ownership, validation, and failure recovery.
-- [ ] Preserve queue confinement and avoid passing live managed objects across asynchronous session boundaries.
+- [x] Introduce immutable game descriptors and stable IDs for application-service inputs and outputs.
+- [x] Add a narrow repository contract; keep Core Data objects inside persistence-owned execution boundaries.
+- [x] Extract import recognition and validation into per-system handlers behind common orchestration.
+- [x] Define artifact descriptions for ROMs, normal saves, RTC, firmware, save states, and directory-based runtime data.
+- [x] Move concrete core file discovery into adapters; preserve existing artifact identifiers and paths.
+- [x] Add a save-readiness interface so launch logic does not inspect Harmony records.
+- [x] Keep Harmony/Core Data integration behind repository/sync adapters, including any managed-model conformance needed internally.
+- [x] Consolidate file replacement and deletion workflows with explicit ownership, validation, and failure recovery.
+- [x] Preserve queue confinement and avoid passing live managed objects across asynchronous session boundaries.
 
 Acceptance: extracted launch/import/save services do not import Harmony or concrete emulator modules. Existing library and save fixtures remain compatible. Import failure, partial writes, deletion, and sync conflict/download behavior do not silently lose or overwrite user data.
 
@@ -192,3 +192,5 @@ Baseline evidence and outstanding gates: [QualityBaseline.md](QualityBaseline.md
 | 2026-10-14 | Phase 1 descriptor/capability seam | Ten SwiftPM contracts and existing fixture suite passed; full Debug arm64 Simulator build passed | Legacy System enum remains a compatibility facade; runtime and storage adapters follow in subsequent phases |
 
 | 2026-10-14 | Phase 2 launch preflight, session ownership/drivers, vendor configuration and main-save extraction | Nineteen SwiftPM contracts and existing fixtures passed; Debug arm64 Simulator build passed | UIKit continues to own console presentation and multi-scene prompts; gameplay/save completion smoke tests remain pending |
+
+| 2026-10-14 | Phase 3 storage artifacts, metadata inspectors, sidecar/replacement adapters and stable-ID runtime persistence | Twenty-five SwiftPM contracts, full fixture/schema/Nuke integration suite and Debug arm64 Simulator build passed | Existing Core Data/Harmony implementations remain behind app adapters; live cloud behavior still requires signed devices |

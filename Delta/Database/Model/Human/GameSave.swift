@@ -8,7 +8,6 @@
 
 import Foundation
 
-import GBCDeltaCore
 
 import Harmony
 import Roxas
@@ -41,15 +40,7 @@ extension GameSave: Syncable
     public var syncableFiles: Set<File> {
         guard let game = self.game else { return [] }
         
-        var files: Set<File> = [File(identifier: "gameSave", fileURL: game.gameSaveURL)]
-        
-        if game.type == .gbc
-        {
-            let gameTimeSaveURL = game.gameSaveURL.deletingPathExtension().appendingPathExtension("rtc")
-            files.insert(File(identifier: "gameTimeSave", fileURL: gameTimeSaveURL))
-        }
-        
-        return files
+        return Set(CoreStorageAdapter.saveFiles(game).map { File(identifier: $0.identifier, fileURL: $0.fileURL) })
     }
     
     public var syncableMetadata: [HarmonyMetadataKey : String] {

@@ -40,8 +40,7 @@ import DeltaCore
         }
     }
     nonisolated static func saveDirectory(identifier: String) -> URL {
-        DatabaseManager.gamesDirectoryURL.appendingPathComponent("J2ME", isDirectory: true)
-            .appendingPathComponent(identifier, isDirectory: true)
+        CoreStorageAdapter.javaSaveDirectory(identifier: identifier)
     }
     static func launch(_ game: Game, from presenter: UIViewController) {
         guard !EmulationServices.isJavaActive else {
@@ -81,13 +80,9 @@ import DeltaCore
             appIcon: icon, canvasWidth: profile.w, canvasHeight: profile.h, render3dScale: preferences.scale3D, fpsLimit: preferences.fps)
         controller.preferences = preferences
         controller.gameIdentifier = game.identifier
-        controller.onPreferencesChanged = { preferences in
-            var settings = game.gameSettings as? [String: Any] ?? [:]
-            settings["j2me.preferences"] = preferences.json
-            game.gameSettings = settings as NSDictionary
-            game.managedObjectContext?.saveWithErrorLogging()
-        }
-        controller.onSessionClosed = { completion in J2MESaveStore.checkpoint(game, completion: completion) }
+        let persistence = JavaGamePersistenceAdapter(game: game)
+        controller.onPreferencesChanged = { persistence.updatePreferences($0) }
+        controller.onSessionClosed = { completion in persistence.checkpoint(completion: completion) }
         controller.saveDirectory = saveDirectory(identifier: game.identifier)
         controller.modalPresentationStyle = .fullScreen
         controller.sessionLease = lease

@@ -33,15 +33,8 @@ enum CoreConfigurationAdapter
     static func requiredFilesAvailable(for game: Game) -> Bool
     {
         guard game.type == .ds, Settings.preferredCore(for: .ds) == MelonDS.core else { return true }
-        let bridge = MelonDSEmulatorBridge.shared
-        let files: [URL]
-        switch game.identifier
-        {
-        case Game.melonDSDSiBIOSIdentifier: files = [bridge.dsiBIOS7URL, bridge.dsiBIOS9URL, bridge.dsiFirmwareURL, bridge.dsiNANDURL]
-        case Game.melonDSBIOSIdentifier: files = [bridge.bios7URL, bridge.bios9URL, bridge.firmwareURL]
-        default: return true // Ordinary DS games do not require home-screen firmware.
-        }
-        return files.allSatisfy { FileManager.default.fileExists(atPath: $0.path) }
+        guard let firmware = CoreStorageAdapter.firmware(game.identifier) else { return true }
+        return firmware.requiredFiles.allSatisfy { FileManager.default.fileExists(atPath: $0.path) }
     }
 
     static let gyroActivated = GBA.didActivateGyroNotification

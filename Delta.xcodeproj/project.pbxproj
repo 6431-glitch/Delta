@@ -32,6 +32,11 @@
 /* End PBXAggregateTarget section */
 
 /* Begin PBXBuildFile section */
+		E40A6E12F79B1A89172A3048 /* JavaGamePersistenceAdapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87BE0FE31038C51B12E8A47F /* JavaGamePersistenceAdapter.swift */; };
+		CE48E751D406387BF45B48BB /* ContentImportAdapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6EA7AA2E25B3495F014DC17 /* ContentImportAdapter.swift */; };
+		58E844ED7981C19149682092 /* CoreStorageAdapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBDA771D9537BDA7D4C7B558 /* CoreStorageAdapter.swift */; };
+		41A5178CEB7667C881365D6B /* ImportCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6D2D18133049293E1AA3C9 /* ImportCoordinator.swift */; };
+		749BBA8010E6B0EE9090DCD4 /* StorageArtifact.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9D8B2B0A32AAF3F96A264FF /* StorageArtifact.swift */; };
 		1934D926CBEDDED9EC419140 /* CallbackEmulationSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC6CA25C6DC188454FD52A88 /* CallbackEmulationSession.swift */; };
 		8D94F31A50E42082F23830E8 /* MainSaveStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 072A5DD54074159CEC1D4C9A /* MainSaveStore.swift */; };
 		29B746939E8D75EF4191F079 /* RuntimeSessionAdapters.swift in Sources */ = {isa = PBXBuildFile; fileRef = E6D6C4D2D70B210CF6B767F1 /* RuntimeSessionAdapters.swift */; };
@@ -747,6 +752,11 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		87BE0FE31038C51B12E8A47F /* JavaGamePersistenceAdapter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Delta/Emulation/Adapters/JavaGamePersistenceAdapter.swift"; sourceTree = SOURCE_ROOT; };
+		F6EA7AA2E25B3495F014DC17 /* ContentImportAdapter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Delta/Emulation/Adapters/ContentImportAdapter.swift"; sourceTree = SOURCE_ROOT; };
+		FBDA771D9537BDA7D4C7B558 /* CoreStorageAdapter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Delta/Emulation/Adapters/CoreStorageAdapter.swift"; sourceTree = SOURCE_ROOT; };
+		5E6D2D18133049293E1AA3C9 /* ImportCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Modules/DeltaApplication/ImportCoordinator.swift"; sourceTree = SOURCE_ROOT; };
+		F9D8B2B0A32AAF3F96A264FF /* StorageArtifact.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Modules/DeltaDomain/StorageArtifact.swift"; sourceTree = SOURCE_ROOT; };
 		CC6CA25C6DC188454FD52A88 /* CallbackEmulationSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Modules/DeltaApplication/CallbackEmulationSession.swift"; sourceTree = SOURCE_ROOT; };
 		072A5DD54074159CEC1D4C9A /* MainSaveStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Delta/Emulation/Adapters/MainSaveStore.swift"; sourceTree = SOURCE_ROOT; };
 		E6D6C4D2D70B210CF6B767F1 /* RuntimeSessionAdapters.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Delta/Emulation/Adapters/RuntimeSessionAdapters.swift"; sourceTree = SOURCE_ROOT; };
@@ -1981,6 +1991,11 @@
 		BFFA71CE1AAC406100EE9DD1 = {
 			isa = PBXGroup;
 			children = (
+				87BE0FE31038C51B12E8A47F /* JavaGamePersistenceAdapter.swift */,
+				F6EA7AA2E25B3495F014DC17 /* ContentImportAdapter.swift */,
+				FBDA771D9537BDA7D4C7B558 /* CoreStorageAdapter.swift */,
+				5E6D2D18133049293E1AA3C9 /* ImportCoordinator.swift */,
+				F9D8B2B0A32AAF3F96A264FF /* StorageArtifact.swift */,
 				CC6CA25C6DC188454FD52A88 /* CallbackEmulationSession.swift */,
 				072A5DD54074159CEC1D4C9A /* MainSaveStore.swift */,
 				E6D6C4D2D70B210CF6B767F1 /* RuntimeSessionAdapters.swift */,
@@ -3128,6 +3143,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E40A6E12F79B1A89172A3048 /* JavaGamePersistenceAdapter.swift in Sources */,
+				CE48E751D406387BF45B48BB /* ContentImportAdapter.swift in Sources */,
+				58E844ED7981C19149682092 /* CoreStorageAdapter.swift in Sources */,
+				41A5178CEB7667C881365D6B /* ImportCoordinator.swift in Sources */,
+				749BBA8010E6B0EE9090DCD4 /* StorageArtifact.swift in Sources */,
 				1934D926CBEDDED9EC419140 /* CallbackEmulationSession.swift in Sources */,
 				8D94F31A50E42082F23830E8 /* MainSaveStore.swift in Sources */,
 				29B746939E8D75EF4191F079 /* RuntimeSessionAdapters.swift in Sources */,

@@ -709,31 +709,6 @@ private extension GameCollectionViewController
             }
         }
         
-        if let coordinator = SyncManager.shared.coordinator, coordinator.isSyncing
-        {
-            if let gameSave = game.gameSave
-            {
-                do
-                {
-                    if let record = try coordinator.recordController.fetchRecords(for: [gameSave]).first
-                    {
-                        if record.isSyncingEnabled && !record.isConflicted && (record.localStatus == nil || record.remoteStatus == .updated)
-                        {
-                            throw LaunchError.downloadingGameSave
-                        }
-                    }
-                }
-                catch let error as LaunchError
-                {
-                    throw error
-                }
-                catch
-                {
-                    print("Error fetching record for game save.", error)
-                }
-            }
-        }
-        
         guard CoreConfigurationAdapter.requiredFilesAvailable(for: game) else { throw LaunchError.biosNotFound }
 
     }
