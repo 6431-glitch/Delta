@@ -200,6 +200,8 @@ extension GameCollectionViewController
     override func viewWillDisappear(_ animated: Bool)
     {
         super.viewWillDisappear(animated)
+        // A delayed restore must not present gameplay after this launch surface is gone.
+        EmulationServices.cancelPendingJavaLaunch(ownedBy: self)
         
         if _performingPreviewTransition
         {

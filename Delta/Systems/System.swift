@@ -1,4 +1,3 @@
-import DeltaDomain
 //
 //  System.swift
 //  Delta
@@ -7,6 +6,7 @@ import DeltaDomain
 //  Copyright © 2017 Riley Testut. All rights reserved.
 //
 
+import DeltaDomain
 import DeltaCore
 
 import SNESDeltaCore

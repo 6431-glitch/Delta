@@ -7,6 +7,8 @@ public enum SessionState: String, Sendable
 
 public enum EmulationError: Error, Equatable, LocalizedError
 {
+    case cancelled
+    case capabilityUnavailable(EmulationCapability)
     case gameNotFound
     case unsupportedSystem(String)
     case missingGameFile
@@ -19,14 +21,16 @@ public enum EmulationError: Error, Equatable, LocalizedError
     public var errorDescription: String? {
         switch self
         {
-        case .gameNotFound: return "The game is no longer in the library."
-        case .unsupportedSystem: return "This game's system is not available."
-        case .missingGameFile: return "The game file is not available on this device yet."
-        case .savesUnavailable: return "Wait for this game's saves to finish downloading before opening it."
-        case .missingRequiredFiles: return "Required system files are missing."
-        case .sessionBusy: return "A game is already running in this runtime."
-        case .invalidTransition: return "The requested operation is unavailable in the current session state."
-        case .runtimeFailed: return "The game runtime could not complete the operation."
+        case .cancelled: return NSLocalizedString("The launch was cancelled.", comment: "Emulation lifecycle error")
+        case .capabilityUnavailable: return NSLocalizedString("This action is not supported by the current runtime.", comment: "Emulation lifecycle error")
+        case .gameNotFound: return NSLocalizedString("The game is no longer in the library.", comment: "Emulation lifecycle error")
+        case .unsupportedSystem: return NSLocalizedString("This game's system is not available.", comment: "Emulation lifecycle error")
+        case .missingGameFile: return NSLocalizedString("The game file is not available on this device yet.", comment: "Emulation lifecycle error")
+        case .savesUnavailable: return NSLocalizedString("Wait for this game's saves to finish downloading before opening it.", comment: "Emulation lifecycle error")
+        case .missingRequiredFiles: return NSLocalizedString("Required system files are missing.", comment: "Emulation lifecycle error")
+        case .sessionBusy: return NSLocalizedString("A game is already running in this runtime.", comment: "Emulation lifecycle error")
+        case .invalidTransition: return NSLocalizedString("The requested operation is unavailable in the current session state.", comment: "Emulation lifecycle error")
+        case .runtimeFailed: return NSLocalizedString("The game runtime could not complete the operation.", comment: "Emulation lifecycle error")
         }
     }
 }

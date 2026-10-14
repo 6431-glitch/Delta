@@ -1,7 +1,7 @@
 import Foundation
 
 /// Compatibility hints, not a claim to emulate every API on these handsets.
-enum J2MEPhone: String, CaseIterable, Codable {
+enum J2MEPhone: String, CaseIterable, Codable, Sendable {
     case generic, nokia, sonyEricsson
     var title: String { switch self { case .generic: return "Generic MIDP"; case .nokia: return "Nokia"; case .sonyEricsson: return "Sony Ericsson" } }
     var platform: String { switch self { case .generic: return "Delta/MIDP-2.0"; case .nokia: return "Nokia6230i/03.88"; case .sonyEricsson: return "SonyEricssonK800i/R1" } }
@@ -9,13 +9,13 @@ enum J2MEPhone: String, CaseIterable, Codable {
     var fire: Int { self == .nokia ? -5 : self == .sonyEricsson ? -5 : 53 }
 }
 
-struct J2MEControlPlacement: Codable {
+struct J2MEControlPlacement: Codable, Sendable {
     var x: Double
     var y: Double
     var scale: Double
 }
 
-struct J2MEPreferences: Codable {
+struct J2MEPreferences: Codable, Sendable {
     var phone: J2MEPhone = .generic
     var fps: Int = 0
     var scale3D: Int = 3

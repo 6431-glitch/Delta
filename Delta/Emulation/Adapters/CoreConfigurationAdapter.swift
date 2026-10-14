@@ -71,7 +71,7 @@ enum CoreConfigurationAdapter
         core.start()
         core.pause()
         do { try core.load(state) }
-        catch { print("Failed to restore state after enabling JIT: \(error)") }
+        catch { QualityDiagnostics.failure("jit.restore.failed", error: error, operation: UUID()) }
         if wasRunning { resume() }
     }
 

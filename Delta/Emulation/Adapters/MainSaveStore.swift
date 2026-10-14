@@ -29,7 +29,7 @@ enum MainSaveStore
                 let history = try context.fetch(historyRequest)
                 for old in history.dropFirst(limit) { context.delete(old) }
                 try context.save()
-            } catch { print("Main Save failed: \(error)") }
+            } catch { QualityDiagnostics.failure("save.main.failed", error: error, operation: UUID()) }
         }
     }
 }

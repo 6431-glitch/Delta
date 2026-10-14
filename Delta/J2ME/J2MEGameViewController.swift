@@ -1,5 +1,3 @@
-import DeltaApplication
-import DeltaDomain
 //
 //  J2MEGameViewController.swift
 //  J2MEEmulator
@@ -8,6 +6,8 @@ import DeltaDomain
 //  Engine lifecycle and native form/list presentation remain vendor-compatible.
 //
 
+import DeltaApplication
+import DeltaDomain
 import UIKit
 
 // MARK: - Layout mode (extensible for future layouts)
@@ -311,22 +311,26 @@ class J2MEGameViewController: UIViewController, UIAdaptivePresentationController
     }
 
     private func runGameAsynchronously() {
+        let request = JavaRuntimeAdapter.Request(resourceRoot: Bundle.main.resourcePath, saveDirectory: saveDirectory,
+            jarPath: jarPath, gameIdentifier: gameIdentifier, appName: appName, canvasWidth: canvasWidth,
+            canvasHeight: canvasHeight, render3dScale: render3dScale, fpsLimit: fpsLimit, preferences: preferences)
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in
-            self?.runMIDlet()
+            let outcome = JavaRuntimeAdapter.run(request)
             DispatchQueue.main.async {
                 guard let self else { return }
+                self.runtimeError = outcome.error
                 self.runtimeTerminated = true
                 self.input.enabled = false
                 self.input.stopControllers()
                 self.joystickView?.cancelKeys(); self.numpadView?.cancelKeys()
-                let complete: (Result<Void, Error>) -> Void = { [weak self] result in
+                let checkpoint = LaunchPreparation { [weak self] _, result in
                     guard let self else { return }
                     if case .failure(let error) = result { self.runtimeError = [self.runtimeError, "Could not sync Java saves: \(error.localizedDescription)"].compactMap { $0 }.joined(separator: "\n") }
                     self.runtimeSession.finish(failed: self.runtimeError != nil)
                     self.runtimeFinished = true
                     self.finishIfReady()
                 }
-                if let closed = self.onSessionClosed { closed(complete) } else { complete(.success(())) }
+                if let closed = self.onSessionClosed { closed { checkpoint.complete($0) } } else { checkpoint.complete(.success(())) }
                 setGlobalJ2MEEmulatorView(nil)
                 activeJ2MEGameViewController = nil
                 self.finishIfReady()
@@ -345,47 +349,6 @@ class J2MEGameViewController: UIViewController, UIAdaptivePresentationController
             self.sessionLease = nil
             if let error = self.runtimeError, let presenter { J2MELibrary.showError(error, from: presenter) }
         }
-    }
-
-    private func runMIDlet() {
-        let started = Date()
-        let sessionPreferences = preferences
-        var diagnosticResult: Int32 = -1
-        defer {
-            J2MEDiagnostics.write(id: gameIdentifier, name: appName, screen: "\(canvasWidth) × \(canvasHeight)", preferences: sessionPreferences, result: diagnosticResult, error: runtimeError, duration: Date().timeIntervalSince(started))
-        }
-        guard let resRoot = Bundle.main.resourcePath else { runtimeError = "Runtime resources are missing."; return }
-        let saveRoot = saveDirectory.path
-        do { try FileManager.default.createDirectory(at: saveDirectory, withIntermediateDirectories: true) }
-        catch { runtimeError = "Could not create this game's save folder: \(error.localizedDescription)"; return }
-
-        // HD JARs retain logical Canvas/image sizes for collision and movement.
-        // Only their backing pixels and the framebuffer use the denser scale.
-        let artworkAttributes = J2MEJARMetadata.read(from: jarPath)?.attributes ?? [:]
-        let requestedScale = Int(artworkAttributes["Delta-J2ME-Render-Scale"] ?? "1") ?? 1
-        let requestedAssetScale = Int(artworkAttributes["Delta-J2ME-Asset-Scale"] ?? "1") ?? 1
-        let outputScale = min(max(1, min(3, requestedScale)), max(1, 2048 / max(canvasWidth, canvasHeight)))
-        delta_j2me_configure_2d(Int32(outputScale), Int32(max(1, min(3, requestedAssetScale))))
-        let initResult = jvm_bridge_init(resRoot, saveRoot, jarPath,
-                                         Int32(canvasWidth),
-                                         Int32(canvasHeight),
-                                         Int32(render3dScale),
-                                         Int32(fpsLimit))
-        diagnosticResult = initResult
-        guard initResult == 0 else {
-            runtimeError = "The Java runtime could not start (\(initResult))."
-            jvm_bridge_destroy()
-            return
-        }
-
-        for (key, value) in sessionPreferences.properties { delta_j2me_set_property(key, value) }
-        let runResult = jvm_bridge_run_midlet(jarPath)
-        diagnosticResult = runResult
-        let javaError = String(cString: delta_j2me_get_property("delta.j2me.error"))
-        if !javaError.isEmpty { runtimeError = "Java compatibility error: " + javaError }
-        if runResult != 0 && runtimeError == nil { runtimeError = "This MIDlet could not run (\(runResult)). It may require unsupported phone APIs." }
-        print("[Swift] MIDlet run result: \(runResult)")
-        jvm_bridge_destroy()
     }
 
     @objc private func showPauseMenu() {
