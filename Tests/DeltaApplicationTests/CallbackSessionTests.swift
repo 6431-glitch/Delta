@@ -10,6 +10,8 @@ final class CallbackSessionTests: XCTestCase
         var pauses = [Bool]()
         let session = CallbackEmulationSession(start: { starts += 1 }, pause: { pauses.append($0) }, stop: { stops += 1 })
         XCTAssertThrowsError(try session.pause())
+        XCTAssertThrowsError(try session.resume())
+        XCTAssertEqual(session.state, .idle)
         try session.start(); try session.start()
         try session.pause(); try session.pause()
         try session.resume(); try session.resume()

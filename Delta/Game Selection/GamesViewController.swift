@@ -298,7 +298,7 @@ extension GamesViewController
     {
         super.viewDidAppear(animated)
         #if DEBUG
-        if let path = ProcessInfo.processInfo.environment["DELTA_J2ME_TEST_JAR"], !didLaunchJ2MEDiagnostic {
+        if let path = ProcessInfo.processInfo.environment["DELTA_QUALITY_TEST_GAME"] ?? ProcessInfo.processInfo.environment["DELTA_J2ME_TEST_JAR"], !didLaunchJ2MEDiagnostic {
             didLaunchJ2MEDiagnostic = true
             DatabaseManager.shared.importGames(at: [URL(fileURLWithPath: path)]) { [weak self] games, errors in
                 let id = games.first?.objectID
@@ -308,7 +308,10 @@ extension GamesViewController
                         print("[J2ME QA] Import failed: \(errors)"); return
                     }
                     print("[J2ME QA] Launching \(game.name)")
-                    J2MELibrary.launch(game, from: self)
+                    if game.type == .j2me { J2MELibrary.launch(game, from: self) }
+                    else if let controller = self.pageViewController.viewControllers?.first as? GameCollectionViewController {
+                        controller.launchFromHome(game)
+                    }
                 }
             }
             return

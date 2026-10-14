@@ -30,7 +30,8 @@ with tempfile.TemporaryDirectory(prefix='delta-quality-') as scratch:
     run(audio)
     rendering = str(Path(scratch) / 'rendering')
     run('swiftc', '-module-cache-path', str(cache), 'Tests/RenderingServices/verify.swift',
-        'Cores/DeltaCore/DeltaCore/UI/Game/EmulatorCore+Presentation.swift', '-o', rendering)
+        'Cores/DeltaCore/DeltaCore/UI/Game/EmulatorCore+Presentation.swift',
+        'Cores/DeltaCore/DeltaCore/UI/Game/EmulatorAudioManaging.swift', '-o', rendering)
     run(rendering)
     if args.model:
         run('swift', '-module-cache-path', str(cache), 'Tests/ArtworkMigration/verify.swift', str(args.model.resolve()))

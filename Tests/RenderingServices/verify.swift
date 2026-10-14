@@ -2,8 +2,19 @@ import Foundation
 import AVFoundation
 
 // Host doubles let the production factory/presentation adapter run without UIKit or a GPU.
+public final class RingBuffer {}
+public protocol AudioRendering: AnyObject { var audioBuffer: RingBuffer { get } }
 public final class AudioManager {
-    public let audioFormat: AVAudioFormat
+    public let audioBuffer = RingBuffer()
+    public var frameDuration = 1.0 / 60.0
+    public var rate = 1.0
+    public var isEnabled = true
+    public var respectsSilentMode = true
+    public var mixesWithOtherAudio = false
+    public var pausesOtherAudio = false
+    public func start() {}
+    public func stop() {}
+    public var audioFormat: AVAudioFormat
     public init(audioFormat: AVAudioFormat) { self.audioFormat = audioFormat }
 }
 public struct VideoFormat {}

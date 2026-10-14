@@ -41,8 +41,8 @@ Changed launch/save/JIT flows use the EmulationLifecycle unified-log category an
 - [x] SwiftPM contracts: registration, capabilities, launch/import failure, storage identity, session lifecycle, weak registry and cancellation/exactly-once completion.
 - [x] Existing artwork/replacement/schema/save-state/J2ME audio/Nuke checks retain their dedicated fixture runners.
 - [x] Neutral modules build under complete concurrency checking with warnings as errors.
-- [ ] Debug and Release arm64 Simulator builds after final integration.
-- [ ] Runtime smoke validation on original test fixtures.
+- [x] Debug and Release arm64 Simulator builds after final integration.
+- [x] Original NES (silent audio) and Java runtime/RMS relaunch smoke validation.
 - [ ] Physical performance/audio/controller and authenticated cloud/hardware verification.
 
 The remaining device gates are explicit. No measured performance regression or improvement is claimed until comparable fixture/device measurements exist.

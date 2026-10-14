@@ -26,12 +26,14 @@ import DeltaDomain
     public func pause() throws
     {
         if state == .paused { return }
+        guard state == .running else { throw EmulationError.invalidTransition(state, .paused) }
         try lifecycle.transition(to: .paused)
         pauseRuntime(true)
     }
     public func resume() throws
     {
         if state == .running { return }
+        guard state == .paused else { throw EmulationError.invalidTransition(state, .running) }
         try lifecycle.transition(to: .running)
         pauseRuntime(false)
     }

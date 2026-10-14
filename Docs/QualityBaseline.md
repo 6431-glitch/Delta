@@ -10,7 +10,7 @@ Recorded 2026-10-14. Starting commit: `c7f11f9` (existing feature work checkpoin
 - [x] App targets iPhone/iPad. App project deployment target is iOS 17.4; individual library targets have older minima.
 - [x] OperatorKit binary supplies iOS arm64 and iOS Simulator arm64/x86_64 slices; no native macOS slice.
 - [x] Submodule revisions captured by `git submodule status`; use the Git-pinned revisions, not latest upstream heads.
-- [ ] Runtime smoke tests and device performance baseline. No simulator was booted at initial inspection; authenticated cloud/device checks require configured accounts/devices.
+- [x] Post-upgrade console/Java simulator smoke tests pass; original physical performance baseline remains unrecorded. Authenticated cloud/device checks require configured accounts/devices.
 
 For a fresh clone, initialize submodules recursively and install the Podfile dependencies with CocoaPods. Preserve the workspace's pinned SPM revisions. J2ME generation uses the checked-in preparation scripts invoked by its native build phase; see `Experiments/J2ME/README.md`. Do not replace local forks with upstream packages while reproducing this baseline.
 
@@ -50,9 +50,17 @@ The initial review counted 234 app Swift files, 110 textual `DatabaseManager.sha
 
 ## Outstanding acceptance gates
 
-- [ ] Exercise conventional gameplay and save/load using a legally available fixture.
-- [ ] Exercise J2ME import, start, pause, resume, exit, and save restoration.
+- [x] Exercise original NES fixture execution/frame and save/load using silent audio.
+- [x] Exercise J2ME import, start, pause, resume, exit, checkpoint, and RMS relaunch restoration.
 - [ ] Compare launch time, frame pacing, audio stability, and memory on the same fixture/device before and after changes.
 - [ ] Validate authenticated sync upload/download/conflicts on signed devices.
 
 Until these are available, static/contract/build checks support incremental refactoring but do not establish unchanged gameplay performance or live cloud behavior.
+
+## Resource hydration discovered during runtime validation
+
+NES and MelonDS Standard.deltaskin files are Git LFS pointers in this checkout. The Git LFS command is not installed on the host. The app compiles, but those skins cannot be decoded until LFS objects are hydrated. A fresh setup needs Git LFS and `git lfs pull` in the affected submodules. This is an existing resource/setup limitation, not a schema migration. No pointer files were replaced or staged by the quality upgrade.
+
+The initial simulator attempt also stalled inside AVAudioSession activation. Console frame/save tests use an explicitly injected silent audio service; actual audible playback remains a separate validation gate.
+
+The two skins were subsequently restored by resources.py --hydrate with pinned SHA-256/size/CRC verification. Source pointer backups remain in .build; the hydrated binaries were not committed.

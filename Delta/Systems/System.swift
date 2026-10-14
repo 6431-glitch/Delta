@@ -17,36 +17,44 @@ import N64DeltaCore
 import MelonDSDeltaCore
 import GPGXDeltaCore
 
-enum System: String, CaseIterable
+/// A descriptor-backed compatibility facade. Adding a system no longer adds enum cases.
+struct System: RawRepresentable, CaseIterable, Hashable, CustomStringConvertible
 {
-    case nes
-    case genesis
-    case snes
-    case n64
-    case gbc
-    case gba
-    case ds
-    case j2me
-    
-    static var registeredSystems: [System] {
-        let systems = System.allCases.filter { Delta.registeredCores.keys.contains($0.gameType) }
-        return systems
-    }
-    
-    static var coreSystems: [System] { allCases.filter { $0.descriptor.runtime == .deltaCore } }
+    // Composition: extend this registry alongside a core factory/registration and its resources.
+    static let registry = BuiltInSystems.registry
+    let descriptor: SystemDescriptor
+    var rawValue: String { descriptor.preferenceKey }
+    var description: String { rawValue }
 
-    static var allCores: [DeltaCoreProtocol] {
-        return [NES.core, SNES.core, N64.core, GBC.core, GBA.core, MelonDS.core, GPGX.core]
+    private init(descriptor: SystemDescriptor) { self.descriptor = descriptor }
+    init?(rawValue: String)
+    {
+        guard let descriptor = Self.registry.systems.first(where: { $0.preferenceKey == rawValue }) else { return nil }
+        self.init(descriptor: descriptor)
     }
+    static let nes = System(rawValue: "nes")!
+    static let genesis = System(rawValue: "genesis")!
+    static let snes = System(rawValue: "snes")!
+    static let n64 = System(rawValue: "n64")!
+    static let gbc = System(rawValue: "gbc")!
+    static let gba = System(rawValue: "gba")!
+    static let ds = System(rawValue: "ds")!
+    static let j2me = System(rawValue: "j2me")!
+
+    static var allCases: [System] { registry.systems.map { System(descriptor: $0) } }
+    static var registeredSystems: [System] { allCases.filter { Delta.registeredCores.keys.contains($0.gameType) } }
+    static var coreSystems: [System] { allCases.filter { $0.descriptor.runtime == .deltaCore } }
+    static var allCores: [DeltaCoreProtocol] {
+        let builtIn: [DeltaCoreProtocol] = [NES.core, SNES.core, N64.core, GBC.core, GBA.core, MelonDS.core, GPGX.core]
+        let extra = Delta.registeredCores.values.filter { core in !builtIn.contains { $0.identifier == core.identifier } }
+        return builtIn + extra.sorted { $0.identifier < $1.identifier }
+    }
+    static func == (lhs: System, rhs: System) -> Bool { lhs.descriptor.identifier == rhs.descriptor.identifier }
+    func hash(into hasher: inout Hasher) { hasher.combine(descriptor.identifier) }
 }
 
 extension System
 {
-    var descriptor: SystemDescriptor {
-        // Every legacy enum case corresponds to a validated built-in descriptor.
-        return BuiltInSystems.descriptors.first { $0.preferenceKey == self.rawValue }!
-    }
-
     var localizedName: String { NSLocalizedString(descriptor.name, comment: "") }
     var localizedShortName: String { NSLocalizedString(descriptor.shortName, comment: "") }
     var localizedDisplayName: String { NSLocalizedString(descriptor.displayName, comment: "") }
@@ -63,26 +71,21 @@ extension System
 extension System
 {
     var deltaCore: DeltaCoreProtocol? {
-        switch self
-        {
-        case .nes: return NES.core
-        case .snes: return SNES.core
-        case .n64: return N64.core
-        case .gbc: return GBC.core
-        case .gba: return GBA.core
-        case .ds: return Settings.preferredCore(for: .ds) ?? MelonDS.core
-        case .j2me: return nil
-        case .genesis: return GPGX.core
-        }
+        guard descriptor.runtime == .deltaCore else { return nil }
+        if self == .ds { return Settings.preferredCore(for: .ds) ?? MelonDS.core }
+        let providers: [String: () -> DeltaCoreProtocol] = [
+            "nes": { NES.core }, "snes": { SNES.core }, "n64": { N64.core },
+            "gbc": { GBC.core }, "gba": { GBA.core }, "genesis": { GPGX.core }
+        ]
+        return providers[rawValue]?() ?? Delta.core(for: gameType)
     }
     
     var gameType: DeltaCore.GameType { GameType(rawValue: descriptor.identifier) }
 
     init?(gameType: DeltaCore.GameType)
     {
-        guard let descriptor = BuiltInSystems.registry.system(identifier: gameType.rawValue),
-              let system = System(rawValue: descriptor.preferenceKey) else { return nil }
-        self = system
+        guard let descriptor = Self.registry.system(identifier: gameType.rawValue) else { return nil }
+        self.init(descriptor: descriptor)
     }
 
 }
@@ -93,7 +96,7 @@ extension DeltaCore.GameType
 
     init?(fileExtension: String)
     {
-        guard let system = BuiltInSystems.registry.system(fileExtension: fileExtension) else { return nil }
+        guard let system = System.registry.system(fileExtension: fileExtension) else { return nil }
         self.init(rawValue: system.identifier)
     }
 }

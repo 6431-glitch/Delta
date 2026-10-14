@@ -32,6 +32,7 @@
 /* End PBXAggregateTarget section */
 
 /* Begin PBXBuildFile section */
+		29F7B271E6E3A6F8C9A13488 /* QualitySmokeDriver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8CC62E34270B41B417002186 /* QualitySmokeDriver.swift */; };
 		12CF56185C178E16068D1817 /* QualityDiagnostics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EABE8B8164FEC383EBC758D /* QualityDiagnostics.swift */; };
 		C3A1F62F328D6D9533A1CFF4 /* JavaRuntimeAdapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5468C0CF6F793C3EDC54DDED /* JavaRuntimeAdapter.swift */; };
 		46A80284B5B682887C5A60B7 /* OperatorLibraryAdapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE80453CDF6A4AA0E45222F4 /* OperatorLibraryAdapter.swift */; };
@@ -751,6 +752,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		8CC62E34270B41B417002186 /* QualitySmokeDriver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Delta/Emulation/Adapters/QualitySmokeDriver.swift"; sourceTree = SOURCE_ROOT; };
 		9EABE8B8164FEC383EBC758D /* QualityDiagnostics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Delta/Emulation/Adapters/QualityDiagnostics.swift"; sourceTree = SOURCE_ROOT; };
 		5468C0CF6F793C3EDC54DDED /* JavaRuntimeAdapter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Delta/Emulation/Adapters/JavaRuntimeAdapter.swift"; sourceTree = SOURCE_ROOT; };
 		DE80453CDF6A4AA0E45222F4 /* OperatorLibraryAdapter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Delta/Emulation/Adapters/OperatorLibraryAdapter.swift"; sourceTree = SOURCE_ROOT; };
@@ -1995,6 +1997,7 @@
 		BFFA71CE1AAC406100EE9DD1 = {
 			isa = PBXGroup;
 			children = (
+				8CC62E34270B41B417002186 /* QualitySmokeDriver.swift */,
 				9EABE8B8164FEC383EBC758D /* QualityDiagnostics.swift */,
 				5468C0CF6F793C3EDC54DDED /* JavaRuntimeAdapter.swift */,
 				DE80453CDF6A4AA0E45222F4 /* OperatorLibraryAdapter.swift */,
@@ -3153,6 +3156,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				29F7B271E6E3A6F8C9A13488 /* QualitySmokeDriver.swift in Sources */,
 				12CF56185C178E16068D1817 /* QualityDiagnostics.swift in Sources */,
 				C3A1F62F328D6D9533A1CFF4 /* JavaRuntimeAdapter.swift in Sources */,
 				46A80284B5B682887C5A60B7 /* OperatorLibraryAdapter.swift in Sources */,

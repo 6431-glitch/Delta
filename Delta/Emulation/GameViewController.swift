@@ -89,6 +89,22 @@ class GameViewController: DeltaCore.GameViewController
 {
     private(set) var runtimeSession: DeltaCoreSessionAdapter?
     private var sessionRegistration: UUID?
+    #if DEBUG
+    private var didRunQualitySmoke = false
+    #endif
+
+    override func makeEmulatorCore(game: GameProtocol, options: [EmulatorCore.Option: Any]) -> EmulatorCore?
+    {
+        #if DEBUG
+        if QualitySmokeDriver.enabled {
+            let standard = EmulatorRenderingServices.apple
+            let services = EmulatorRenderingServices(makeAudio: { QualitySilentAudio(audioFormat: $0) },
+                makeVideo: standard.makeVideo, acceptsInput: standard.acceptsInput)
+            return EmulatorCore(game: game, options: options, renderingServices: services)
+        }
+        #endif
+        return super.makeEmulatorCore(game: game, options: options)
+    }
 
     /// Assumed to be Delta.Game instance
     override var game: GameProtocol? {
@@ -561,6 +577,12 @@ extension GameViewController
     override func viewDidAppear(_ animated: Bool)
     {
         super.viewDidAppear(animated)
+        #if DEBUG
+        if !didRunQualitySmoke, QualitySmokeDriver.enabled, game != nil {
+            didRunQualitySmoke = true
+            QualitySmokeDriver.console(self)
+        }
+        #endif
         
         if CoreConfigurationAdapter.supportsJIT(self.emulatorCore), ProcessInfo.processInfo.isJITAvailable
         {
