@@ -17,7 +17,14 @@ enum J2MEGameLayoutMode {
 // MARK: - J2MEGameViewController
 
 class J2MEGameViewController: UIViewController, UIAdaptivePresentationControllerDelegate {
-    static var isSessionActive = false
+    var sessionLease: SessionOwnership.Lease?
+    private lazy var runtimeSession = CallbackEmulationSession(start: { [weak self] in self?.runGameAsynchronously() }, pause: { paused in
+        delta_j2me_set_paused(paused ? 1 : 0)
+        delta_j2me_audio_pause(paused ? 1 : 0)
+    }, stop: {
+        jvm_bridge_request_stop()
+        delta_j2me_set_paused(0)
+    })
     var saveDirectory: URL!
     var gameIdentifier = ""
     var preferences = J2MEPreferences()
@@ -297,6 +304,11 @@ class J2MEGameViewController: UIViewController, UIAdaptivePresentationController
     // ============================================================
 
     private func startGame() {
+        do { try runtimeSession.start(); updatePause() }
+        catch { runtimeError = error.localizedDescription; runtimeFinished = true; finishIfReady() }
+    }
+
+    private func runGameAsynchronously() {
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in
             self?.runMIDlet()
             DispatchQueue.main.async {
@@ -308,6 +320,7 @@ class J2MEGameViewController: UIViewController, UIAdaptivePresentationController
                 let complete: (Result<Void, Error>) -> Void = { [weak self] result in
                     guard let self else { return }
                     if case .failure(let error) = result { self.runtimeError = [self.runtimeError, "Could not sync Java saves: \(error.localizedDescription)"].compactMap { $0 }.joined(separator: "\n") }
+                    self.runtimeSession.finish(failed: self.runtimeError != nil)
                     self.runtimeFinished = true
                     self.finishIfReady()
                 }
@@ -326,7 +339,8 @@ class J2MEGameViewController: UIViewController, UIAdaptivePresentationController
         didFinishSession = true
         let presenter = presentingViewController
         dismiss(animated: true) {
-            J2MEGameViewController.isSessionActive = false
+            if let lease = self.sessionLease { EmulationServices.ownership.release(lease) }
+            self.sessionLease = nil
             if let error = self.runtimeError, let presenter { J2MELibrary.showError(error, from: presenter) }
         }
     }
@@ -419,9 +433,7 @@ class J2MEGameViewController: UIViewController, UIAdaptivePresentationController
         onPreferencesChanged?(preferences)
         input.enabled = false; input.releaseAll()
         joystickView?.cancelKeys(); numpadView?.cancelKeys()
-        jvm_bridge_request_stop()
-        // Wake paused Java threads so the event loop can observe the stop request.
-        delta_j2me_set_paused(0)
+        try? runtimeSession.stop()
     }
 
     // MARK: - Pause and touch layout editor
@@ -439,8 +451,8 @@ class J2MEGameViewController: UIViewController, UIAdaptivePresentationController
         emulatorView.isUserInteractionEnabled = !paused
         formView.isUserInteractionEnabled = !paused
         listView.isUserInteractionEnabled = !paused
-        delta_j2me_set_paused(paused ? 1 : 0)
-        delta_j2me_audio_pause(paused ? 1 : 0)
+        if paused { try? runtimeSession.pause() }
+        else { try? runtimeSession.resume() }
         pauseLabel.isHidden = !paused || editingControls
     }
     private var orientationKey: String { view.bounds.width > view.bounds.height ? "landscape." : "portrait." }

@@ -1,9 +1,8 @@
 import UIKit
 import DeltaCore
-import Harmony
 
 /// Library metadata lives in Game.gameSettings, preserving preferences across local relaunches.
-enum J2MELibrary {
+@MainActor enum J2MELibrary {
     static let presets: [(label: String, w: Int, h: Int)] = [
         ("128 × 128", 128, 128), ("128 × 160", 128, 160), ("176 × 208", 176, 208),
         ("176 × 220", 176, 220), ("240 × 320", 240, 320), ("240 × 400", 240, 400),
@@ -27,7 +26,7 @@ enum J2MELibrary {
         return automatic
     }
     static func configure(_ game: Game, from presenter: UIViewController) {
-        guard !J2MEGameViewController.isSessionActive else {
+        guard !EmulationServices.isJavaActive else {
             showError("Exit the Java game before changing settings.", from: presenter); return
         }
         guard savesAreReady(game, from: presenter) else { return }
@@ -40,12 +39,12 @@ enum J2MELibrary {
             presenter.present(navigation, animated: true)
         }
     }
-    static func saveDirectory(identifier: String) -> URL {
+    nonisolated static func saveDirectory(identifier: String) -> URL {
         DatabaseManager.gamesDirectoryURL.appendingPathComponent("J2ME", isDirectory: true)
             .appendingPathComponent(identifier, isDirectory: true)
     }
     static func launch(_ game: Game, from presenter: UIViewController) {
-        guard !J2MEGameViewController.isSessionActive else {
+        guard !EmulationServices.isJavaActive else {
             showError("A Java game is already running. Exit it before starting another.", from: presenter)
             return
         }
@@ -54,18 +53,24 @@ enum J2MELibrary {
             return
         }
         guard savesAreReady(game, from: presenter) else { return }
-        J2MEGameViewController.isSessionActive = true
+        let lease: SessionOwnership.Lease
+        do { lease = try EmulationServices.ownership.acquire(scope: EmulationServices.javaScope) }
+        catch { showError(error.localizedDescription, from: presenter); return }
         J2MESaveStore.restoreIfNeeded(game) { result in
             do { try result.get() }
             catch {
-                J2MEGameViewController.isSessionActive = false
+                EmulationServices.ownership.release(lease)
                 showError("Could not restore Java saves: \(error.localizedDescription)", from: presenter)
                 return
             }
-            presentGame(game, from: presenter)
+            guard !game.isDeleted, presenter.viewIfLoaded?.window != nil, presenter.presentedViewController == nil else {
+                EmulationServices.ownership.release(lease)
+                return
+            }
+            presentGame(game, lease: lease, from: presenter)
         }
     }
-    private static func presentGame(_ game: Game, from presenter: UIViewController) {
+    private static func presentGame(_ game: Game, lease: SessionOwnership.Lease, from presenter: UIViewController) {
         let automatic = automaticScreen(for: game)
         let profile = screen(for: game, automatic: automatic)
         let metadata = J2MEJARMetadata.read(from: game.fileURL.path)
@@ -85,21 +90,14 @@ enum J2MELibrary {
         controller.onSessionClosed = { completion in J2MESaveStore.checkpoint(game, completion: completion) }
         controller.saveDirectory = saveDirectory(identifier: game.identifier)
         controller.modalPresentationStyle = .fullScreen
-        J2MEGameViewController.isSessionActive = true
+        controller.sessionLease = lease
         game.playedDate = Date()
         game.managedObjectContext?.saveWithErrorLogging()
         presenter.present(controller, animated: true)
     }
     private static func savesAreReady(_ game: Game, from presenter: UIViewController) -> Bool {
-        guard let coordinator = SyncManager.shared.coordinator, coordinator.isSyncing, let save = game.gameSave else { return true }
-        do {
-            if let record = try coordinator.recordController.fetchRecords(for: [save]).first,
-               record.isSyncingEnabled && !record.isConflicted && (record.localStatus == nil || record.remoteStatus == .updated) {
-                showError("Delta Sync is downloading this game's saves. Wait for it to finish before opening the game or its settings.", from: presenter)
-                return false
-            }
-            return true
-        } catch { showError(error.localizedDescription, from: presenter); return false }
+        do { _ = try EmulationServices.prepare(game); return true }
+        catch { showError(error.localizedDescription, from: presenter); return false }
     }
     static func showError(_ message: String, from presenter: UIViewController) {
         let alert = UIAlertController(title: "Java ME", message: message, preferredStyle: .alert)

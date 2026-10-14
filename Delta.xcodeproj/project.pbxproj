@@ -32,6 +32,13 @@
 /* End PBXAggregateTarget section */
 
 /* Begin PBXBuildFile section */
+		1934D926CBEDDED9EC419140 /* CallbackEmulationSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC6CA25C6DC188454FD52A88 /* CallbackEmulationSession.swift */; };
+		8D94F31A50E42082F23830E8 /* MainSaveStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 072A5DD54074159CEC1D4C9A /* MainSaveStore.swift */; };
+		29B746939E8D75EF4191F079 /* RuntimeSessionAdapters.swift in Sources */ = {isa = PBXBuildFile; fileRef = E6D6C4D2D70B210CF6B767F1 /* RuntimeSessionAdapters.swift */; };
+		DAEB3743846EB0A6E2EC3665 /* CoreConfigurationAdapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 300E35A33EF6D6184A5986ED /* CoreConfigurationAdapter.swift */; };
+		D6CD2B0AE80F790BE8216AE2 /* LaunchServices.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEA0A7D2AEFDAF7F882ACAB7 /* LaunchServices.swift */; };
+		8A337DF6F4998822BC6A3F2A /* LaunchCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08F308589AE0B794B67564EC /* LaunchCoordinator.swift */; };
+		2D9D883BB963BD5BD3AF8A85 /* EmulationSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4864AE5F972B971745CBCEAF /* EmulationSession.swift */; };
 		4DBCF3FA0B807D4EAF5B78A8 /* SystemDescriptor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2480549AD793D4CE3D2A3C13 /* SystemDescriptor.swift */; };
 		AABBAA000000000000000005 /* GameFileReplacement.swift in Sources */ = {isa = PBXBuildFile; fileRef = AABBAA000000000000000006; };
 		AABBAA000000000000000003 /* ArtworkImportValidation.swift in Sources */ = {isa = PBXBuildFile; fileRef = AABBAA000000000000000004; };
@@ -740,6 +747,13 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		CC6CA25C6DC188454FD52A88 /* CallbackEmulationSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Modules/DeltaApplication/CallbackEmulationSession.swift"; sourceTree = SOURCE_ROOT; };
+		072A5DD54074159CEC1D4C9A /* MainSaveStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Delta/Emulation/Adapters/MainSaveStore.swift"; sourceTree = SOURCE_ROOT; };
+		E6D6C4D2D70B210CF6B767F1 /* RuntimeSessionAdapters.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Delta/Emulation/Adapters/RuntimeSessionAdapters.swift"; sourceTree = SOURCE_ROOT; };
+		300E35A33EF6D6184A5986ED /* CoreConfigurationAdapter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Delta/Emulation/Adapters/CoreConfigurationAdapter.swift"; sourceTree = SOURCE_ROOT; };
+		EEA0A7D2AEFDAF7F882ACAB7 /* LaunchServices.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Delta/Emulation/Adapters/LaunchServices.swift"; sourceTree = SOURCE_ROOT; };
+		08F308589AE0B794B67564EC /* LaunchCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Modules/DeltaApplication/LaunchCoordinator.swift"; sourceTree = SOURCE_ROOT; };
+		4864AE5F972B971745CBCEAF /* EmulationSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Modules/DeltaDomain/EmulationSession.swift"; sourceTree = SOURCE_ROOT; };
 		2480549AD793D4CE3D2A3C13 /* SystemDescriptor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Modules/DeltaDomain/SystemDescriptor.swift"; sourceTree = SOURCE_ROOT; };
 		A140A140A140A140A140A140 /* Delta 14.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "Delta 14.xcdatamodel"; sourceTree = "<group>"; };
 		AABBAA000000000000000006 /* GameFileReplacement.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = GameFileReplacement.swift; path = Delta/Components/Loading/GameFileReplacement.swift; sourceTree = "<group>"; };
@@ -1967,6 +1981,13 @@
 		BFFA71CE1AAC406100EE9DD1 = {
 			isa = PBXGroup;
 			children = (
+				CC6CA25C6DC188454FD52A88 /* CallbackEmulationSession.swift */,
+				072A5DD54074159CEC1D4C9A /* MainSaveStore.swift */,
+				E6D6C4D2D70B210CF6B767F1 /* RuntimeSessionAdapters.swift */,
+				300E35A33EF6D6184A5986ED /* CoreConfigurationAdapter.swift */,
+				EEA0A7D2AEFDAF7F882ACAB7 /* LaunchServices.swift */,
+				08F308589AE0B794B67564EC /* LaunchCoordinator.swift */,
+				4864AE5F972B971745CBCEAF /* EmulationSession.swift */,
 				2480549AD793D4CE3D2A3C13 /* SystemDescriptor.swift */,
 				BFFA71D91AAC406100EE9DD1 /* Delta */,
 				D539103029E88B6C0006B350 /* DeltaPreviews */,
@@ -3107,6 +3128,13 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1934D926CBEDDED9EC419140 /* CallbackEmulationSession.swift in Sources */,
+				8D94F31A50E42082F23830E8 /* MainSaveStore.swift in Sources */,
+				29B746939E8D75EF4191F079 /* RuntimeSessionAdapters.swift in Sources */,
+				DAEB3743846EB0A6E2EC3665 /* CoreConfigurationAdapter.swift in Sources */,
+				D6CD2B0AE80F790BE8216AE2 /* LaunchServices.swift in Sources */,
+				8A337DF6F4998822BC6A3F2A /* LaunchCoordinator.swift in Sources */,
+				2D9D883BB963BD5BD3AF8A85 /* EmulationSession.swift in Sources */,
 				4DBCF3FA0B807D4EAF5B78A8 /* SystemDescriptor.swift in Sources */,
 				BFB3645823245A6000CD0EB1 /* LicensesViewController.swift in Sources */,
 				BFC6F7B81F435BC500221B96 /* Input+Display.swift in Sources */,
