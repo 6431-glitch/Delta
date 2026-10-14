@@ -30,23 +30,22 @@ struct CoresListView: View
     private func coreName(for system: System) -> String
     {
         let core = Settings.preferredCore(for: system.gameType) ?? system.deltaCore
-        return core.metadata?.name.value ?? core.name
+        return core?.metadata?.name.value ?? core?.name ?? system.localizedName
     }
     
     @ViewBuilder
     private func coreSettingsDestination(for system: System) -> some View
     {
-        switch system
-        {
-        case .j2me: EmptyView()
-        case .nes: NESCoreSettingsView()
-        case .genesis: GenesisCoreSettingsView()
-        case .snes: SNESCoreSettingsView()
-        case .n64: N64CoreSettingsView()
-        case .gbc: GBCCoreSettingsView()
-        case .gba: GBACoreSettingsView()
-        case .ds: MelonDSCoreSettingsView()
-            .ignoresSafeArea()
-        }
+        let destinations: [System: () -> AnyView] = [
+            .nes: { AnyView(NESCoreSettingsView()) },
+            .genesis: { AnyView(GenesisCoreSettingsView()) },
+            .snes: { AnyView(SNESCoreSettingsView()) },
+            .n64: { AnyView(N64CoreSettingsView()) },
+            .gbc: { AnyView(GBCCoreSettingsView()) },
+            .gba: { AnyView(GBACoreSettingsView()) },
+            .ds: { AnyView(MelonDSCoreSettingsView().ignoresSafeArea()) }
+        ]
+        if let destination = destinations[system] { destination() }
+        else { EmptyView() }
     }
 }

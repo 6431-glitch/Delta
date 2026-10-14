@@ -32,6 +32,7 @@
 /* End PBXAggregateTarget section */
 
 /* Begin PBXBuildFile section */
+		4DBCF3FA0B807D4EAF5B78A8 /* SystemDescriptor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2480549AD793D4CE3D2A3C13 /* SystemDescriptor.swift */; };
 		AABBAA000000000000000005 /* GameFileReplacement.swift in Sources */ = {isa = PBXBuildFile; fileRef = AABBAA000000000000000006; };
 		AABBAA000000000000000003 /* ArtworkImportValidation.swift in Sources */ = {isa = PBXBuildFile; fileRef = AABBAA000000000000000004; };
 		AABBAA000000000000000001 /* AuroraArtworkManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = AABBAA000000000000000002; };
@@ -739,6 +740,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		2480549AD793D4CE3D2A3C13 /* SystemDescriptor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Modules/DeltaDomain/SystemDescriptor.swift"; sourceTree = SOURCE_ROOT; };
 		A140A140A140A140A140A140 /* Delta 14.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "Delta 14.xcdatamodel"; sourceTree = "<group>"; };
 		AABBAA000000000000000006 /* GameFileReplacement.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = GameFileReplacement.swift; path = Delta/Components/Loading/GameFileReplacement.swift; sourceTree = "<group>"; };
 		AABBAA000000000000000004 /* ArtworkImportValidation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ArtworkImportValidation.swift; path = Delta/Components/Loading/ArtworkImportValidation.swift; sourceTree = "<group>"; };
@@ -1965,6 +1967,7 @@
 		BFFA71CE1AAC406100EE9DD1 = {
 			isa = PBXGroup;
 			children = (
+				2480549AD793D4CE3D2A3C13 /* SystemDescriptor.swift */,
 				BFFA71D91AAC406100EE9DD1 /* Delta */,
 				D539103029E88B6C0006B350 /* DeltaPreviews */,
 				D5D7C1F229E60E0000663793 /* DeltaFeatures */,
@@ -3104,6 +3107,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4DBCF3FA0B807D4EAF5B78A8 /* SystemDescriptor.swift in Sources */,
 				BFB3645823245A6000CD0EB1 /* LicensesViewController.swift in Sources */,
 				BFC6F7B81F435BC500221B96 /* Input+Display.swift in Sources */,
 				D5AE76C82C2B808F0086471B /* AltAppIconsViewController.swift in Sources */,

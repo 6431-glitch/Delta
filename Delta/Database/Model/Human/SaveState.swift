@@ -199,7 +199,7 @@ extension SaveState: Syncable
                     switch system
                     {
                     case .ds: self.coreIdentifier = Delta.desmumeCoreID // Assume DS save state with nil coreIdentifier is from DeSmuME core.
-                    default: self.coreIdentifier = system.deltaCore.identifier
+                    default: self.coreIdentifier = system.deltaCore?.identifier
                     }
                 }
             }

@@ -217,24 +217,21 @@ private extension AppDelegate
 {
     func registerCores()
     {
+        let systems: [System]
         #if LITE
-        
         #if BETA
-        Delta.register(System.nes.deltaCore)
-        Delta.register(System.gbc.deltaCore)
+        systems = [.nes, .gbc]
         #else
-        Delta.register(System.nes.deltaCore)
+        systems = [.nes]
         #endif
-        
+        #elseif BETA
+        systems = System.coreSystems
         #else
-        
-        #if BETA
-        System.coreSystems.forEach { Delta.register($0.deltaCore) }
-        #else
-        System.coreSystems.filter { $0 != .genesis }.forEach { Delta.register($0.deltaCore) }
+        systems = System.coreSystems.filter { $0 != .genesis }
         #endif
-        
-        #endif
+
+        systems.compactMap(\.deltaCore).forEach { Delta.register($0) }
+
     }
     
     func configureAppearance()

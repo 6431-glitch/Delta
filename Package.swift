@@ -8,6 +8,8 @@ let package = Package(
     platforms: [.macOS(.v13)],
     products: [],
     targets: [
+        .target(name: "DeltaDomain", path: "Modules/DeltaDomain"),
+        .testTarget(name: "DeltaDomainTests", dependencies: ["DeltaDomain"], path: "Tests/DeltaDomainTests"),
         .target(name: "DeltaSyncContracts", path: "Delta/Syncing", exclude: ["iCloudService.swift", "SyncManager.swift", "SyncResultViewController.swift", "SyncValidationError.swift", "SyncResultsViewController.storyboard"], sources: ["iCloudSyncState.swift"]),
         .testTarget(name: "DeltaSyncContractsTests", dependencies: ["DeltaSyncContracts"], path: "Tests/iCloudSyncTests")
     ]

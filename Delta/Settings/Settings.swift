@@ -587,20 +587,9 @@ private extension Settings
 {
     static func preferredControllerSkinKey(for system: System, traits: DeltaCore.ControllerSkin.Traits, forExternalController isForExternalController: Bool) -> String?
     {
-        let systemName: String
-        
-        switch system
-        {
-        case .nes: systemName = "nes"
-        case .snes: systemName = "snes"
-        case .gbc: systemName = "gbc"
-        case .gba: systemName = "gba"
-        case .n64: systemName = "n64"
-        case .ds: systemName = "ds"
-        case .j2me: return nil
-        case .genesis: systemName = "genesis"
-        }
-        
+        guard system.descriptor.runtime == .deltaCore else { return nil }
+        let systemName = system.descriptor.preferenceKey
+
         let orientation: String
         
         switch traits.orientation
