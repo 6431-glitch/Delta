@@ -1,3 +1,5 @@
+import DeltaApplication
+import DeltaDomain
 import Foundation
 import CoreData
 import Harmony
@@ -7,6 +9,7 @@ import DeltaCore
 @MainActor enum EmulationServices
 {
     static let ownership = SessionOwnership()
+    static let sessions = ActiveSessionRegistry()
     static let javaScope = "runtime.javaME"
     static var isJavaActive: Bool { ownership.isActive(scope: javaScope) }
 

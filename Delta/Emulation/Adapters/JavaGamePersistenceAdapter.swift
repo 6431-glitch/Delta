@@ -1,3 +1,4 @@
+import DeltaDomain
 import Foundation
 import CoreData
 

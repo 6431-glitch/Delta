@@ -7,6 +7,8 @@ import sys
 project = Path('Delta.xcodeproj/project.pbxproj')
 text = project.read_text()
 for source in sys.argv[1:]:
+    if source.startswith("Modules/"):
+        raise SystemExit("Module sources are discovered by SwiftPM; link their product instead.")
     name = Path(source).name
     reference = hashlib.sha256(('quality-ref:' + source).encode()).hexdigest()[:24].upper()
     build = hashlib.sha256(('quality-build:' + source).encode()).hexdigest()[:24].upper()

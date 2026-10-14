@@ -1,7 +1,5 @@
 import Foundation
-#if canImport(DeltaDomain)
 import DeltaDomain
-#endif
 
 public struct ImportInspection: Sendable
 {

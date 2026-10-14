@@ -32,19 +32,16 @@
 /* End PBXAggregateTarget section */
 
 /* Begin PBXBuildFile section */
+		46A80284B5B682887C5A60B7 /* OperatorLibraryAdapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE80453CDF6A4AA0E45222F4 /* OperatorLibraryAdapter.swift */; };
+		A0D1A0000000000000000005 /* DeltaApplication in Frameworks */ = {isa = PBXBuildFile; productRef = A0D1A0000000000000000004 /* DeltaApplication */; };
+		A0D1A0000000000000000003 /* DeltaDomain in Frameworks */ = {isa = PBXBuildFile; productRef = A0D1A0000000000000000002 /* DeltaDomain */; };
 		E40A6E12F79B1A89172A3048 /* JavaGamePersistenceAdapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87BE0FE31038C51B12E8A47F /* JavaGamePersistenceAdapter.swift */; };
 		CE48E751D406387BF45B48BB /* ContentImportAdapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6EA7AA2E25B3495F014DC17 /* ContentImportAdapter.swift */; };
 		58E844ED7981C19149682092 /* CoreStorageAdapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBDA771D9537BDA7D4C7B558 /* CoreStorageAdapter.swift */; };
-		41A5178CEB7667C881365D6B /* ImportCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6D2D18133049293E1AA3C9 /* ImportCoordinator.swift */; };
-		749BBA8010E6B0EE9090DCD4 /* StorageArtifact.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9D8B2B0A32AAF3F96A264FF /* StorageArtifact.swift */; };
-		1934D926CBEDDED9EC419140 /* CallbackEmulationSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC6CA25C6DC188454FD52A88 /* CallbackEmulationSession.swift */; };
 		8D94F31A50E42082F23830E8 /* MainSaveStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 072A5DD54074159CEC1D4C9A /* MainSaveStore.swift */; };
 		29B746939E8D75EF4191F079 /* RuntimeSessionAdapters.swift in Sources */ = {isa = PBXBuildFile; fileRef = E6D6C4D2D70B210CF6B767F1 /* RuntimeSessionAdapters.swift */; };
 		DAEB3743846EB0A6E2EC3665 /* CoreConfigurationAdapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 300E35A33EF6D6184A5986ED /* CoreConfigurationAdapter.swift */; };
 		D6CD2B0AE80F790BE8216AE2 /* LaunchServices.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEA0A7D2AEFDAF7F882ACAB7 /* LaunchServices.swift */; };
-		8A337DF6F4998822BC6A3F2A /* LaunchCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08F308589AE0B794B67564EC /* LaunchCoordinator.swift */; };
-		2D9D883BB963BD5BD3AF8A85 /* EmulationSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4864AE5F972B971745CBCEAF /* EmulationSession.swift */; };
-		4DBCF3FA0B807D4EAF5B78A8 /* SystemDescriptor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2480549AD793D4CE3D2A3C13 /* SystemDescriptor.swift */; };
 		AABBAA000000000000000005 /* GameFileReplacement.swift in Sources */ = {isa = PBXBuildFile; fileRef = AABBAA000000000000000006; };
 		AABBAA000000000000000003 /* ArtworkImportValidation.swift in Sources */ = {isa = PBXBuildFile; fileRef = AABBAA000000000000000004; };
 		AABBAA000000000000000001 /* AuroraArtworkManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = AABBAA000000000000000002; };
@@ -752,6 +749,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		DE80453CDF6A4AA0E45222F4 /* OperatorLibraryAdapter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Delta/Emulation/Adapters/OperatorLibraryAdapter.swift"; sourceTree = SOURCE_ROOT; };
 		87BE0FE31038C51B12E8A47F /* JavaGamePersistenceAdapter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Delta/Emulation/Adapters/JavaGamePersistenceAdapter.swift"; sourceTree = SOURCE_ROOT; };
 		F6EA7AA2E25B3495F014DC17 /* ContentImportAdapter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Delta/Emulation/Adapters/ContentImportAdapter.swift"; sourceTree = SOURCE_ROOT; };
 		FBDA771D9537BDA7D4C7B558 /* CoreStorageAdapter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Delta/Emulation/Adapters/CoreStorageAdapter.swift"; sourceTree = SOURCE_ROOT; };
@@ -1266,6 +1264,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A0D1A0000000000000000005 /* DeltaApplication in Frameworks */,
+				A0D1A0000000000000000003 /* DeltaDomain in Frameworks */,
 				D5FB042C2C5AF40A008329DD /* libresolv.tbd in Frameworks */,
 				BF69FBA823E396860051BEEA /* libz.tbd in Frameworks */,
 				D52CB8C82CE2B7C800B04458 /* StoreKit.framework in Frameworks */,
@@ -1991,6 +1991,7 @@
 		BFFA71CE1AAC406100EE9DD1 = {
 			isa = PBXGroup;
 			children = (
+				DE80453CDF6A4AA0E45222F4 /* OperatorLibraryAdapter.swift */,
 				87BE0FE31038C51B12E8A47F /* JavaGamePersistenceAdapter.swift */,
 				F6EA7AA2E25B3495F014DC17 /* ContentImportAdapter.swift */,
 				FBDA771D9537BDA7D4C7B558 /* CoreStorageAdapter.swift */,
@@ -2553,6 +2554,8 @@
 			);
 			name = Delta;
 			packageProductDependencies = (
+				A0D1A0000000000000000004 /* DeltaApplication */,
+				A0D1A0000000000000000002 /* DeltaDomain */,
 				D5C45FEE2BE992A80009DBB0 /* AltKit */,
 				D5AE76C12C2B59240086471B /* KeychainAccess */,
 				D5E76AAC2BE199890078C0C5 /* ShowTouches */,
@@ -2651,6 +2654,7 @@
 			);
 			mainGroup = BFFA71CE1AAC406100EE9DD1;
 			packageReferences = (
+				A0D1A0000000000000000001 /* XCLocalSwiftPackageReference "." */,
 				D5C45FED2BE992A80009DBB0 /* XCRemoteSwiftPackageReference "AltKit" */,
 				D5AE76C02C2B59240086471B /* XCRemoteSwiftPackageReference "KeychainAccess" */,
 				D5E76AAB2BE199890078C0C5 /* XCRemoteSwiftPackageReference "ShowTouches" */,
@@ -3143,19 +3147,14 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				46A80284B5B682887C5A60B7 /* OperatorLibraryAdapter.swift in Sources */,
 				E40A6E12F79B1A89172A3048 /* JavaGamePersistenceAdapter.swift in Sources */,
 				CE48E751D406387BF45B48BB /* ContentImportAdapter.swift in Sources */,
 				58E844ED7981C19149682092 /* CoreStorageAdapter.swift in Sources */,
-				41A5178CEB7667C881365D6B /* ImportCoordinator.swift in Sources */,
-				749BBA8010E6B0EE9090DCD4 /* StorageArtifact.swift in Sources */,
-				1934D926CBEDDED9EC419140 /* CallbackEmulationSession.swift in Sources */,
 				8D94F31A50E42082F23830E8 /* MainSaveStore.swift in Sources */,
 				29B746939E8D75EF4191F079 /* RuntimeSessionAdapters.swift in Sources */,
 				DAEB3743846EB0A6E2EC3665 /* CoreConfigurationAdapter.swift in Sources */,
 				D6CD2B0AE80F790BE8216AE2 /* LaunchServices.swift in Sources */,
-				8A337DF6F4998822BC6A3F2A /* LaunchCoordinator.swift in Sources */,
-				2D9D883BB963BD5BD3AF8A85 /* EmulationSession.swift in Sources */,
-				4DBCF3FA0B807D4EAF5B78A8 /* SystemDescriptor.swift in Sources */,
 				BFB3645823245A6000CD0EB1 /* LicensesViewController.swift in Sources */,
 				BFC6F7B81F435BC500221B96 /* Input+Display.swift in Sources */,
 				D5AE76C82C2B808F0086471B /* AltAppIconsViewController.swift in Sources */,
@@ -3910,7 +3909,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2023 Riley Testut. All rights reserved.";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.4;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -3958,7 +3957,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2023 Riley Testut. All rights reserved.";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.4;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -4130,6 +4129,13 @@
 		};
 /* End XCConfigurationList section */
 
+/* Begin XCLocalSwiftPackageReference section */
+        A0D1A0000000000000000001 /* XCLocalSwiftPackageReference "." */ = {
+            isa = XCLocalSwiftPackageReference;
+            relativePath = .;
+        };
+/* End XCLocalSwiftPackageReference section */
+
 /* Begin XCRemoteSwiftPackageReference section */
 		AC223E55A38F03C722DE4DDA /* XCRemoteSwiftPackageReference "Nuke" */ = {
 			isa = XCRemoteSwiftPackageReference;
@@ -4174,6 +4180,8 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		A0D1A0000000000000000004 /* DeltaApplication */ = {isa = XCSwiftPackageProductDependency; productName = DeltaApplication; };
+		A0D1A0000000000000000002 /* DeltaDomain */ = {isa = XCSwiftPackageProductDependency; productName = DeltaDomain; };
 		015BA9A7C0840E713AAF7F6B /* NukeExtensions */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = AC223E55A38F03C722DE4DDA /* XCRemoteSwiftPackageReference "Nuke" */;
