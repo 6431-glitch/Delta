@@ -283,7 +283,9 @@ private extension PauseViewController
         })
         
         let speed = (emulatorCore.game as? Game).map { FastForwardSpeed.resolvedRate(for: $0, core: emulatorCore.deltaCore) } ?? emulatorCore.deltaCore.supportedRates.upperBound
-        self.fastForwardItem = MenuItem(text: String(localized: "Fast Forward") + " · " + FastForwardSpeed(rawValue: speed).description, image: #imageLiteral(resourceName: "FastForward"), action: { _ in })
+        if System(gameType: emulatorCore.game.type) != .gba {
+            self.fastForwardItem = MenuItem(text: String(localized: "Fast Forward") + " · " + FastForwardSpeed(rawValue: speed).description, image: #imageLiteral(resourceName: "FastForward"), action: { _ in })
+        }
         self.sustainButtonsItem = MenuItem(text: String(localized: "Repeat Buttons"), image: #imageLiteral(resourceName: "SustainButtons"), action: { _ in })
         self.screenshotItem = MenuItem(text: NSLocalizedString("Screenshot", comment: ""), image: #imageLiteral(resourceName: "Screenshot"), action: { _ in })
         self.orientationItem = MenuItem(text: String(localized: "Orientation"),
