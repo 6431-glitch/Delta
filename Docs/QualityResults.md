@@ -2,6 +2,8 @@
 
 Updated 2026-10-14. Integration branch: `refactor/codebase-quality`.
 
+Follow-up 2026-10-15: fresh Debug build and NES/Java/Java RMS relaunch smoke checks pass on the user's existing iPhone 17 Pro, iOS 26.5. The device and its data were preserved. See [SimulatorValidation.md](SimulatorValidation.md) for evidence and remaining validation limits.
+
 ## Delivered code
 
 - [x] Phase 0: repeatable validation runner, baseline inventory, parameterized schema fixtures, and preserved feature checkpoint.
