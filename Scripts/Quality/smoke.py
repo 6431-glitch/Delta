@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Exercise original fixtures in an isolated simulator; delete only the device this run creates."""
+"""Exercise original fixtures; preserve an existing device or delete only one created here."""
 import argparse
 import json
 import hashlib
@@ -14,6 +14,7 @@ root = Path(__file__).resolve().parents[2]
 parser = argparse.ArgumentParser()
 parser.add_argument('--app', type=Path, required=True)
 parser.add_argument('--output', type=Path, default=Path('.build/quality-smoke'))
+parser.add_argument('--device', help='Use an already booted simulator without erasing, shutting down, or deleting it')
 args = parser.parse_args()
 app, output = args.app.resolve(), args.output.resolve()
 output.mkdir(parents=True, exist_ok=True)
@@ -24,14 +25,22 @@ with (app / 'Info.plist').open('rb') as file:
 def sim(*arguments, **kwargs):
     return subprocess.check_output(['xcrun', 'simctl', *arguments], text=True, **kwargs).strip()
 
-types = json.loads(sim('list', 'devicetypes', '-j'))['devicetypes']
-device_type = next(item['identifier'] for item in types if item['name'] == 'iPhone 17 Pro')
-runtimes = json.loads(sim('list', 'runtimes', '-j'))['runtimes']
-runtime = next(item['identifier'] for item in runtimes if item.get('isAvailable') and item['name'] == 'iOS 26.5')
-device = sim('create', 'Delta Quality Smoke', device_type, runtime)
+if args.device:
+    devices = json.loads(sim('list', 'devices', '-j'))['devices']
+    selected = next((item for group in devices.values() for item in group if item['udid'] == args.device), None)
+    if selected is None or selected['state'] != 'Booted':
+        raise SystemExit('--device must identify an existing booted simulator')
+    device = args.device
+else:
+    types = json.loads(sim('list', 'devicetypes', '-j'))['devicetypes']
+    device_type = next(item['identifier'] for item in types if item['name'] == 'iPhone 17 Pro')
+    runtimes = json.loads(sim('list', 'runtimes', '-j'))['runtimes']
+    runtime = next(item['identifier'] for item in runtimes if item.get('isAvailable') and item['name'] == 'iOS 26.5')
+    device = sim('create', 'Delta Quality Smoke', device_type, runtime)
 try:
     print('Smoke simulator: ' + device, flush=True)
-    sim('boot', device)
+    if not args.device:
+        sim('boot', device)
     subprocess.run(['open', '-a', 'Simulator', '--args', '-CurrentDeviceUDID', device], check=True)
     sim('bootstatus', device, '-b')
     sim('install', device, str(app))
@@ -77,6 +86,7 @@ try:
                 try: process.wait(timeout=5)
                 except subprocess.TimeoutExpired: process.kill(); process.wait()
 finally:
-    try: sim('shutdown', device)
-    except subprocess.CalledProcessError: pass
-    sim('delete', device)
+    if not args.device:
+        try: sim('shutdown', device)
+        except subprocess.CalledProcessError: pass
+        sim('delete', device)
