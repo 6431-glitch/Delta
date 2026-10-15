@@ -7,6 +7,6 @@
 - [x] Preserve save availability, hardcore load restrictions, multiplayer restrictions, and repeat-button selection hiding.
 - [x] Build the Debug Simulator app (`.build/gba-controls-build.log`: BUILD SUCCEEDED).
 - [x] Verify the GBA scene in portrait/landscape, Fast Forward on/off feedback, long-press speed selection, Quick Save enabling Quick Load, Quick Load, and the pause menu without Fast Forward on iPhone 17 Pro/iOS 26.5.
-- [ ] Merge the completed change into `refactor/codebase-quality`.
+- [x] Merge the completed change from `quality/gba-gameplay-controls` into `refactor/codebase-quality`.
 
 Verification used an original solid-blue GBA fixture and the Debug-only silent audio backend. `DELTA_QUALITY_SMOKE_INTERACTIVE=1` keeps the fixture running for manual controls checks instead of executing the automatic shutdown test. Artifacts are under `.build/gba-controls/`. Physical-device/audio validation is unchanged.
