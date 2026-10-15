@@ -10,7 +10,7 @@ Follow-up validation on an existing user simulator. The runner supports `--devic
 - [x] Verify Java import, rendered frame, pause/resume, shutdown, and checkpoint.
 - [x] Verify Java RMS persistence across relaunch; backup contents changed and captured frame shows `RMS launches: 2`.
 - [x] Inspect captured NES/Java frames and reopen the normal app.
-- [ ] Merge validation changes into `refactor/codebase-quality`.
+- [x] Merge validation changes from `quality/simulator-validation` into `refactor/codebase-quality`.
 
 Console smoke uses injected silent audio. These checks do not establish audible playback, physical controller/Operator behavior, signed-device cloud sync, or comparable device performance.
 
