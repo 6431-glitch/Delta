@@ -234,6 +234,7 @@ class GameViewController: DeltaCore.GameViewController
     private var repeatPlayerIndex: Int?
     private lazy var gbaQuickSaveButton = makeGBAQuickStateButton(symbol: "square.and.arrow.down", label: String(localized: "Quick Save"), action: #selector(saveFromGBAControl))
     private lazy var gbaQuickLoadButton = makeGBAQuickStateButton(symbol: "arrow.counterclockwise", label: String(localized: "Quick Load"), action: #selector(loadFromGBAControl))
+    private lazy var gbaFastForwardButton = makeGBAQuickStateButton(symbol: "forward.fill", label: String(localized: "Fast Forward"), action: #selector(fastForwardFromGBAControl))
 
     private var repeatTimer: Timer?
     private var repeatStartedAt = ProcessInfo.processInfo.systemUptime
@@ -1474,8 +1475,14 @@ private extension GameViewController {
         performQuickLoadAction()
     }
 
+    @objc func fastForwardFromGBAControl() {
+        guard let emulatorCore, emulatorCore.state == .running else { return }
+        let isFastForwarding = emulatorCore.rate != emulatorCore.deltaCore.supportedRates.lowerBound
+        performFastForwardAction(activate: !isFastForwarding)
+    }
+
     func updateGBAQuickStateControls() {
-        let buttons = [gbaQuickSaveButton, gbaQuickLoadButton]
+        let buttons = [gbaQuickSaveButton, gbaQuickLoadButton, gbaFastForwardButton]
         for button in buttons where button.superview == nil { view.addSubview(button) }
         guard let game = game as? Game, System(gameType: game.type) == .gba,
               !controllerView.isHidden, controllerView.playerIndex != nil,
@@ -1498,7 +1505,15 @@ private extension GameViewController {
         }
         let side: CGFloat = 44
         gbaQuickSaveButton.frame = CGRect(x: left.maxX + 8, y: left.midY - side / 2, width: side, height: side)
-        gbaQuickLoadButton.frame = CGRect(x: right.minX - 8 - side, y: right.midY - side / 2, width: side, height: side)
+        gbaQuickLoadButton.frame = gbaQuickSaveButton.frame.offsetBy(dx: side + 8, dy: 0)
+        gbaFastForwardButton.frame = CGRect(x: right.minX - 8 - side, y: right.midY - side / 2, width: side, height: side)
+        if gbaQuickLoadButton.frame.maxX + 8 > gbaFastForwardButton.frame.minX {
+            // Narrow portrait skins cannot fit three touch targets between the shoulders.
+            let origin = CGPoint(x: (left.maxX + right.minX - (side * 2 + 8)) / 2,
+                                 y: min(left.minY, right.minY) - side - 8)
+            gbaQuickSaveButton.frame.origin = origin
+            gbaQuickLoadButton.frame = gbaQuickSaveButton.frame.offsetBy(dx: side + 8, dy: 0)
+        }
         let available = emulatorCore?.isWirelessMultiplayerActive != true
         let request = SaveState.fetchRequest(for: game, type: .quick)
         request.fetchLimit = 1
@@ -1506,6 +1521,30 @@ private extension GameViewController {
         gbaQuickSaveButton.isEnabled = available
         gbaQuickLoadButton.isEnabled = available && hasQuickSave && (!AchievementsManager.shared.isAuthenticated || !Settings.features.retroAchievements.isHardcoreModeEnabled)
         gbaQuickLoadButton.accessibilityHint = hasQuickSave ? String(localized: "Loads your latest quick save.") : String(localized: "Create a quick save first.")
+        gbaFastForwardButton.isEnabled = available && (emulatorCore?.deltaCore.supportedRates.upperBound ?? 1) > 1
+        let isFastForwarding = emulatorCore.map { $0.rate != $0.deltaCore.supportedRates.lowerBound } ?? false
+        gbaFastForwardButton.isSelected = isFastForwarding
+        gbaFastForwardButton.configuration?.baseForegroundColor = isFastForwarding ? .systemYellow : .white
+        gbaFastForwardButton.accessibilityValue = isFastForwarding ? String(localized: "On") : String(localized: "Off")
+        if let core = emulatorCore?.deltaCore {
+            let preferred = game.settings[.fastForwardSpeed] as? Double
+            var actions = FastForwardSpeed.speeds(in: core.supportedRates).map { speed in
+                UIAction(title: speed.description, state: preferred == speed.rawValue ? .on : .off) { [weak self, weak game] _ in
+                    guard let self, let game else { return }
+                    game.settings[.fastForwardSpeed] = speed.rawValue
+                    game.managedObjectContext?.saveWithErrorLogging()
+                    self.performFastForwardAction(activate: true)
+                }
+            }
+            let defaultSpeed = FastForwardSpeed(rawValue: FastForwardSpeed.resolvedRate(for: game, core: core, useGamePreference: false))
+            actions.append(UIAction(title: String(localized: "Default") + " · " + defaultSpeed.description, state: preferred == nil ? .on : .off) { [weak self, weak game] _ in
+                guard let self, let game else { return }
+                game.settings[.fastForwardSpeed] = nil
+                game.managedObjectContext?.saveWithErrorLogging()
+                self.performFastForwardAction(activate: true)
+            })
+            gbaFastForwardButton.menu = UIMenu(title: String(localized: "Fast Forward"), children: actions)
+        }
         for button in buttons {
             button.isHidden = false
             button.alpha = button.isEnabled ? 1 : 0.4
@@ -1614,6 +1653,7 @@ private extension GameViewController
         self.isSelectingSustainedButtons = true
         gbaQuickSaveButton.isHidden = true
         gbaQuickLoadButton.isHidden = true
+        gbaFastForwardButton.isHidden = true
         
         let sustainInputsMapping = SustainInputsMapping(gameController: gameController)
         gameController.addReceiver(self, inputMapping: sustainInputsMapping)
@@ -1722,6 +1762,7 @@ extension GameViewController
     func performFastForwardAction(activate: Bool)
     {
         guard let emulatorCore = self.emulatorCore, !emulatorCore.isWirelessMultiplayerActive else { return }
+        defer { view.setNeedsLayout() }
         
         if activate
         {

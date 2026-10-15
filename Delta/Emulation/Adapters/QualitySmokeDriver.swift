@@ -23,7 +23,7 @@ import AVFoundation
     }
     static func console(_ controller: GameViewController, attempt: Int = 0)
     {
-        guard enabled else { return }
+        guard enabled, ProcessInfo.processInfo.environment["DELTA_QUALITY_SMOKE_INTERACTIVE"] != "1" else { return }
         DispatchQueue.main.asyncAfter(deadline: .now() + 2) { [weak controller] in
             guard let controller, let core = controller.emulatorCore else { record(runtime: "console", passed: false, detail: "No core"); return }
             do {
