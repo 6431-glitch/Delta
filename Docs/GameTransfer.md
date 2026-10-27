@@ -7,7 +7,7 @@
 - [x] Import packages from Files/Open In; confirm existing-game replacement and preserve a recovery package.
 - [x] Restore files and database records together with rollback on failure; reject games currently in use.
 - [x] Verify round trips and malformed-package rejection, build Debug, and check the menu on Simulator.
-- [ ] Merge into `refactor/codebase-quality`.
+- [x] Merge `quality/game-transfer` (`4f33452`) into `refactor/codebase-quality`. Changes are local; nothing has been pushed.
 
 Transfer copies the game; it does not remove the source. Global preferences, accounts, cloud credentials, emulator firmware, and photos saved outside Delta are not game-owned data. Save states retain their core/version metadata and still require a compatible emulator core on the receiving device.
 
