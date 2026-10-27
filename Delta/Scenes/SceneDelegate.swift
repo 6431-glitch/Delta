@@ -196,7 +196,10 @@ private extension SceneDelegate
             case .url(let url):
                 if url.isFileURL
                 {
-                    if GameType(fileExtension: url.pathExtension) != nil || url.pathExtension.lowercased() == "zip"
+                    if url.pathExtension.lowercased() == GameTransferCoordinator.fileExtension {
+                        GameTransferCoordinator.receive([url]) { self.present($0) }
+                    }
+                    else if GameType(fileExtension: url.pathExtension) != nil || url.pathExtension.lowercased() == "zip"
                     {
                         self.importGame(at: url)
                     }

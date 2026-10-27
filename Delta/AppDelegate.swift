@@ -265,7 +265,11 @@ extension AppDelegate
     {
         if url.isFileURL
         {
-            if GameType(fileExtension: url.pathExtension) != nil || url.pathExtension.lowercased() == "zip"
+            if url.pathExtension.lowercased() == GameTransferCoordinator.fileExtension {
+                GameTransferCoordinator.receive([url]) { self.present($0) }
+                return true
+            }
+            else if GameType(fileExtension: url.pathExtension) != nil || url.pathExtension.lowercased() == "zip"
             {
                 return self.importGame(at: url)
             }

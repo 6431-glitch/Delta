@@ -1,5 +1,7 @@
 # Quality upgrade results
 
+Feature follow-up 2026-10-27: complete per-game Transfer export/restore is documented in [GameTransfer.md](GameTransfer.md). The normal contract suite now has 36 tests, including six transfer test groups; actual-model console/Java round trips and the transfer UI/document-handler/recovery flow pass.
+
 Updated 2026-10-14. Integration branch: `refactor/codebase-quality`.
 
 Follow-up 2026-10-15: fresh Debug build and NES/Java/Java RMS relaunch smoke checks pass on the user's existing iPhone 17 Pro, iOS 26.5. The device and its data were preserved. See [SimulatorValidation.md](SimulatorValidation.md) for evidence and remaining validation limits.

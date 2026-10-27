@@ -308,6 +308,10 @@ extension GamesViewController
                         print("[J2ME QA] Import failed: \(errors)"); return
                     }
                     print("[J2ME QA] Launching \(game.name)")
+                    if ProcessInfo.processInfo.environment["DELTA_QUALITY_TRANSFER_ROUNDTRIP"] == "1" {
+                        QualityTransferDriver.run(game)
+                        return
+                    }
                     if game.type == .j2me { J2MELibrary.launch(game, from: self) }
                     else if let controller = self.pageViewController.viewControllers?.first as? GameCollectionViewController {
                         controller.launchFromHome(game)
@@ -596,6 +600,7 @@ extension GamesViewController: ImportControllerDelegate
         documentTypes.insert(UTType.data.identifier)
         documentTypes.insert(UTType.item.identifier)
         documentTypes.insert(kUTTypeZipArchive as String)
+        documentTypes.insert("page.ducnguyen.delta.transfer")
         documentTypes.insert("com.rileytestut.delta.skin")
         
         #if BETA
@@ -641,7 +646,9 @@ extension GamesViewController: ImportControllerDelegate
             print(error)
         }
         
-        let gameURLs = urls.filter { $0.pathExtension.lowercased() != "deltaskin" }
+        let transfers = urls.filter { $0.pathExtension.lowercased() == GameTransferCoordinator.fileExtension }
+        GameTransferCoordinator.receive(Array(transfers)) { [weak self] in self?.present($0, animated: true) }
+        let gameURLs = urls.filter { $0.pathExtension.lowercased() != "deltaskin" && $0.pathExtension.lowercased() != GameTransferCoordinator.fileExtension }
         DatabaseManager.shared.importGames(at: Set(gameURLs)) { (games, errors) in
             if errors.count > 0
             {
