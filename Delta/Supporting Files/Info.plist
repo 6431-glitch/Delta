@@ -9,6 +9,12 @@
 	<key>CFBundleDocumentTypes</key>
 	<array>
         <dict>
+            <key>CFBundleTypeName</key><string>Delta Game Transfer</string>
+            <key>CFBundleTypeRole</key><string>Editor</string>
+            <key>LSHandlerRank</key><string>Owner</string>
+            <key>LSItemContentTypes</key><array><string>page.ducnguyen.delta.transfer</string></array>
+        </dict>
+        <dict>
             <key>CFBundleTypeName</key><string>Java ME Game</string>
             <key>CFBundleTypeRole</key><string>Viewer</string>
             <key>LSHandlerRank</key><string>Alternate</string>
@@ -333,6 +339,15 @@
 	<true/>
 	<key>UTExportedTypeDeclarations</key>
 	<array>
+        <dict>
+            <key>UTTypeIdentifier</key><string>page.ducnguyen.delta.transfer</string>
+            <key>UTTypeDescription</key><string>Delta Game Transfer</string>
+            <key>UTTypeConformsTo</key><array><string>public.data</string><string>public.archive</string></array>
+            <key>UTTypeTagSpecification</key><dict>
+                <key>public.filename-extension</key><array><string>deltatransfer</string></array>
+                <key>public.mime-type</key><string>application/x-delta-transfer</string>
+            </dict>
+        </dict>
         <dict>
             <key>UTTypeIdentifier</key><string>page.ducnguyen.delta.j2me</string>
             <key>UTTypeDescription</key><string>Java ME JAR</string>

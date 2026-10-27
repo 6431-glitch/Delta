@@ -746,6 +746,10 @@ private extension GameCollectionViewController
         let shareAction = UIAction(title: NSLocalizedString("Share", comment: ""), image: UIImage(symbolNameIfAvailable: "square.and.arrow.up")) { [unowned self] action in
             self.share(game)
         }
+        let transferAction = UIAction(title: String(localized: "Transfer"), image: UIImage(systemName: "arrow.up.arrow.down")) { [weak self] _ in
+            guard let self else { return }
+            GameTransferCoordinator.export(game, from: self, sourceView: self._popoverSourceView)
+        }
         
         let settingsAction = UIAction(title: NSLocalizedString("Game Settings", comment: ""), image: UIImage(symbolNameIfAvailable: "gear")) { [unowned self] _ in
             self.showSettings(for: game)
@@ -781,7 +785,7 @@ private extension GameCollectionViewController
         switch game.type
         {
         case .j2me:
-            return [favoriteAction, renameAction, changeArtworkAction, shareAction, settingsMenu, deleteAction]
+            return [favoriteAction, renameAction, changeArtworkAction, shareAction, transferAction, settingsMenu, deleteAction]
 
         case GameType.unknown:
             return [renameAction, shareAction, settingsMenu, deleteAction]
@@ -790,7 +794,7 @@ private extension GameCollectionViewController
             return openActions + [favoriteAction, renameAction, changeArtworkAction, settingsMenu, saveStatesAction]
             
         default:
-            return openActions + [favoriteAction, renameAction, changeArtworkAction, shareAction, settingsMenu, savesMenu, deleteAction]
+            return openActions + [favoriteAction, renameAction, changeArtworkAction, shareAction, transferAction, settingsMenu, savesMenu, deleteAction]
         }
     }
     

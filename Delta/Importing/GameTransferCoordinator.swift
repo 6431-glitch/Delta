@@ -1,0 +1,106 @@
+import UIKit
+import CoreData
+import DeltaApplication
+import DeltaCore
+
+/// One interactive transfer at a time; UI owns confirmation and temporary-package lifetime.
+@MainActor enum GameTransferCoordinator {
+    static let fileExtension = "deltatransfer"
+    private static var busy = false
+
+    static func export(_ game: Game, from presenter: UIViewController, sourceView: UIView?) {
+        guard !busy else { show(GameTransferError.busy, present: { presenter.present($0, animated: true) }); return }
+        busy = true
+        Task {
+            defer { busy = false }
+            do {
+                let snapshot = try GameTransferArchive.snapshot(game)
+                let identifiers = Set(snapshot.manifest.games.map(\.identifier))
+                EmulationServices.transferringGameIdentifiers.formUnion(identifiers)
+                defer { EmulationServices.transferringGameIdentifiers.subtract(identifiers) }
+                let url = try await work { try GameTransferArchive.create(snapshot) }
+                let share = UIActivityViewController(activityItems: [url], applicationActivities: nil)
+                share.popoverPresentationController?.sourceView = sourceView ?? presenter.view
+                share.popoverPresentationController?.sourceRect = sourceView?.bounds ?? CGRect(x: presenter.view.bounds.midX, y: presenter.view.bounds.midY, width: 1, height: 1)
+                share.completionWithItemsHandler = { _, _, _, _ in try? FileManager.default.removeItem(at: url.deletingLastPathComponent()) }
+                presenter.present(share, animated: true)
+            } catch { show(error, present: { presenter.present($0, animated: true) }) }
+        }
+    }
+
+    static func receive(_ urls: [URL], present: @escaping (UIAlertController) -> Void) {
+        guard !urls.isEmpty else { return }
+        guard !busy else { show(GameTransferError.busy, present: present); return }
+        busy = true
+        Task {
+            defer { busy = false }
+            for url in urls {
+                do {
+                    let prepared = try await work { try GameTransferArchive.prepare(url) }
+                    defer { try? FileManager.default.removeItem(at: prepared.directory) }
+                    try checkInactive(prepared.manifest)
+                    var identifiers = Set(prepared.manifest.games.map(\.identifier))
+                    EmulationServices.transferringGameIdentifiers.formUnion(identifiers)
+                    defer { EmulationServices.transferringGameIdentifiers.subtract(identifiers) }
+                    let existing = try prepared.manifest.games.compactMap {
+                        try GameTransferArchive.find(Game.self, id: $0.identifier, context: DatabaseManager.shared.viewContext)
+                    }
+                    if !existing.isEmpty {
+                        let confirmed = await confirm(present: present)
+                        guard confirmed else { continue }
+                        try checkInactive(prepared.manifest)
+                        // Keep complete recovery packages in Documents, beyond temporary share-sheet cleanup.
+                        var backedUp = Set<String>()
+                        for game in existing where !backedUp.contains(game.identifier) {
+                            let snapshot = try GameTransferArchive.snapshot(game)
+                            let recoveryIdentifiers = Set(snapshot.manifest.games.map(\.identifier))
+                            identifiers.formUnion(recoveryIdentifiers)
+                            EmulationServices.transferringGameIdentifiers.formUnion(recoveryIdentifiers)
+                            let recovery = try await work { try GameTransferArchive.create(snapshot) }
+                            let directory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+                                .appendingPathComponent("Transfers/Recovery/" + UUID().uuidString, isDirectory: true)
+                            try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+                            try FileManager.default.moveItem(at: recovery, to: directory.appendingPathComponent(recovery.lastPathComponent))
+                            try? FileManager.default.removeItem(at: recovery.deletingLastPathComponent())
+                            backedUp.formUnion(snapshot.manifest.games.map(\.identifier))
+                        }
+                    }
+                    try checkInactive(prepared.manifest)
+                    try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+                        GameTransferArchive.install(prepared) { continuation.resume(with: $0) }
+                    }
+                } catch {
+                    show(error, present: present)
+                    return
+                }
+            }
+        }
+    }
+
+    private static func checkInactive(_ manifest: GameTransferManifest) throws {
+        guard !manifest.games.contains(where: {
+            EmulationServices.sessions.session(gameIdentifier: $0.identifier) != nil ||
+            ($0.gameType == GameType.j2me.rawValue && EmulationServices.isJavaActive)
+        }) else { throw GameTransferError.gameInUse }
+    }
+    private static func confirm(present: (UIAlertController) -> Void) async -> Bool {
+        await withCheckedContinuation { continuation in
+            let alert = UIAlertController(title: String(localized: "Restore Game Transfer?"),
+                message: String(localized: "This game is already in your library. Imported settings and matching saves will replace the current versions. Additional local saves are kept. A recovery transfer of your current game will be saved in Documents/Transfers/Recovery."), preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: String(localized: "Cancel"), style: .cancel) { _ in continuation.resume(returning: false) })
+            alert.addAction(UIAlertAction(title: String(localized: "Restore"), style: .default) { _ in continuation.resume(returning: true) })
+            present(alert)
+        }
+    }
+    private static func show(_ error: Error, present: (UIAlertController) -> Void) {
+        present(UIAlertController(title: String(localized: "Could Not Transfer Game"), error: error))
+    }
+    static func work<T: Sendable>(_ body: @escaping @Sendable () throws -> T) async throws -> T {
+        try await withCheckedThrowingContinuation { continuation in
+            DispatchQueue.global(qos: .userInitiated).async {
+                do { continuation.resume(returning: try body()) }
+                catch { continuation.resume(throwing: error) }
+            }
+        }
+    }
+}

@@ -95,6 +95,8 @@ class GameViewController: DeltaCore.GameViewController
 
     override func makeEmulatorCore(game: GameProtocol, options: [EmulatorCore.Option: Any]) -> EmulatorCore?
     {
+        // Scene restoration can construct a core without the library launch preflight.
+        if let game = game as? Game, EmulationServices.transferringGameIdentifiers.contains(game.identifier) { return nil }
         #if DEBUG
         if QualitySmokeDriver.enabled {
             let standard = EmulatorRenderingServices.apple

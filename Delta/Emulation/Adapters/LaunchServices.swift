@@ -10,6 +10,7 @@ import DeltaCore
 {
     static let ownership = SessionOwnership()
     static let sessions = ActiveSessionRegistry()
+    static var transferringGameIdentifiers = Set<String>()
     static var pendingJavaPreparation: LaunchPreparation?
     static weak var pendingJavaSurface: AnyObject?
     static func cancelPendingJavaLaunch(ownedBy surface: AnyObject)
@@ -22,6 +23,7 @@ import DeltaCore
 
     static func prepare(_ game: Game) throws -> PreparedLaunch
     {
+        guard !transferringGameIdentifiers.contains(game.identifier) else { throw GameTransferError.busy }
         guard let context = game.managedObjectContext else { throw EmulationError.gameNotFound }
         let adapter = ManagedLaunchAdapter(context: context, sync: SyncManager.shared.coordinator)
         let systemIdentifier = game.type.rawValue
