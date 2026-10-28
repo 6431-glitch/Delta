@@ -111,8 +111,7 @@ enum GameTransferArchive {
     }
 
     static func create(_ snapshot: Snapshot) throws -> URL {
-        let directory = fm.temporaryDirectory.appendingPathComponent(UUID().uuidString, isDirectory: true)
-        try fm.createDirectory(at: directory, withIntermediateDirectories: true)
+        let directory = try GameTransferTemporaryFiles.createWorkspace()
         do {
             let staging = directory.appendingPathComponent("staging", isDirectory: true)
             try fm.createDirectory(at: staging, withIntermediateDirectories: true)
@@ -145,7 +144,16 @@ enum GameTransferArchive {
 
     static func prepare(_ url: URL) throws -> Prepared {
         let access = url.startAccessingSecurityScopedResource(); defer { if access { url.stopAccessingSecurityScopedResource() } }
-        let archive = try Archive(url: url, accessMode: .read)
+        let directory = try GameTransferTemporaryFiles.createWorkspace()
+        var prepared = false
+        defer { if !prepared { GameTransferTemporaryFiles.discardWorkspace(directory) } }
+        var source = url
+        if GameTransferTemporaryFiles.isIncomingCopy(url) {
+            // Take ownership of the sandbox copy, never the user's original in Files.
+            source = directory.appendingPathComponent("incoming.deltatransfer")
+            try fm.moveItem(at: url, to: source)
+        }
+        let archive = try Archive(url: source, accessMode: .read)
         let entries = Array(archive)
         guard entries.count <= 20001, Set(entries.map(\.path)).count == entries.count,
               entries.allSatisfy({ $0.type == .file }),
@@ -161,8 +169,6 @@ enum GameTransferArchive {
         try manifest.validate()
         guard Set(entries.map(\.path)) == Set(manifest.files.map(\.path)).union(["manifest.json"]) else { throw GameTransferError.invalidPackage }
         let entriesByPath = Dictionary(uniqueKeysWithValues: entries.map { ($0.path, $0) })
-        let directory = fm.temporaryDirectory.appendingPathComponent(UUID().uuidString, isDirectory: true)
-        try fm.createDirectory(at: directory, withIntermediateDirectories: true)
         do {
             for file in manifest.files {
                 guard let entry = entriesByPath[file.path], entry.uncompressedSize == file.byteCount else { throw GameTransferError.invalidPackage }
@@ -190,13 +196,16 @@ enum GameTransferArchive {
                       try RSTHasher.sha1HashOfFile(at: content) == record.identifier else { throw GameTransferError.invalidPackage }
                 _ = try ContentImportAdapter.inspect(content)
             }
+            prepared = true
             return Prepared(manifest: manifest, directory: directory)
         } catch { try? fm.removeItem(at: directory); throw error }
     }
 
     static func install(_ prepared: Prepared, container: NSPersistentContainer = DatabaseManager.shared, completion: @escaping (Result<Void, Error>) -> Void) {
         container.performBackgroundTask { context in
-            let rollbackDirectory = FileManager.default.temporaryDirectory.appendingPathComponent("transfer-rollback-" + UUID().uuidString)
+            // Unfinished rollback data must survive app restarts and temporary-file cleanup.
+            let rollbackDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+                .appendingPathComponent("Transfers/Recovery/Incomplete/" + UUID().uuidString, isDirectory: true)
             var transaction: GameTransferFileTransaction?
             do {
                 // Validate all relationships/collisions before writing anything.
