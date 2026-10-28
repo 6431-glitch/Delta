@@ -8,7 +8,7 @@
 - [x] Clean abandoned workspaces from an interrupted prior session at app launch, without sweeping active transfers.
 - [x] Preserve original games/saves, user-saved transfer files in Files, and recovery backups; retain incomplete rollback data outside temporary cleanup.
 - [x] Verify cleanup paths and exercise sender/receiver cleanup on Simulator: export lifetime removes sender workspace, valid/invalid Inbox imports remove receiver copies, extraction folders disappear, and saved packages remain. Debug build and all 39 contracts pass.
-- [ ] Merge the cleanup follow-up into `refactor/codebase-quality`.
+- [x] Merge `quality/game-transfer-cleanup` (`ed3b93d`) into `refactor/codebase-quality` locally.
 
 Cleanup removes transfer working files on each installation, including an app-owned Inbox copy on the receiver. A transfer deliberately saved in Files is retained. The original game and its installed saves remain on both devices. Recovery packages and incomplete rollback data in Documents/Transfers/Recovery are preserved. App restart removes abandoned transfer workspaces; it never sweeps that recovery directory. Cleanup cannot control copies retained by another share destination or a file provider.
 
