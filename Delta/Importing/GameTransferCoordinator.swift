@@ -7,22 +7,39 @@ import DeltaCore
 @MainActor enum GameTransferCoordinator {
     static let fileExtension = "deltatransfer"
     private static var busy = false
+    private static var deferredIncomingCleanup = Set<URL>()
+
+    static func cleanInterruptedTransfers() {
+        let abandoned = GameTransferTemporaryFiles.interruptedWorkspaces()
+        DispatchQueue.global(qos: .utility).async {
+            for directory in abandoned { GameTransferTemporaryFiles.discardWorkspace(directory) }
+        }
+    }
+
+    private static func finishOperation(incoming: [URL] = []) {
+        busy = false
+        deferredIncomingCleanup.formUnion(incoming)
+        let copies = deferredIncomingCleanup
+        deferredIncomingCleanup.removeAll()
+        for url in copies { GameTransferTemporaryFiles.discardIncomingCopy(url) }
+    }
 
     static func export(_ game: Game, from presenter: UIViewController, sourceView: UIView?) {
         guard !busy else { show(GameTransferError.busy, present: { presenter.present($0, animated: true) }); return }
         busy = true
         Task {
-            defer { busy = false }
+            defer { finishOperation() }
             do {
                 let snapshot = try GameTransferArchive.snapshot(game)
                 let identifiers = Set(snapshot.manifest.games.map(\.identifier))
                 EmulationServices.transferringGameIdentifiers.formUnion(identifiers)
                 defer { EmulationServices.transferringGameIdentifiers.subtract(identifiers) }
                 let url = try await work { try GameTransferArchive.create(snapshot) }
+                let lifetime = GameTransferExportLifetime(directory: url.deletingLastPathComponent())
                 let share = UIActivityViewController(activityItems: [url], applicationActivities: nil)
                 share.popoverPresentationController?.sourceView = sourceView ?? presenter.view
                 share.popoverPresentationController?.sourceRect = sourceView?.bounds ?? CGRect(x: presenter.view.bounds.midX, y: presenter.view.bounds.midY, width: 1, height: 1)
-                share.completionWithItemsHandler = { _, _, _, _ in try? FileManager.default.removeItem(at: url.deletingLastPathComponent()) }
+                share.completionWithItemsHandler = { _, _, _, _ in lifetime.finish() }
                 presenter.present(share, animated: true)
             } catch { show(error, present: { presenter.present($0, animated: true) }) }
         }
@@ -30,14 +47,18 @@ import DeltaCore
 
     static func receive(_ urls: [URL], present: @escaping (UIAlertController) -> Void) {
         guard !urls.isEmpty else { return }
-        guard !busy else { show(GameTransferError.busy, present: present); return }
+        guard !busy else {
+            deferredIncomingCleanup.formUnion(urls)
+            show(GameTransferError.busy, present: present)
+            return
+        }
         busy = true
         Task {
-            defer { busy = false }
+            defer { finishOperation(incoming: urls) }
             for url in urls {
                 do {
                     let prepared = try await work { try GameTransferArchive.prepare(url) }
-                    defer { try? FileManager.default.removeItem(at: prepared.directory) }
+                    defer { GameTransferTemporaryFiles.discardWorkspace(prepared.directory) }
                     try checkInactive(prepared.manifest)
                     var identifiers = Set(prepared.manifest.games.map(\.identifier))
                     EmulationServices.transferringGameIdentifiers.formUnion(identifiers)
@@ -57,11 +78,16 @@ import DeltaCore
                             identifiers.formUnion(recoveryIdentifiers)
                             EmulationServices.transferringGameIdentifiers.formUnion(recoveryIdentifiers)
                             let recovery = try await work { try GameTransferArchive.create(snapshot) }
+                            defer { GameTransferTemporaryFiles.discardWorkspace(recovery.deletingLastPathComponent()) }
                             let directory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
                                 .appendingPathComponent("Transfers/Recovery/" + UUID().uuidString, isDirectory: true)
-                            try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-                            try FileManager.default.moveItem(at: recovery, to: directory.appendingPathComponent(recovery.lastPathComponent))
-                            try? FileManager.default.removeItem(at: recovery.deletingLastPathComponent())
+                            do {
+                                try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+                                try FileManager.default.moveItem(at: recovery, to: directory.appendingPathComponent(recovery.lastPathComponent))
+                            } catch {
+                                try? FileManager.default.removeItem(at: directory)
+                                throw error
+                            }
                             backedUp.formUnion(snapshot.manifest.games.map(\.identifier))
                         }
                     }

@@ -139,6 +139,26 @@ import ZIPFoundation
                 guard rejected else { throw GameTransferError.invalidPackage }
                 let exported = try QualitySmokeDriver.directory().appendingPathComponent("Transfer.deltatransfer")
                 try fm.copyItem(at: url, to: exported)
+                // Receiver owns Inbox copies and extracted data, while user-saved packages survive.
+                let inbox = fm.urls(for: .documentDirectory, in: .userDomainMask)[0].appendingPathComponent("Inbox")
+                try fm.createDirectory(at: inbox, withIntermediateDirectories: true)
+                let incoming = inbox.appendingPathComponent("cleanup.deltatransfer")
+                try fm.copyItem(at: exported, to: incoming)
+                let received = try GameTransferArchive.prepare(incoming)
+                guard !fm.fileExists(atPath: incoming.path) else { throw GameTransferError.invalidPackage }
+                GameTransferTemporaryFiles.discardWorkspace(received.directory)
+                guard !fm.fileExists(atPath: received.directory.path), fm.fileExists(atPath: exported.path) else { throw GameTransferError.invalidPackage }
+                let invalidIncoming = inbox.appendingPathComponent("invalid.deltatransfer")
+                try Data("invalid archive".utf8).write(to: invalidIncoming)
+                let before = Set(GameTransferTemporaryFiles.interruptedWorkspaces())
+                do { _ = try GameTransferArchive.prepare(invalidIncoming); throw GameTransferError.invalidPackage }
+                catch {
+                    guard !fm.fileExists(atPath: invalidIncoming.path), Set(GameTransferTemporaryFiles.interruptedWorkspaces()) == before else { throw GameTransferError.invalidPackage }
+                }
+                let sender = try GameTransferArchive.create(roundTrip)
+                let lifetime = GameTransferExportLifetime(directory: sender.deletingLastPathComponent())
+                lifetime.finish()
+                guard !fm.fileExists(atPath: sender.path) else { throw GameTransferError.invalidPackage }
                 record(passed: true, detail: "Fresh export/import preserves all metadata and file hashes for console + Java; all five state types/thumbnails, artwork, settings, enabled cheat, custom skin, preview/secondary links, battery/RMS/receipt; existing-game merge keeps extra saves; tampered payload rejected.")
             } catch { record(passed: false, detail: error.localizedDescription) }
         }

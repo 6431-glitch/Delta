@@ -1,5 +1,21 @@
 # Complete game transfer — 2026-10-27
 
+## Sender and receiver cleanup follow-up
+
+- [x] Keep export/import staging in transfer-owned temporary workspaces.
+- [x] Sender: remove the export workspace on share completion/cancellation or share-sheet release, including unsuccessful presentation.
+- [x] Receiver: take ownership of sandbox Inbox/temporary import copies and remove them and extracted files on success, cancellation, or error. Clean unprocessed batch copies and defer busy-request cleanup until the active operation finishes.
+- [x] Clean abandoned workspaces from an interrupted prior session at app launch, without sweeping active transfers.
+- [x] Preserve original games/saves, user-saved transfer files in Files, and recovery backups; retain incomplete rollback data outside temporary cleanup.
+- [x] Verify cleanup paths and exercise sender/receiver cleanup on Simulator: export lifetime removes sender workspace, valid/invalid Inbox imports remove receiver copies, extraction folders disappear, and saved packages remain. Debug build and all 39 contracts pass.
+- [ ] Merge the cleanup follow-up into `refactor/codebase-quality`.
+
+Cleanup removes transfer working files on each installation, including an app-owned Inbox copy on the receiver. A transfer deliberately saved in Files is retained. The original game and its installed saves remain on both devices. Recovery packages and incomplete rollback data in Documents/Transfers/Recovery are preserved. App restart removes abandoned transfer workspaces; it never sweeps that recovery directory. Cleanup cannot control copies retained by another share destination or a file provider.
+
+Cleanup validation (2026-10-28): 39 contracts pass (including three cleanup test groups), dependency boundaries pass, and DeltaApplication passes complete concurrency checking with warnings as errors. Debug build and the actual-model console/Java transfer round trip with sender/receiver cleanup checks pass. Evidence is under `.build/transfer-cleanup-smoke/` and `.build/transfer-cleanup-*.log`. The disposable simulator was deleted by the runner.
+
+- [x] Final Release arm64 Simulator build passes with Debug verification code excluded.
+
 - [x] Add Transfer beside Share in the game actions menu.
 - [x] Define a versioned `.deltatransfer` package and validate its manifest, paths, sizes, and checksums.
 - [x] Include game content, metadata, custom cover/banner artwork, per-game settings, favorite/played state, cheats, all save-state types and thumbnails, battery/RTC saves, Java data/sidecars, and assigned skins.
