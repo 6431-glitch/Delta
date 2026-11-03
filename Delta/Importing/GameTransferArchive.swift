@@ -20,6 +20,11 @@ enum GameTransferArchive {
     private static let fm = FileManager.default
 
     @MainActor static func snapshot(_ root: Game) throws -> Snapshot {
+        try snapshot([root])
+    }
+
+    @MainActor static func snapshot(_ roots: [Game]) throws -> Snapshot {
+        guard let root = roots.first else { throw GameTransferError.emptyLibrary }
         var sources: [String: URL] = [:], embedded: [String: Data] = [:]
         var records: [GameTransferManifest.GameRecord] = [], visited = Set<String>()
         func add(_ url: URL, path: String, required: Bool = false) throws {
@@ -99,7 +104,7 @@ enum GameTransferArchive {
             records.append(record)
             if let secondary = game.secondaryGame { try capture(secondary) }
         }
-        try capture(root)
+        for game in roots { try capture(game) }
         return Snapshot(manifest: .init(rootIdentifier: root.identifier, games: records), sources: sources, embedded: embedded)
     }
 
@@ -129,7 +134,8 @@ enum GameTransferArchive {
             try manifest.validate()
             let name = manifest.games.first { $0.identifier == manifest.rootIdentifier }!.name
             let safeName = String(name.unicodeScalars.filter { CharacterSet.alphanumerics.contains($0) || " _-".unicodeScalars.contains($0) }.prefix(60))
-            let output = directory.appendingPathComponent((safeName.isEmpty ? "Game" : safeName) + ".deltatransfer")
+            let outputName = manifest.games.count > 1 ? "Delta Library" : (safeName.isEmpty ? "Game" : safeName)
+            let output = directory.appendingPathComponent(outputName + ".deltatransfer")
             let archive = try Archive(url: output, accessMode: .create)
             let manifestURL = staging.appendingPathComponent("manifest.json")
             let manifestData = try JSONEncoder().encode(manifest)

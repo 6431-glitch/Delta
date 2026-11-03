@@ -53,6 +53,20 @@ final class GameTransferTests: XCTestCase {
         }
         try manifest.validate()
     }
+    func testLibraryWithMoreThanEightGamesRoundTripsAndRejectsDuplicates() throws {
+        var manifest = fixture()
+        for index in 1...11 {
+            let identifier = String(format: "%040x", index)
+            manifest.games.append(.init(identifier: identifier, gameType: "com.rileytestut.delta.game.gba", filename: identifier + ".gba", name: "Game \(index)", isFavorite: false, collectionIndex: 2001))
+            manifest.files.append(.init(path: "Games/" + identifier + ".gba", byteCount: 1, sha256: String(repeating: "b", count: 64)))
+        }
+        try manifest.validate()
+        let decoded = try JSONDecoder().decode(GameTransferManifest.self, from: JSONEncoder().encode(manifest))
+        XCTAssertEqual(decoded.games.count, 12)
+        try decoded.validate()
+        manifest.games.append(manifest.games[1])
+        XCTAssertThrowsError(try manifest.validate())
+    }
     func testFileRollbackRestoresOverwritesAndRemovesNewFiles() throws {
         let temporary = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         defer { try? FileManager.default.removeItem(at: temporary) }

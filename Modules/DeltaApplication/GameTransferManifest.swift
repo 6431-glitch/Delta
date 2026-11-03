@@ -91,7 +91,7 @@ public struct GameTransferManifest: Codable, Sendable {
     }
     public func validate() throws {
         func require(_ condition: Bool) throws { if !condition { throw GameTransferError.invalidPackage } }
-        try require(version == 1 && !games.isEmpty && games.count <= 8 && games.contains { $0.identifier == rootIdentifier })
+        try require(version == 1 && !games.isEmpty && games.count <= 1000 && games.contains { $0.identifier == rootIdentifier })
         try require(Set(games.map(\.identifier)).count == games.count && files.count <= 20000)
         let ids = Set(games.map(\.identifier))
         var required = Set<String>(), allowedSkins = Set<String>(), artworkPaths = Set<String>()
@@ -149,7 +149,7 @@ public struct GameTransferManifest: Codable, Sendable {
 }
 
 public enum GameTransferError: LocalizedError {
-    case invalidPackage, unsupportedVersion, gameInUse, missingFile, incompatibleGame, busy
+    case invalidPackage, unsupportedVersion, gameInUse, missingFile, incompatibleGame, busy, emptyLibrary
     public var errorDescription: String? {
         switch self {
         case .invalidPackage: return String(localized: "This game transfer is incomplete, damaged, or contains unsupported data.")
@@ -157,6 +157,7 @@ public enum GameTransferError: LocalizedError {
         case .gameInUse: return String(localized: "Close the game in every window before transferring or restoring it.")
         case .missingFile: return String(localized: "Download all of this game's files before transferring it.")
         case .incompatibleGame: return String(localized: "This transfer conflicts with an existing game, save state, or controller skin.")
+        case .emptyLibrary: return String(localized: "Your library has no games to transfer.")
         case .busy: return String(localized: "Another game transfer is still in progress.")
         }
     }

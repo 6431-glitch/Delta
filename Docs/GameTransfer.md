@@ -1,5 +1,16 @@
 # Complete game transfer — 2026-10-27
 
+## Library transfer — 2026-11-03
+
+- [x] Export all playable games in one transfer from Settings → Advanced → Transfer Library.
+- [x] Reuse validated import, conflict confirmation, recovery, and rollback for the complete archive.
+- [x] Support libraries larger than eight games, while retaining bounded package validation.
+- [x] Transfer contract tests pass, including a 12-game manifest round trip and duplicate rejection.
+- [ ] Complete a fresh iOS Simulator build: Xcode 27.2 fails in the existing native ConfigFile comparator code before app compilation.
+- [ ] Verify an actual transfer between two physical phones signed into different iCloud accounts.
+
+Close games on the source phone, choose Transfer Library, and send the archive with AirDrop or save it to Files. On the new phone, open the archive in Delta or select it from Library → + → Files. Both installations need a version that supports library-sized transfers. Games and their game-owned data described below are included; global settings, unassigned skins, firmware, and accounts are not included. The current format supports up to 1,000 games, 20,000 files, 2 GiB per file, and 8 GiB total uncompressed data. A library exceeding these limits fails export instead of producing a partial archive. Storage is needed for temporary staging and the archive on both phones.
+
 ## Sender and receiver cleanup follow-up
 
 - [x] Keep export/import staging in transfer-owned temporary workspaces.

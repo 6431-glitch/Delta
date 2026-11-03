@@ -611,11 +611,11 @@ extension SettingsViewController
         case .advanced where !isSectionHidden(section):
             if PurchaseManager.shared.supportsExperimentalFeatures
             {
-                return super.tableView(tableView, numberOfRowsInSection: sectionIndex)
+                return super.tableView(tableView, numberOfRowsInSection: sectionIndex) + 1
             }
             else
             {
-                return 1
+                return 2
             }
             
         default:
@@ -632,6 +632,12 @@ extension SettingsViewController
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell
     {
+        if indexPath.section == Section.advanced.rawValue && indexPath.row == (PurchaseManager.shared.supportsExperimentalFeatures ? 2 : 1) {
+            let cell = UITableViewCell(style: .default, reuseIdentifier: nil)
+            cell.textLabel?.text = NSLocalizedString("Transfer Library", comment: "")
+            cell.accessoryType = .disclosureIndicator
+            return cell
+        }
         let cell = super.tableView(tableView, cellForRowAt: indexPath)
 
         let section = Section(rawValue: indexPath.section)!
@@ -732,6 +738,17 @@ extension SettingsViewController
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath)
     {
         let cell = tableView.cellForRow(at: indexPath)
+        if indexPath.section == Section.advanced.rawValue && indexPath.row == (PurchaseManager.shared.supportsExperimentalFeatures ? 2 : 1) {
+            tableView.deselectRow(at: indexPath, animated: true)
+            let alert = UIAlertController(title: NSLocalizedString("Transfer Library", comment: ""), message: NSLocalizedString("Send your games, saves, artwork and per-game settings to another phone using AirDrop or Files. Global settings, unassigned skins, firmware and accounts are not included. Close all games first. On the new phone, open the transfer in Delta.", comment: ""), preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .cancel))
+            alert.addAction(UIAlertAction(title: NSLocalizedString("Continue", comment: ""), style: .default) { [weak self] _ in
+                guard let self else { return }
+                GameTransferCoordinator.exportLibrary(from: self, sourceView: cell)
+            })
+            present(alert, animated: true)
+            return
+        }
         let section = Section(rawValue: indexPath.section)!
 
         switch section
@@ -834,6 +851,7 @@ extension SettingsViewController
             }
             
         case .advanced:
+            if indexPath.row == (PurchaseManager.shared.supportsExperimentalFeatures ? 2 : 1) { return UITableView.automaticDimension }
             let row = AdvancedRow(rawValue: indexPath.row)!
             switch row
             {

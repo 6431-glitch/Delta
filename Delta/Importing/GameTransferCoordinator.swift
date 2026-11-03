@@ -45,6 +45,30 @@ import DeltaCore
         }
     }
 
+    static func exportLibrary(from presenter: UIViewController, sourceView: UIView?) {
+        guard !busy else { show(GameTransferError.busy, present: { presenter.present($0, animated: true) }); return }
+        busy = true
+        Task {
+            defer { finishOperation() }
+            do {
+                let request: NSFetchRequest<Game> = Game.fetchRequest()
+                request.sortDescriptors = [NSSortDescriptor(keyPath: \Game.name, ascending: true)]
+                let games = try DatabaseManager.shared.viewContext.fetch(request).filter { CoreStorageAdapter.firmware($0.identifier) == nil }
+                let snapshot = try GameTransferArchive.snapshot(games)
+                let identifiers = Set(snapshot.manifest.games.map(\.identifier))
+                EmulationServices.transferringGameIdentifiers.formUnion(identifiers)
+                defer { EmulationServices.transferringGameIdentifiers.subtract(identifiers) }
+                let url = try await work { try GameTransferArchive.create(snapshot) }
+                let lifetime = GameTransferExportLifetime(directory: url.deletingLastPathComponent())
+                let share = UIActivityViewController(activityItems: [url], applicationActivities: nil)
+                share.popoverPresentationController?.sourceView = sourceView ?? presenter.view
+                share.popoverPresentationController?.sourceRect = sourceView?.bounds ?? CGRect(x: presenter.view.bounds.midX, y: presenter.view.bounds.midY, width: 1, height: 1)
+                share.completionWithItemsHandler = { _, _, _, _ in lifetime.finish() }
+                presenter.present(share, animated: true)
+            } catch { show(error, present: { presenter.present($0, animated: true) }) }
+        }
+    }
+
     static func receive(_ urls: [URL], present: @escaping (UIAlertController) -> Void) {
         guard !urls.isEmpty else { return }
         guard !busy else {
@@ -111,8 +135,8 @@ import DeltaCore
     }
     private static func confirm(present: (UIAlertController) -> Void) async -> Bool {
         await withCheckedContinuation { continuation in
-            let alert = UIAlertController(title: String(localized: "Restore Game Transfer?"),
-                message: String(localized: "This game is already in your library. Imported settings and matching saves will replace the current versions. Additional local saves are kept. A recovery transfer of your current game will be saved in Documents/Transfers/Recovery."), preferredStyle: .alert)
+            let alert = UIAlertController(title: String(localized: "Restore Transfer?"),
+                message: String(localized: "Some games are already in your library. Imported settings and matching saves will replace the current versions. Additional local saves are kept. Recovery transfers of the current games will be saved in Documents/Transfers/Recovery."), preferredStyle: .alert)
             alert.addAction(UIAlertAction(title: String(localized: "Cancel"), style: .cancel) { _ in continuation.resume(returning: false) })
             alert.addAction(UIAlertAction(title: String(localized: "Restore"), style: .default) { _ in continuation.resume(returning: true) })
             present(alert)
