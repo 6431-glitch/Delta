@@ -1,0 +1,4 @@
+Validated: all 29 PNGs at exact 3x density; original loading and gameplay methods preserved; all other entries unchanged.
+Original SHA-256: e06ac9c910879242b9638746ea1a8e730aefd83da5f38442ddd0f43f6f484122
+Output: /Users/ducnguyen/workspace/own/Delta/output/snowball-modernized/Snowball-Fight-Modernized-HD.jar
+Output SHA-256: 4d3d25662853ac59e61b316c51a5225fae727536e23be411e4b60e849d891285
