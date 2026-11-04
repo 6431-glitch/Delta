@@ -1,15 +1,26 @@
 # Complete game transfer — 2026-10-27
 
+## Import failure investigation — 2026-11-04
+
+- [x] Allow a game whose content was replaced while retaining its original game identifier. Every archive file still requires its declared size, ZIP CRC, and SHA-256 to match.
+- [x] Log export staging, archive verification, manifest validation, game checks, restore progress and failures under the `Transfer` category. Logs include stage, item number, counts, sizes, error domain and code; they do not include game names or file contents.
+- [x] Verify a complete multi-game restore with a replaced ROM and tampered-payload rejection on Simulator.
+- [x] Verify successful and rejected transfers appear in the same OSLogStore used by the app’s error-log export.
+- [ ] Identify the original physical-phone import failure if the error and diagnostics become available. The user reports the updated transfer worked.
+
+On a build containing the diagnostics, reproduce the import, then open Settings → More → Advanced → Export Error Log on the receiving phone. Export the log before force-quitting or relaunching the app, since this export covers the current app process. The exported file can contain unrelated app diagnostics, so review it before sharing. The reported archive may already be valid; retain it and try importing it with the updated receiver. Both devices should run a build that supports whole-library transfers.
+
 ## Library transfer — 2026-11-03
 
-- [x] Export all playable games in one transfer from Settings → Advanced → Transfer Library.
+- [x] Make Transfer Library available in the active SwiftUI Settings screen.
+- [x] Export all playable games in one transfer from Settings → Accounts & Sync → Transfer Library (on iOS 26, choose Accounts or Overview).
 - [x] Reuse validated import, conflict confirmation, recovery, and rollback for the complete archive.
 - [x] Support libraries larger than eight games, while retaining bounded package validation.
 - [x] Transfer contract tests pass, including a 12-game manifest round trip and duplicate rejection.
-- [ ] Complete a fresh iOS Simulator build: Xcode 27.2 fails in the existing native ConfigFile comparator code before app compilation.
-- [ ] Verify an actual transfer between two physical phones signed into different iCloud accounts.
+- [x] iOS Simulator Debug build passes with Xcode 27.2 after deployment target and native comparator compatibility changes in the dependency checkouts.
+- [x] User reports the transfer worked between the phones on 2026-11-04; the original failure was not conclusively identified.
 
-Close games on the source phone, choose Transfer Library, and send the archive with AirDrop or save it to Files. On the new phone, open the archive in Delta or select it from Library → + → Files. Both installations need a version that supports library-sized transfers. Games and their game-owned data described below are included; global settings, unassigned skins, firmware, and accounts are not included. The current format supports up to 1,000 games, 20,000 files, 2 GiB per file, and 8 GiB total uncompressed data. A library exceeding these limits fails export instead of producing a partial archive. Storage is needed for temporary staging and the archive on both phones.
+Close games on the source phone, choose Settings → Accounts & Sync → Transfer Library, and send the archive with AirDrop or save it to Files. On the new phone, open the archive in Delta or select it from Library → + → Files. Both installations need a version that supports library-sized transfers. Games and their game-owned data described below are included; global settings, unassigned skins, firmware, and accounts are not included. The current format supports up to 1,000 games, 20,000 files, 2 GiB per file, and 8 GiB total uncompressed data. A library exceeding these limits fails export instead of producing a partial archive. Storage is needed for temporary staging and the archive on both phones.
 
 ## Sender and receiver cleanup follow-up
 
@@ -40,7 +51,7 @@ Transfer copies the game; it does not remove the source. Global preferences, acc
 
 ## Package and restore behavior
 
-The archive contains `manifest.json` and game-owned files, with a version, byte counts and SHA-256 hashes. Import checks paths, ownership, duplicate entries, ZIP CRCs, sizes, content identity, and supported game types before installing files. Symlinks and unrelated paths are rejected. Files are staged and overwritten files retained until the database save succeeds; an error rolls back files and database changes. Existing shared controller skins must match the transferred bytes.
+The archive contains `manifest.json` and game-owned files, with a version, byte counts and SHA-256 hashes. Import checks paths, ownership, duplicate entries, ZIP CRCs, sizes, file integrity, and supported game types before installing files. Symlinks and unrelated paths are rejected. Files are staged and overwritten files retained until the database save succeeds; an error rolls back files and database changes. Existing shared controller skins must match the transferred bytes.
 
 Transfer is available beside Share for supported games, including Java ME. Share continues to send only the game file. Choose Transfer, then AirDrop or Save to Files in the system share sheet. On the receiving installation, open the `.deltatransfer` file in Delta or select it through Library → + → Files. The receiving installation must support this transfer format.
 

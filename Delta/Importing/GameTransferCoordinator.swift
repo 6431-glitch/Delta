@@ -120,6 +120,8 @@ import DeltaCore
                         GameTransferArchive.install(prepared) { continuation.resume(with: $0) }
                     }
                 } catch {
+                    let failure = error as NSError
+                    Logger.transfer.error("Transfer receive failed: domain=\(failure.domain, privacy: .public), code=\(failure.code, privacy: .public)")
                     show(error, present: present)
                     return
                 }

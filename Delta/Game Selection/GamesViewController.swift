@@ -72,7 +72,6 @@ class GamesViewController: UIViewController
     private var replacementGameID: NSManagedObjectID?
     private var auroraArtworkImporter: ImportController?
     private var auroraArtworkSelection: (id: NSManagedObjectID, kind: AuroraArtworkKind)?
-    private var showingAuroraHome = true
 
     override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
         return AppOrientation.current.mask
@@ -321,7 +320,7 @@ extension GamesViewController
             return
         }
         #endif
-        if #available(iOS 26, *), showingAuroraHome {
+        do {
             auroraModel?.orientation = AppOrientation.current
             self.applyAppOrientation(AppOrientation.current)
         }
@@ -1054,7 +1053,6 @@ private extension GamesViewController {
     }
 
     func installAuroraHome() {
-        guard #available(iOS 26, *) else { return }
         let model = AuroraHomeModel()
         model.importGames = { [weak self] in self?.importFiles() }
         model.gameActions = { [weak self, weak model] id, source in
@@ -1126,18 +1124,15 @@ private extension GamesViewController {
 
     func updateAuroraVisibility() {
         guard auroraController != nil else { return }
-        auroraController?.view.isHidden = !showingAuroraHome
-        placeholderView.accessibilityElementsHidden = showingAuroraHome
+        placeholderView.accessibilityElementsHidden = true
         if let container = pageViewController.view.superview, container !== view {
-            container.accessibilityElementsHidden = showingAuroraHome
+            container.accessibilityElementsHidden = true
         }
-        if showingAuroraHome {
-            navigationItem.searchController = nil
-            navigationController?.setNavigationBarHidden(true, animated: false)
-            navigationController?.setToolbarHidden(true, animated: false)
-            pageControl.isHidden = true
-            view.bringSubviewToFront(auroraController!.view)
-        }
+        navigationItem.searchController = nil
+        navigationController?.setNavigationBarHidden(true, animated: false)
+        navigationController?.setToolbarHidden(true, animated: false)
+        pageControl.isHidden = true
+        view.bringSubviewToFront(auroraController!.view)
     }
 
     func applyAppOrientation(_ orientation: AppOrientation) {

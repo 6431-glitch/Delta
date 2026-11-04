@@ -241,7 +241,6 @@
 		BF5942931E09BD1A0051894B /* NSFetchedResultsController+Conveniences.m in Sources */ = {isa = PBXBuildFile; fileRef = BF5942901E09BD1A0051894B /* NSFetchedResultsController+Conveniences.m */; };
 		BF5942941E09BD1A0051894B /* NSManagedObject+Conveniences.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF5942911E09BD1A0051894B /* NSManagedObject+Conveniences.swift */; };
 		BF5942951E09BD1A0051894B /* NSManagedObjectContext+Conveniences.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF5942921E09BD1A0051894B /* NSManagedObjectContext+Conveniences.swift */; };
-		BF5E7F441B9A650B00AE44F8 /* SettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF5E7F431B9A650B00AE44F8 /* SettingsViewController.swift */; };
 		BF5E7F461B9A652600AE44F8 /* Settings.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = BF5E7F451B9A652600AE44F8 /* Settings.storyboard */; };
 		BF63A1A321A4AAAE00EE8F61 /* RecordSyncStatusViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF63A1A221A4AAAE00EE8F61 /* RecordSyncStatusViewController.swift */; };
 		BF63A1B521A4B76E00EE8F61 /* RecordVersionsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF63A1B421A4B76E00EE8F61 /* RecordVersionsViewController.swift */; };
@@ -981,7 +980,6 @@
 		BF5942901E09BD1A0051894B /* NSFetchedResultsController+Conveniences.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSFetchedResultsController+Conveniences.m"; sourceTree = "<group>"; };
 		BF5942911E09BD1A0051894B /* NSManagedObject+Conveniences.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "NSManagedObject+Conveniences.swift"; sourceTree = "<group>"; };
 		BF5942921E09BD1A0051894B /* NSManagedObjectContext+Conveniences.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "NSManagedObjectContext+Conveniences.swift"; sourceTree = "<group>"; };
-		BF5E7F431B9A650B00AE44F8 /* SettingsViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SettingsViewController.swift; sourceTree = "<group>"; };
 		BF5E7F451B9A652600AE44F8 /* Settings.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = Settings.storyboard; path = Delta/Base.lproj/Settings.storyboard; sourceTree = SOURCE_ROOT; };
 		BF616A121F08184A0077F8B2 /* ControllerInputsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ControllerInputsViewController.swift; sourceTree = "<group>"; };
 		BF63A1A221A4AAAE00EE8F61 /* RecordSyncStatusViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordSyncStatusViewController.swift; sourceTree = "<group>"; };
@@ -1873,7 +1871,6 @@
 			children = (
 				BFAA1FEC1B8AA4FA00495943 /* Settings.swift */,
 				BF5E7F451B9A652600AE44F8 /* Settings.storyboard */,
-				BF5E7F431B9A650B00AE44F8 /* SettingsViewController.swift */,
 				8282422F2F7C487800D8F899 /* SettingsRow.swift */,
 				828242252F7C40C300D8F899 /* SettingsView.swift */,
 				BFB3645723245A6000CD0EB1 /* LicensesViewController.swift */,
@@ -3376,7 +3373,6 @@
 				BF99A5971DC2F9C400468E9E /* ControllerSkinTableViewCell.swift in Sources */,
 				BFE9908024451E15006409A7 /* MelonDSCoreSettingsViewController.swift in Sources */,
 				BF5942861E09BC8B0051894B /* _Cheat.swift in Sources */,
-				BF5E7F441B9A650B00AE44F8 /* SettingsViewController.swift in Sources */,
 				BF8CA9361F5F651900499FDD /* PopoverMenuController.swift in Sources */,
 				D5AE76B52C2B52820086471B /* UserAccount.swift in Sources */,
 				D5D39E792AF2D624004BE3F7 /* GameView+AirPlay.swift in Sources */,
@@ -3704,7 +3700,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				MARKETING_VERSION = 2.0.4;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -3760,7 +3756,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				MARKETING_VERSION = 2.0.4;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				OTHER_CFLAGS = "-DGLES_SILENCE_DEPRECATION";
@@ -3933,7 +3929,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2023 Riley Testut. All rights reserved.";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 17.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -3981,7 +3977,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2023 Riley Testut. All rights reserved.";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 17.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

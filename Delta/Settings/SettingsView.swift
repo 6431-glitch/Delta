@@ -33,63 +33,27 @@ struct SettingsView: View
     private var dismiss
     @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
     @Environment(\.dynamicTypeSize) private var typeSize
-    @Environment(\.colorScheme) private var inheritedColorScheme
     @SwiftUI.State private var category: SettingsCategory = .all
 
     var body: some View {
         NavigationStack {
-            Group {
-                if #available(iOS 26, *) {
-                    modernSettings
-                } else {
-                    Form {
-                        ControlsSection()
-                        EmulationSection()
-                        OnlineMultiplayerSection()
-                        DisplaySection()
-                        ServicesSection()
-                        MiscellaneousSection()
-                        CreditsSection()
-                        SupportSection()
-                    }
-                    .safeAreaPadding(.top, 8)
-                }
-            }
+            modernSettings
             .navigationTitle("Settings")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 if !isTab {
-                    if #available(iOS 26, *)
-                    {
-                        ToolbarItem(placement: .cancellationAction) {
-                            Button(role: .close) {
-                                // dismiss() skips presentationControllerDidDismiss, so explicitly sync on close.
-                                SyncManager.shared.sync()
-                                dismiss()
-                            }
-                        }
-                    }
-                    else
-                    {
-                        ToolbarItem(placement: .confirmationAction) {
-                            Button("Done") {
-                                // dismiss() skips presentationControllerDidDismiss, so explicitly sync on close.
-                                SyncManager.shared.sync()
-                                dismiss()
-                            }
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button(role: .close) {
+                            SyncManager.shared.sync()
+                            dismiss()
                         }
                     }
                 }
             }
-            .toolbarColorScheme(isModern ? .dark : nil, for: .navigationBar)
+            .toolbarColorScheme(.dark, for: .navigationBar)
         }
-        .preferredColorScheme(isModern ? .dark : nil)
-        .environment(\.colorScheme, isModern ? .dark : inheritedColorScheme)
-    }
-
-    private var isModern: Bool {
-        if #available(iOS 26, *) { return true }
-        return false
+        .preferredColorScheme(.dark)
+        .environment(\.colorScheme, .dark)
     }
 
     @available(iOS 26, *)
@@ -397,8 +361,37 @@ struct OnlineMultiplayerView: View
 
 // MARK: - Services
 
+private final class TransferPresentationAnchor: ObservableObject {
+    weak var view: UIView?
+
+    func transferLibrary() {
+        guard let view else { return }
+        var responder: UIResponder? = view
+        while let current = responder, !(current is UIViewController) { responder = current.next }
+        guard let presenter = responder as? UIViewController else { return }
+        let alert = UIAlertController(title: String(localized: "Transfer Library"), message: String(localized: "Send your games, saves, artwork and per-game settings to another phone using AirDrop or Files. Global settings, unassigned skins, firmware and accounts are not included. Close all games first. On the new phone, open the transfer in Delta."), preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: String(localized: "Cancel"), style: .cancel))
+        alert.addAction(UIAlertAction(title: String(localized: "Continue"), style: .default) { [weak presenter, weak view] _ in
+            guard let presenter else { return }
+            GameTransferCoordinator.exportLibrary(from: presenter, sourceView: view)
+        })
+        presenter.present(alert, animated: true)
+    }
+}
+
+private struct TransferAnchorView: UIViewRepresentable {
+    let anchor: TransferPresentationAnchor
+    func makeUIView(context: Context) -> UIView {
+        let view = UIView(frame: .zero)
+        anchor.view = view
+        return view
+    }
+    func updateUIView(_ uiView: UIView, context: Context) { anchor.view = uiView }
+}
+
 private struct ServicesSection: View
 {
+    @StateObject private var transferAnchor = TransferPresentationAnchor()
     @SwiftUI.State
     private var syncingServiceName: String? = Settings.syncingService?.localizedName
     
@@ -413,6 +406,11 @@ private struct ServicesSection: View
 
     var body: some View {
         Section("Accounts & Sync") {
+            Button { transferAnchor.transferLibrary() } label: {
+                SettingsRow(label: Text("Transfer Library"), systemImage: "iphone.and.arrow.forward", color: .indigo)
+            }
+            .background(TransferAnchorView(anchor: transferAnchor).allowsHitTesting(false))
+
             NavigationLink {
                 SyncingServicesViewController.ViewRepresentable()
                     .ignoresSafeArea()

@@ -117,12 +117,20 @@ enum GameTransferArchive {
 
     static func create(_ snapshot: Snapshot) throws -> URL {
         let directory = try GameTransferTemporaryFiles.createWorkspace()
+        let operation = UUID().uuidString
+        var stage = "stage files"
+        var position = 0
+        Logger.transfer.notice("Export \(operation, privacy: .public): started, games=\(snapshot.manifest.games.count, privacy: .public), files=\(Set(snapshot.sources.keys).union(snapshot.embedded.keys).count, privacy: .public)")
         do {
             let staging = directory.appendingPathComponent("staging", isDirectory: true)
             try fm.createDirectory(at: staging, withIntermediateDirectories: true)
             var manifest = snapshot.manifest
             let paths = Set(snapshot.sources.keys).union(snapshot.embedded.keys).sorted()
-            for path in paths {
+            for (index, path) in paths.enumerated() {
+                position = index + 1
+                if index == 0 || (index + 1).isMultiple(of: 25) || index + 1 == paths.count {
+                    Logger.transfer.notice("Export \(operation, privacy: .public): staging file \(position, privacy: .public)/\(paths.count, privacy: .public)")
+                }
                 guard GameTransferManifest.safePath(path) else { throw GameTransferError.invalidPackage }
                 let target = staging.appendingPathComponent(path)
                 try fm.createDirectory(at: target.deletingLastPathComponent(), withIntermediateDirectories: true)
@@ -131,11 +139,13 @@ enum GameTransferArchive {
                 let (size, hash) = try digest(target)
                 manifest.files.append(.init(path: path, byteCount: size, sha256: hash))
             }
+            stage = "validate manifest"
             try manifest.validate()
             let name = manifest.games.first { $0.identifier == manifest.rootIdentifier }!.name
             let safeName = String(name.unicodeScalars.filter { CharacterSet.alphanumerics.contains($0) || " _-".unicodeScalars.contains($0) }.prefix(60))
             let outputName = manifest.games.count > 1 ? "Delta Library" : (safeName.isEmpty ? "Game" : safeName)
             let output = directory.appendingPathComponent(outputName + ".deltatransfer")
+            stage = "write archive"
             let archive = try Archive(url: output, accessMode: .create)
             let manifestURL = staging.appendingPathComponent("manifest.json")
             let manifestData = try JSONEncoder().encode(manifest)
@@ -144,39 +154,70 @@ enum GameTransferArchive {
             try archive.addEntry(with: "manifest.json", fileURL: manifestURL, compressionMethod: .deflate)
             for file in manifest.files { try archive.addEntry(with: file.path, fileURL: staging.appendingPathComponent(file.path), compressionMethod: .deflate) }
             try fm.removeItem(at: staging)
+            let size = (try? output.resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? -1
+            Logger.transfer.notice("Export \(operation, privacy: .public): archive complete, bytes=\(size, privacy: .public)")
             return output
-        } catch { try? fm.removeItem(at: directory); throw error }
+        } catch {
+            let failure = error as NSError
+            Logger.transfer.error("Export \(operation, privacy: .public): failed at \(stage, privacy: .public), item=\(position, privacy: .public), domain=\(failure.domain, privacy: .public), code=\(failure.code, privacy: .public)")
+            try? fm.removeItem(at: directory)
+            throw error
+        }
     }
 
     static func prepare(_ url: URL) throws -> Prepared {
         let access = url.startAccessingSecurityScopedResource(); defer { if access { url.stopAccessingSecurityScopedResource() } }
         let directory = try GameTransferTemporaryFiles.createWorkspace()
+        let operation = UUID().uuidString
         var prepared = false
-        defer { if !prepared { GameTransferTemporaryFiles.discardWorkspace(directory) } }
+        var stage = "open"
+        var position = 0
+        Logger.transfer.notice("Import \(operation, privacy: .public): started; extension=\(url.pathExtension.lowercased(), privacy: .public)")
+        defer {
+            if !prepared {
+                Logger.transfer.error("Import \(operation, privacy: .public): failed at \(stage, privacy: .public), item=\(position, privacy: .public)")
+                GameTransferTemporaryFiles.discardWorkspace(directory)
+            }
+        }
         var source = url
         if GameTransferTemporaryFiles.isIncomingCopy(url) {
             // Take ownership of the sandbox copy, never the user's original in Files.
             source = directory.appendingPathComponent("incoming.deltatransfer")
             try fm.moveItem(at: url, to: source)
         }
+        stage = "open archive"
+        let sourceSize = (try? source.resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? -1
+        Logger.transfer.notice("Import \(operation, privacy: .public): source bytes=\(sourceSize, privacy: .public), securityScoped=\(access, privacy: .public)")
         let archive = try Archive(url: source, accessMode: .read)
         let entries = Array(archive)
+        Logger.transfer.notice("Import \(operation, privacy: .public): archive entries=\(entries.count, privacy: .public)")
+        stage = "archive structure"
         guard entries.count <= 20001, Set(entries.map(\.path)).count == entries.count,
               entries.allSatisfy({ $0.type == .file }),
               let header = entries.first(where: { $0.path == "manifest.json" }), header.uncompressedSize <= 16 * 1024 * 1024 else { throw GameTransferError.invalidPackage }
+        stage = "read manifest"
         var data = Data()
         let headerChecksum = try archive.extract(header) { chunk in
             guard data.count + chunk.count <= 16 * 1024 * 1024 else { throw GameTransferError.invalidPackage }
             data.append(chunk)
         }
         guard headerChecksum == header.checksum else { throw GameTransferError.invalidPackage }
+        stage = "decode manifest"
         let manifest = try JSONDecoder().decode(GameTransferManifest.self, from: data)
+        Logger.transfer.notice("Import \(operation, privacy: .public): manifest version=\(manifest.version, privacy: .public), games=\(manifest.games.count, privacy: .public), files=\(manifest.files.count, privacy: .public), bytes=\(data.count, privacy: .public)")
+        stage = "validate manifest"
         guard manifest.version == 1 else { throw GameTransferError.unsupportedVersion }
         try manifest.validate()
+        stage = "match archive entries"
         guard Set(entries.map(\.path)) == Set(manifest.files.map(\.path)).union(["manifest.json"]) else { throw GameTransferError.invalidPackage }
         let entriesByPath = Dictionary(uniqueKeysWithValues: entries.map { ($0.path, $0) })
         do {
-            for file in manifest.files {
+            for (index, file) in manifest.files.enumerated() {
+                position = index + 1
+                stage = "verify archive file"
+                if index == 0 || (index + 1).isMultiple(of: 25) || index + 1 == manifest.files.count {
+                    Logger.transfer.notice("Import \(operation, privacy: .public): verifying file \(index + 1, privacy: .public)/\(manifest.files.count, privacy: .public), declared bytes=\(file.byteCount, privacy: .public)")
+                }
                 guard let entry = entriesByPath[file.path], entry.uncompressedSize == file.byteCount else { throw GameTransferError.invalidPackage }
                 let destination = directory.appendingPathComponent(file.path)
                 // Bound actual output as well as declared sizes; ZIP metadata is untrusted.
@@ -190,19 +231,30 @@ enum GameTransferArchive {
                         guard written <= file.byteCount else { throw GameTransferError.invalidPackage }
                         try handle.write(contentsOf: chunk)
                     }
-                    guard checksum == entry.checksum else { throw GameTransferError.invalidPackage }
+                    guard checksum == entry.checksum else {
+                        Logger.transfer.error("Import \(operation, privacy: .public): CRC mismatch at file \(position, privacy: .public)")
+                        throw GameTransferError.invalidPackage
+                    }
                     try handle.close()
                 } catch { try? handle.close(); throw error }
                 let (size, hash) = try digest(destination)
-                guard size == file.byteCount && hash == file.sha256 else { throw GameTransferError.invalidPackage }
+                guard size == file.byteCount && hash == file.sha256 else {
+                    Logger.transfer.error("Import \(operation, privacy: .public): SHA-256 or size mismatch at file \(position, privacy: .public), actual bytes=\(size, privacy: .public), expected bytes=\(file.byteCount, privacy: .public)")
+                    throw GameTransferError.invalidPackage
+                }
             }
-            for record in manifest.games {
+            stage = "validate game content"
+            for (index, record) in manifest.games.enumerated() {
+                position = index + 1
+                Logger.transfer.notice("Import \(operation, privacy: .public): validating game \(position, privacy: .public)/\(manifest.games.count, privacy: .public), type=\(record.gameType, privacy: .public)")
                 let content = directory.appendingPathComponent("Games/" + record.filename)
-                guard GameType(fileExtension: content.pathExtension)?.rawValue == record.gameType,
-                      try RSTHasher.sha1HashOfFile(at: content) == record.identifier else { throw GameTransferError.invalidPackage }
+                // A game's identifier is stable when its ROM is replaced. The archive's
+                // SHA-256 check above validates these bytes independently of that ID.
+                guard GameType(fileExtension: content.pathExtension)?.rawValue == record.gameType else { throw GameTransferError.invalidPackage }
                 _ = try ContentImportAdapter.inspect(content)
             }
             prepared = true
+            Logger.transfer.notice("Import \(operation, privacy: .public): archive verified successfully")
             return Prepared(manifest: manifest, directory: directory)
         } catch { try? fm.removeItem(at: directory); throw error }
     }
@@ -213,6 +265,10 @@ enum GameTransferArchive {
             let rollbackDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
                 .appendingPathComponent("Transfers/Recovery/Incomplete/" + UUID().uuidString, isDirectory: true)
             var transaction: GameTransferFileTransaction?
+            let operation = UUID().uuidString
+            var stage = "check relationships"
+            var position = 0
+            Logger.transfer.notice("Restore \(operation, privacy: .public): started, games=\(prepared.manifest.games.count, privacy: .public), files=\(prepared.manifest.files.count, privacy: .public)")
             do {
                 // Validate all relationships/collisions before writing anything.
                 var games: [String: Game] = [:]
@@ -242,7 +298,15 @@ enum GameTransferArchive {
                 }
                 let files = try GameTransferFileTransaction(root: DatabaseManager.defaultDirectoryURL(), recoveryDirectory: rollbackDirectory)
                 transaction = files
-                for file in prepared.manifest.files { try files.install(from: prepared.directory.appendingPathComponent(file.path), path: file.path) }
+                stage = "install files"
+                for (index, file) in prepared.manifest.files.enumerated() {
+                    position = index + 1
+                    if index == 0 || (index + 1).isMultiple(of: 25) || index + 1 == prepared.manifest.files.count {
+                        Logger.transfer.notice("Restore \(operation, privacy: .public): installing file \(position, privacy: .public)/\(prepared.manifest.files.count, privacy: .public)")
+                    }
+                    try files.install(from: prepared.directory.appendingPathComponent(file.path), path: file.path)
+                }
+                stage = "restore game records"
                 for record in prepared.manifest.games {
                     let game = games[record.identifier]!
                     game.name = record.name; game.isFavorite = record.isFavorite; game.playedDate = record.playedDate
@@ -292,10 +356,14 @@ enum GameTransferArchive {
                     game.secondaryGame = record.secondaryIdentifier.flatMap { games[$0] }
                     game.previewSaveState = try record.previewStateIdentifier.flatMap { try find(SaveState.self, id: $0, context: context) }
                 }
+                stage = "save database"
                 try context.save()
                 files.commit()
+                Logger.transfer.notice("Restore \(operation, privacy: .public): completed successfully")
                 DispatchQueue.main.async { completion(.success(())) }
             } catch {
+                let failure = error as NSError
+                Logger.transfer.error("Restore \(operation, privacy: .public): failed at \(stage, privacy: .public), item=\(position, privacy: .public), domain=\(failure.domain, privacy: .public), code=\(failure.code, privacy: .public)")
                 context.rollback()
                 do { try transaction?.rollback() }
                 catch {

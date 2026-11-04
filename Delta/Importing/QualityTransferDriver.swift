@@ -63,6 +63,44 @@ import ZIPFoundation
                     J2MESaveStore.checkpoint(java) { continuation.resume(with: $0) }
                 }
                 context.refresh(java, mergeChanges: true)
+                // Exercise a real library archive, including a ROM changed after import.
+                var libraryGames = [game]
+                let originalROM = try Data(contentsOf: game.fileURL)
+                for index in 1...10 {
+                    var rom = originalROM
+                    rom[rom.count - 1] = UInt8(index)
+                    let fixture = fm.temporaryDirectory.appendingPathComponent("transfer-library-\(index).nes")
+                    try rom.write(to: fixture)
+                    let imported: Game = try await withCheckedThrowingContinuation { continuation in
+                        DatabaseManager.shared.importGames(at: [fixture]) { games, errors in
+                            if let game = games.first { continuation.resume(returning: game) }
+                            else { continuation.resume(throwing: errors.first ?? GameTransferError.missingFile) }
+                        }
+                    }
+                    libraryGames.append(imported)
+                }
+                // Replacement preserves the database ID, while changing ROM bytes.
+                var replaced = try Data(contentsOf: libraryGames[1].fileURL)
+                replaced[replaced.count - 1] ^= 0x80
+                try replaced.write(to: libraryGames[1].fileURL, options: .atomic)
+                let librarySnapshot = try GameTransferArchive.snapshot(libraryGames)
+                guard librarySnapshot.manifest.games.count > 8 else { throw GameTransferError.invalidPackage }
+                let libraryURL = try await GameTransferCoordinator.work { try GameTransferArchive.create(librarySnapshot) }
+                defer { GameTransferTemporaryFiles.discardWorkspace(libraryURL.deletingLastPathComponent()) }
+                let libraryPrepared = try await GameTransferCoordinator.work { try GameTransferArchive.prepare(libraryURL) }
+                defer { GameTransferTemporaryFiles.discardWorkspace(libraryPrepared.directory) }
+                guard libraryPrepared.manifest.games.count == librarySnapshot.manifest.games.count else { throw GameTransferError.invalidPackage }
+                let libraryContainer = NSPersistentContainer(name: "LibraryTransferRoundTrip", managedObjectModel: DatabaseManager.shared.managedObjectModel)
+                let libraryStore = NSPersistentStoreDescription(); libraryStore.type = NSInMemoryStoreType
+                libraryContainer.persistentStoreDescriptions = [libraryStore]
+                try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+                    libraryContainer.loadPersistentStores { _, error in
+                        if let error { continuation.resume(throwing: error) } else { continuation.resume() }
+                    }
+                }
+                try await install(libraryPrepared, container: libraryContainer)
+                let restoredRequest: NSFetchRequest<Game> = Game.fetchRequest()
+                guard try libraryContainer.viewContext.count(for: restoredRequest) == librarySnapshot.manifest.games.count else { throw GameTransferError.invalidPackage }
                 let snapshot = try GameTransferArchive.snapshot(game)
                 let url = try await GameTransferCoordinator.work { try GameTransferArchive.create(snapshot) }
                 defer { try? fm.removeItem(at: url.deletingLastPathComponent()) }
@@ -159,7 +197,16 @@ import ZIPFoundation
                 let lifetime = GameTransferExportLifetime(directory: sender.deletingLastPathComponent())
                 lifetime.finish()
                 guard !fm.fileExists(atPath: sender.path) else { throw GameTransferError.invalidPackage }
-                record(passed: true, detail: "Fresh export/import preserves all metadata and file hashes for console + Java; all five state types/thumbnails, artwork, settings, enabled cheat, custom skin, preview/secondary links, battery/RMS/receipt; existing-game merge keeps extra saves; tampered payload rejected.")
+                // The same OSLogStore path backs Settings → Advanced → Export Error Log.
+                let logStore = try OSLogStore(scope: .currentProcessIdentifier)
+                let logPosition = logStore.position(timeIntervalSinceLatestBoot: 0)
+                let logPredicate = NSPredicate(format: "subsystem == %@ AND category == %@", Logger.deltaSubsystem, "Transfer")
+                let messages = try logStore.getEntries(at: logPosition, matching: logPredicate).compactMap { ($0 as? OSLogEntryLog)?.composedMessage }
+                guard messages.contains(where: { $0.contains("archive verified successfully") }),
+                      messages.contains(where: { $0.contains("SHA-256 or size mismatch") }) else {
+                    throw NSError(domain: "TransferTest", code: 2, userInfo: [NSLocalizedDescriptionKey: "Transfer diagnostics missing from exported log store"])
+                }
+                record(passed: true, detail: "Library archive with over eight games and a replaced ROM imports into a fresh store; fresh export/import preserves all metadata and file hashes for console + Java; all five state types/thumbnails, artwork, settings, enabled cheat, custom skin, preview/secondary links, battery/RMS/receipt; existing-game merge keeps extra saves; tampered payload rejected.")
             } catch { record(passed: false, detail: error.localizedDescription) }
         }
     }

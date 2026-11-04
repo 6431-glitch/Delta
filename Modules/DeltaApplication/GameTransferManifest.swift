@@ -1,4 +1,5 @@
 import Foundation
+import OSLog
 
 /// Portable metadata only. No managed object archives, account state, or absolute sandbox URLs.
 public struct GameTransferManifest: Codable, Sendable {
@@ -90,7 +91,12 @@ public struct GameTransferManifest: Codable, Sendable {
         path.split(separator: "/", omittingEmptySubsequences: false).allSatisfy { !$0.isEmpty && $0 != "." && $0 != ".." }
     }
     public func validate() throws {
-        func require(_ condition: Bool) throws { if !condition { throw GameTransferError.invalidPackage } }
+        func require(_ condition: Bool, line: Int = #line) throws {
+            if !condition {
+                Logger(subsystem: "com.rileytestut.Delta", category: "Transfer").error("Manifest validation failed at rule line \(line, privacy: .public); version=\(version, privacy: .public), games=\(games.count, privacy: .public), files=\(files.count, privacy: .public)")
+                throw GameTransferError.invalidPackage
+            }
+        }
         try require(version == 1 && !games.isEmpty && games.count <= 1000 && games.contains { $0.identifier == rootIdentifier })
         try require(Set(games.map(\.identifier)).count == games.count && files.count <= 20000)
         let ids = Set(games.map(\.identifier))
