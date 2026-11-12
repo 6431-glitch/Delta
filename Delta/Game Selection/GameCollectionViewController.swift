@@ -44,9 +44,9 @@ extension GameCollectionViewController
         var errorDescription: String? {
             switch self
             {
-            case .alreadyRunning: return NSLocalizedString("Delta can only play one copy of a game at a time.", comment: "")
+            case .alreadyRunning: return NSLocalizedString("Epsilon can only play one copy of a game at a time.", comment: "")
             case .downloadingGameSave: return NSLocalizedString("Please wait until after this game's save file has been downloaded before playing to prevent losing save data.", comment: "")
-            case .biosNotFound: return NSLocalizedString("Please import the required files in Delta's settings to play DS games.", comment: "")
+            case .biosNotFound: return NSLocalizedString("Please import the required files in Epsilon’s settings to play DS games.", comment: "")
             case .systemAlreadyRunning(let game, _):
                 var gameNamePhrase = ""
                 if let game
@@ -54,7 +54,7 @@ extension GameCollectionViewController
                     gameNamePhrase = String(format: " (“%@”)", game.name)
                 }
                 
-                let message = String(format: NSLocalizedString("Delta can only play one game per system at a time.\n\nPlease quit the other game%@, or choose another game for a different system.", comment: ""), gameNamePhrase)
+                let message = String(format: NSLocalizedString("Epsilon can only play one game per system at a time.\n\nPlease quit the other game%@, or choose another game for a different system.", comment: ""), gameNamePhrase)
                 return message
                 
             case .multiplayerSessionActive(let emulatorCore):
@@ -616,7 +616,7 @@ private extension GameCollectionViewController
                     self.present(alertController, animated: true)
                     
                 case .biosNotFound:
-                    let alertController = UIAlertController(title: NSLocalizedString("Missing Required DS Files", comment: ""), message: NSLocalizedString("Delta requires certain files to play Nintendo DS games. Please import them to launch this game.", comment: ""), preferredStyle: .alert)
+                    let alertController = UIAlertController(title: NSLocalizedString("Missing Required DS Files", comment: ""), message: NSLocalizedString("Epsilon requires certain files to play Nintendo DS games. Please import them to launch this game.", comment: ""), preferredStyle: .alert)
                     alertController.addAction(UIAlertAction(title: NSLocalizedString("Import Files", comment: ""), style: .default) { _ in
                         self.performSegue(withIdentifier: "showDSSettings", sender: nil)
                     })

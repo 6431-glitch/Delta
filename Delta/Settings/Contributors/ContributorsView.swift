@@ -76,7 +76,7 @@ struct ContributorsView: View
     var body: some View {
         List {
             Section(content: {}, footer: {
-                Text("These individuals have contributed to the open-source Delta project on GitHub.\n\nThank you to all our contributors, your help is much appreciated 💜")
+                Text("Epsilon is based on Delta, created by Riley Testut and the open-source Delta contributors. These individuals have contributed to Delta on GitHub.\n\nThank you to all our contributors, your help is much appreciated 💜")
                     .font(.subheadline)
             })
             

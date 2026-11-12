@@ -329,7 +329,7 @@ private extension SaveStatesViewController
         self.incompatibleLabel.font = self.placeholderView.detailTextLabel.font
         self.incompatibleLabel.textColor = .white
         self.incompatibleLabel.numberOfLines = 0
-        self.incompatibleLabel.text = NSLocalizedString("You have save states that are incompatible with this version of Delta.", comment: "")
+        self.incompatibleLabel.text = NSLocalizedString("You have save states that are incompatible with this version of Epsilon.", comment: "")
         self.placeholderView.stackView.addArrangedSubview(self.incompatibleLabel)
         self.placeholderView.stackView.setCustomSpacing(30, after: self.placeholderView.detailTextLabel)
         self.vibrancyView.contentView.addSubview(self.placeholderView)
@@ -711,11 +711,11 @@ private extension SaveStatesViewController
         {
             if self.incompatibleSaveStatesCount == 1
             {
-                self.incompatibleLabel.text = NSLocalizedString("You have 1 save state that is incompatible with this version of Delta.", comment: "")
+                self.incompatibleLabel.text = NSLocalizedString("You have 1 save state that is incompatible with this version of Epsilon.", comment: "")
             }
             else
             {
-                self.incompatibleLabel.text = String(format: NSLocalizedString("You have %@ save states that are incompatible with this version of Delta.", comment: ""), NSNumber(value: self.incompatibleSaveStatesCount))
+                self.incompatibleLabel.text = String(format: NSLocalizedString("You have %@ save states that are incompatible with this version of Epsilon.", comment: ""), NSNumber(value: self.incompatibleSaveStatesCount))
             }
             
             self.incompatibleLabel.isHidden = false
@@ -840,7 +840,7 @@ private extension SaveStatesViewController
         switch section
         {
         case .info:
-            let attributedText = NSMutableAttributedString(string: NSLocalizedString("These save states are incompatible with this version of Delta. You can export them to continue playing in Delta Legacy.", comment: ""), attributes: [.font: UIFont.preferredFont(forTextStyle: .body), .foregroundColor: UIColor.lightGray])
+            let attributedText = NSMutableAttributedString(string: NSLocalizedString("These save states are incompatible with this version of Epsilon. You can export them to continue playing in Delta Legacy.", comment: ""), attributes: [.font: UIFont.preferredFont(forTextStyle: .body), .foregroundColor: UIColor.lightGray])
             attributedText.mutableString.append("\n\n")
             
             let learnMoreLink = NSAttributedString(string: NSLocalizedString("Learn More…", comment: ""), attributes: [.link: URL(string: "https://deltaemulator.com/legacy")!,
@@ -1313,7 +1313,7 @@ extension SaveStatesViewController
         switch self.filter
         {
         case .incompatible:
-            let alertController = UIAlertController(title: NSLocalizedString("Incompatible Save State", comment: ""), message: NSLocalizedString("This save state is incompatible with this version of Delta.", comment: ""), preferredStyle: .alert)
+            let alertController = UIAlertController(title: NSLocalizedString("Incompatible Save State", comment: ""), message: NSLocalizedString("This save state is incompatible with this version of Epsilon.", comment: ""), preferredStyle: .alert)
             alertController.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .cancel, handler: nil))
             self.present(alertController, animated: true, completion: nil)
             

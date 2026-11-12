@@ -71,7 +71,7 @@ struct SettingsView: View
                 if sidebar {
                     HStack(spacing: 0) {
                         VStack(alignment: .leading, spacing: 20) {
-                            Label("Delta", systemImage: "gamecontroller.fill")
+                            Label("Epsilon", systemImage: "gamecontroller.fill")
                                 .font(.title3.bold()).padding(.horizontal, 12)
                             GlassEffectContainer(spacing: 12) {
                                 VStack(spacing: 8) {
@@ -143,7 +143,7 @@ struct SettingsView: View
             .listRowBackground(Color(red: 0.095, green: 0.105, blue: 0.16))
             .listRowInsets(EdgeInsets(top: 14, leading: 16, bottom: 14, trailing: 16))
             Section {
-                Text("Delta \(Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "")")
+                Text("Epsilon \(Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "")")
                     .font(.caption).foregroundStyle(.secondary).frame(maxWidth: .infinity)
                     .listRowBackground(Color.clear)
             }
@@ -165,7 +165,7 @@ struct SettingsView: View
                     .background(LinearGradient(colors: [.purple, .indigo], startPoint: .topLeading, endPoint: .bottomTrailing), in: RoundedRectangle(cornerRadius: 18))
                     .accessibilityHidden(true)
                 VStack(alignment: .leading, spacing: 6) {
-                    Text(category == .all ? String(localized: "Make Delta yours") : category.title)
+                    Text(category == .all ? String(localized: "Make Epsilon yours") : category.title)
                         .font(.title2.bold()).foregroundStyle(.white)
                     Text(category.subtitle).font(.subheadline).foregroundStyle(.white.opacity(0.65))
                         .fixedSize(horizontal: false, vertical: true)
@@ -204,9 +204,9 @@ private enum SettingsCategory: String, CaseIterable, Identifiable {
         switch self {
         case .all: return String(localized: "Your controls, your look, your way to play.")
         case .play: return String(localized: "Fine-tune controls, audio, video, and emulation.")
-        case .appearance: return String(localized: "Give Delta a look of your own.")
+        case .appearance: return String(localized: "Give Epsilon a look of your own.")
         case .accounts: return String(localized: "Manage game syncing and achievements.")
-        case .more: return String(localized: "Preferences, support, and the people behind Delta.")
+        case .more: return String(localized: "Preferences, support, and the people behind Epsilon.")
         }
     }
 }
@@ -331,7 +331,7 @@ struct OnlineMultiplayerView: View
             } header: {
                 Text("Nintendo DS")
             } footer: {
-                Text("Choose the 3rd-party Nintendo WFC server Delta should use for online play in Nintendo DS games.")
+                Text("Choose the 3rd-party Nintendo WFC server Epsilon should use for online play in Nintendo DS games.")
             }
         }
         .navigationTitle("Online Multiplayer")
@@ -369,7 +369,7 @@ private final class TransferPresentationAnchor: ObservableObject {
         var responder: UIResponder? = view
         while let current = responder, !(current is UIViewController) { responder = current.next }
         guard let presenter = responder as? UIViewController else { return }
-        let alert = UIAlertController(title: String(localized: "Transfer Library"), message: String(localized: "Send your games, saves, artwork and per-game settings to another phone using AirDrop or Files. Global settings, unassigned skins, firmware and accounts are not included. Close all games first. On the new phone, open the transfer in Delta."), preferredStyle: .alert)
+        let alert = UIAlertController(title: String(localized: "Transfer Library"), message: String(localized: "Send your games, saves, artwork and per-game settings to another phone using AirDrop or Files. Global settings, unassigned skins, firmware and accounts are not included. Close all games first. On the new phone, open the transfer in Epsilon."), preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: String(localized: "Cancel"), style: .cancel))
         alert.addAction(UIAlertAction(title: String(localized: "Continue"), style: .default) { [weak presenter, weak view] _ in
             guard let presenter else { return }
@@ -415,7 +415,7 @@ private struct ServicesSection: View
                 SyncingServicesViewController.ViewRepresentable()
                     .ignoresSafeArea()
             } label: {
-                SettingsRow(label: Text("Delta Sync"), systemImage: "arrow.triangle.2.circlepath", color: .indigo) {
+                SettingsRow(label: Text("Epsilon Sync"), systemImage: "arrow.triangle.2.circlepath", color: .indigo) {
                     if let name = syncingServiceName {
                         Text(name).foregroundStyle(.secondary)
                     }
@@ -533,6 +533,12 @@ private struct CreditsSection: View
 {
     var body: some View {
         Section("Credits") {
+            Link(destination: URL(string: "https://github.com/rileytestut/Delta")!) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Based on Delta").fontWeight(.semibold)
+                    Text("Created by Riley Testut and Delta contributors").font(.footnote).foregroundStyle(.secondary)
+                }
+            }
             NavigationLink {
                 ContributorsView()
             } label: {
@@ -553,29 +559,9 @@ private struct CreditsSection: View
 
 private struct SupportSection: View
 {
-    @Environment(\.openURL)
-    var openURL
-    
-    @SwiftUI.State
-    private var showMailError = false
-
     var body: some View {
         Section {
-            Button("Contact Us") {
-                // TODO: support attachments
-                let email = "support@altstore.io"
-                let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? ""
-                let subject = "Delta \(version) Feedback"
-                let urlString = "mailto:\(email)?subject=\(subject)"
-                
-                if let url = URL(string: urlString)
-                {
-                    openURL(url) { success in
-                        if !success { showMailError = true }
-                    }
-                }
-            }
-            .alert("Cannot Send Mail", isPresented: $showMailError) {}
+            Link("Report an Issue", destination: URL(string: "https://github.com/6431-glitch/Delta/issues")!)
             
             Link("Privacy Policy", destination: URL(string: "https://altstore.io/privacy")!)
             

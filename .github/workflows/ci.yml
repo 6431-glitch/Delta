@@ -28,9 +28,13 @@ jobs:
         run: xcodebuild -version
       - name: Run Swift package tests
         run: swift test
+      - name: Check AltStore publishing contracts
+        run: |
+          bash -n Scripts/AltStore/archive.sh
+          python3 -m unittest discover -s Scripts/AltStore -p 'test_*.py'
 
-  simulator-build:
-    name: Dependency checkout and iOS Simulator build
+  device-archive:
+    name: Dependency checkout and iOS release archive
     runs-on: macos-26
     timeout-minutes: 45
     env:
@@ -53,13 +57,6 @@ jobs:
             exit 1
           fi
           git submodule status --recursive
-      - name: Build the iOS Simulator app
-        run: |
-          xcodebuild -version
-          xcodebuild -workspace Delta.xcworkspace -scheme Delta -configuration Debug \
-            -destination 'generic/platform=iOS Simulator' \
-            -derivedDataPath "$RUNNER_TEMP/delta-build" \
-            CODE_SIGNING_ALLOWED=NO ARCHS=arm64 build
       - name: Verify unsigned Release device archive
         run: |
           xcodebuild -workspace Delta.xcworkspace -scheme Delta -configuration Release \

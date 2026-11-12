@@ -143,7 +143,7 @@ enum GameTransferArchive {
             try manifest.validate()
             let name = manifest.games.first { $0.identifier == manifest.rootIdentifier }!.name
             let safeName = String(name.unicodeScalars.filter { CharacterSet.alphanumerics.contains($0) || " _-".unicodeScalars.contains($0) }.prefix(60))
-            let outputName = manifest.games.count > 1 ? "Delta Library" : (safeName.isEmpty ? "Game" : safeName)
+            let outputName = manifest.games.count > 1 ? "Epsilon Library" : (safeName.isEmpty ? "Game" : safeName)
             let output = directory.appendingPathComponent(outputName + ".deltatransfer")
             stage = "write archive"
             let archive = try Archive(url: output, accessMode: .create)

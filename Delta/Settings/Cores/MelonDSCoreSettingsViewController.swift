@@ -51,7 +51,7 @@ private extension MelonDSCoreSettingsViewController
                 return String(format: NSLocalizedString("%@‘s checksum does not match the expected checksum.\n\nChecksum:\n%@\n\nExpected:\n%@", comment: ""), fileURL.lastPathComponent, md5Hash, expectedHash)
                 
             case .unsupportedHash(let fileURL, let md5Hash):
-                return String(format: NSLocalizedString("%@ is not compatible with this version of Delta.\n\nChecksum:\n%@", comment: ""), fileURL.lastPathComponent, md5Hash)
+                return String(format: NSLocalizedString("%@ is not compatible with this version of Epsilon.\n\nChecksum:\n%@", comment: ""), fileURL.lastPathComponent, md5Hash)
                 
             case .incorrectSize(let fileURL, let size, let validSizes):
                 let actualSize = BIOSError.byteFormatter.string(fromByteCount: Int64(size))
@@ -407,7 +407,7 @@ extension MelonDSCoreSettingsViewController
             
             let systemName = (section == .dsiBIOS) ? String(localized: "DSi") : String(localized: "DS")
             
-            var attributedText = AttributedString(localized: "Delta requires these BIOS files to emulate certain Nintendo \(systemName) features.")
+            var attributedText = AttributedString(localized: "Epsilon requires these BIOS files to emulate certain Nintendo \(systemName) features.")
             attributedText += " "
             
             var learnMore = AttributedString(localized: "Learn more…")

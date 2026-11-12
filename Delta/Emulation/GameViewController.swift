@@ -668,7 +668,7 @@ extension GameViewController
             self.pausingGameController = gameController
             
             let pauseViewController = segue.destination as! PauseViewController
-            pauseViewController.pauseText = (self.game as? Game)?.name ?? NSLocalizedString("Delta", comment: "")
+            pauseViewController.pauseText = (self.game as? Game)?.name ?? NSLocalizedString("Epsilon", comment: "")
             pauseViewController.emulatorCore = self.emulatorCore
             pauseViewController.saveStatesViewControllerDelegate = self
             pauseViewController.cheatsViewControllerDelegate = self

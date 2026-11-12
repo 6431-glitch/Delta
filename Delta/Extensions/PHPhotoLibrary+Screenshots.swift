@@ -15,7 +15,7 @@ extension PHPhotoLibrary
     class func requestAuthorizationIfNeeded() async throws
     {
         lazy var accessDeniedError: PHPhotosError = {
-            let errorMessage = NSLocalizedString("Delta does not have permission to write to your Photos library.", comment: "")
+            let errorMessage = NSLocalizedString("Epsilon does not have permission to write to your Photos library.", comment: "")
             
             if #available(iOS 15, *)
             {
