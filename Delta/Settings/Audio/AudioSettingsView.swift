@@ -27,7 +27,7 @@ struct AudioSettingsView: View
                         Settings.respectSilentMode = newValue
                     }
             } footer: {
-                Text("When enabled, Delta will only play game audio if your device isn't silenced.")
+                Text("When enabled, Epsilon will only play game audio if your device isn't silenced.")
             }
             
             Section {

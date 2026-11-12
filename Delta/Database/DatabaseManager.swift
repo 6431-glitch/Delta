@@ -6,6 +6,7 @@
 //  Copyright © 2015 Riley Testut. All rights reserved.
 //
 
+import DeltaApplication
 import Foundation
 import CoreData
 
@@ -14,7 +15,6 @@ import DeltaCore
 import Harmony
 import Roxas
 import ZIPFoundation
-import MelonDSDeltaCore
 
 extension DatabaseManager
 {
@@ -124,98 +124,42 @@ extension DatabaseManager
             print("Failed to update default skin for system:", system)
         }
         
-        switch system
+        let launches = CoreStorageAdapter.firmwareLaunches(for: core)
+        if !launches.isEmpty
         {
-        case .ds where core == MelonDS.core:
-            
-            // Returns nil if game already exists.
-            func makeBIOS(name: String, identifier: String) -> Game?
+            var insertedGames = [Game]()
+            for launch in launches
             {
-                let predicate = NSPredicate(format: "%K == %@", #keyPath(Game.identifier), identifier)
-                if let _ = Game.instancesWithPredicate(predicate, inManagedObjectContext: context, type: Game.self).first
-                {
-                    // BIOS already exists, so don't do anything.
-                    return nil
-                }
-                
-                let filename: String
-                
-                switch identifier
-                {
-                case Game.melonDSBIOSIdentifier:
-                    guard
-                        FileManager.default.fileExists(atPath: MelonDSEmulatorBridge.shared.bios7URL.path) &&
-                        FileManager.default.fileExists(atPath: MelonDSEmulatorBridge.shared.bios9URL.path) &&
-                        FileManager.default.fileExists(atPath: MelonDSEmulatorBridge.shared.firmwareURL.path)
-                    else { return nil }
-                    
-                    filename = "nds.bios"
-                    
-                case Game.melonDSDSiBIOSIdentifier:
-                    #if BETA
-                    
-                    guard
-                        FileManager.default.fileExists(atPath: MelonDSEmulatorBridge.shared.dsiBIOS7URL.path) &&
-                        FileManager.default.fileExists(atPath: MelonDSEmulatorBridge.shared.dsiBIOS9URL.path) &&
-                        FileManager.default.fileExists(atPath: MelonDSEmulatorBridge.shared.dsiFirmwareURL.path) &&
-                        FileManager.default.fileExists(atPath: MelonDSEmulatorBridge.shared.dsiNANDURL.path)
-                    else { return nil }
-                    
-                    filename = "dsi.bios"
-                    
-                    #else
-                    return nil
-                    #endif
-                
-                default: filename = "system.bios"
-                }
-                
+                let predicate = NSPredicate(format: "%K == %@", #keyPath(Game.identifier), launch.identifier)
+                guard Game.instancesWithPredicate(predicate, inManagedObjectContext: context, type: Game.self).isEmpty,
+                      launch.requiredFiles.allSatisfy({ FileManager.default.fileExists(atPath: $0.path) }) else { continue }
                 let bios = Game(context: context)
-                bios.name = name
-                bios.identifier = identifier
-                bios.type = .ds
-                bios.filename = filename
-                
-                if let artwork = UIImage(named: "DS Home Screen"), let artworkData = artwork.pngData()
+                bios.name = launch.name
+                bios.identifier = launch.identifier
+                bios.type = core.gameType
+                bios.filename = launch.filename
+                if let artworkData = UIImage(named: "DS Home Screen")?.pngData()
                 {
-                    do
-                    {
-                        let destinationURL = DatabaseManager.artworkURL(for: bios)
-                        try artworkData.write(to: destinationURL, options: .atomic)
-                        bios.artworkURL = destinationURL
-                    }
-                    catch
-                    {
-                        print("Failed to copy default DS home screen artwork.", error)
-                    }
+                    do {
+                        let destination = DatabaseManager.artworkURL(for: bios)
+                        try artworkData.write(to: destination, options: .atomic)
+                        bios.artworkURL = destination
+                    } catch { print("Failed to copy default home screen artwork.", error) }
                 }
-                
-                return bios
+                insertedGames.append(bios)
             }
-            
-            let insertedGames = [
-                (name: NSLocalizedString("Home Screen", comment: ""), identifier: Game.melonDSBIOSIdentifier),
-                (name: NSLocalizedString("Home Screen (DSi)", comment: ""), identifier: Game.melonDSDSiBIOSIdentifier)
-            ].compactMap(makeBIOS)
-            
-            // Break if we didn't create any new Games.
-            guard !insertedGames.isEmpty else { break }
-            
-            let gameCollection = GameCollection(context: context)
-            gameCollection.identifier = GameType.ds.rawValue
-            gameCollection.index = Int16(System.ds.year)
-            gameCollection.games.formUnion(insertedGames)
-            
-        case .ds:
-            let predicate = NSPredicate(format: "%K IN %@", #keyPath(Game.identifier), [Game.melonDSBIOSIdentifier, Game.melonDSDSiBIOSIdentifier])
-            
-            let games = Game.instancesWithPredicate(predicate, inManagedObjectContext: context, type: Game.self)
-            for game in games
+            if !insertedGames.isEmpty
             {
-                context.delete(game)
+                let collection = GameCollection(context: context)
+                collection.identifier = core.gameType.rawValue
+                collection.index = Int16(system.year)
+                collection.games.formUnion(insertedGames)
             }
-            
-        default: break
+        }
+        else if system == .ds
+        {
+            let predicate = NSPredicate(format: "%K IN %@", #keyPath(Game.identifier), [Game.melonDSBIOSIdentifier, Game.melonDSDSiBIOSIdentifier])
+            for game in Game.instancesWithPredicate(predicate, inManagedObjectContext: context, type: Game.self) { context.delete(game) }
         }
     }
     
@@ -284,7 +228,7 @@ private extension DatabaseManager
             
             for system in System.coreSystems
             {
-                self.prepare(system.deltaCore, in: context)
+                if let core = system.deltaCore { self.prepare(core, in: context) }
             }
             
             do
@@ -377,24 +321,9 @@ extension DatabaseManager
             var identifiers = Set<String>()
             
             let descriptorURLs = urls.filter { $0.pathExtension.lowercased() == "jad" }
-            for descriptorURL in descriptorURLs {
-                let stem = descriptorURL.deletingPathExtension().lastPathComponent.lowercased()
-                let matchingJars = urls.filter { $0.pathExtension.lowercased() == "jar" && $0.deletingPathExtension().lastPathComponent.lowercased() == stem }
-                if matchingJars.isEmpty {
-                    let request: NSFetchRequest<Game> = Game.fetchRequest()
-                    request.predicate = NSPredicate(format: "type == %@", GameType.j2me.rawValue)
-                    let matches = ((try? context.fetch(request)) ?? []).filter {
-                        let settings = $0.gameSettings as? [String: Any] ?? [:]
-                        return (settings["j2me.originalFilename"] as? String).map { URL(fileURLWithPath: $0).deletingPathExtension().lastPathComponent.lowercased() == stem } ?? false
-                    }
-                    if matches.count == 1, let game = matches.first {
-                        var settings = game.gameSettings as? [String: Any] ?? [:]
-                        settings["j2me.descriptor"] = J2MEScreenProfile.descriptorAttributes(at: descriptorURL)
-                        game.gameSettings = settings as NSDictionary
-                        identifiers.insert(game.identifier)
-                    } else { errors.insert(.unsupported(descriptorURL)) }
-                } else if matchingJars.count != 1 { errors.insert(.unsupported(descriptorURL)) }
-            }
+            let sidecars = ContentImportAdapter.attachSidecars(in: urls, context: context)
+            identifiers.formUnion(sidecars.identifiers)
+            errors.formUnion(sidecars.invalidURLs.map { .unsupported($0) })
             for url in urls where url.pathExtension.lowercased() != "jad"
             {
                 guard FileManager.default.fileExists(atPath: url.path) else {
@@ -407,7 +336,7 @@ extension DatabaseManager
                     continue
                 }
                 
-                guard system == .j2me || System.registeredSystems.contains(system) else {
+                guard system.descriptor.runtime == .javaME || System.registeredSystems.contains(system) else {
                     errors.insert(.unsupported(url))
                     continue
                 }
@@ -424,27 +353,19 @@ extension DatabaseManager
                     continue
                 }
                 
-                let javaMetadata = gameType == .j2me ? J2MEJARMetadata.read(from: url.path) : nil
-                if gameType == .j2me && javaMetadata?.className == nil {
+                let inspection: ImportInspection
+                do {
+                    let paired = descriptorURLs.filter { $0.deletingPathExtension().lastPathComponent.lowercased() == url.deletingPathExtension().lastPathComponent.lowercased() }
+                    inspection = try ContentImportAdapter.inspect(url, descriptorURL: paired.count == 1 ? paired.first : nil)
+                } catch {
                     errors.insert(.invalid(url))
                     continue
                 }
                 let filename = identifier + "." + url.pathExtension.lowercased()
                 
-                if gameType == .j2me {
-                    let request: NSFetchRequest<Game> = Game.fetchRequest()
-                    request.predicate = NSPredicate(format: "identifier == %@", identifier)
-                    if let existing = try? context.fetch(request).first {
-                        let paired = descriptorURLs.filter { $0.deletingPathExtension().lastPathComponent.lowercased() == url.deletingPathExtension().lastPathComponent.lowercased() }
-                        if paired.count == 1, let descriptor = paired.first {
-                            var settings = existing.gameSettings as? [String: Any] ?? [:]
-                            settings["j2me.descriptor"] = J2MEScreenProfile.descriptorAttributes(at: descriptor)
-                            existing.gameSettings = settings as NSDictionary
-                        }
-                        identifiers.insert(identifier)
-                        if url.standardizedFileURL != existing.fileURL.standardizedFileURL { try? FileManager.default.removeItem(at: url) }
-                        continue
-                    }
+                if let existing = ContentImportAdapter.reuseExisting(identifier: identifier, source: url, descriptors: descriptorURLs, context: context) {
+                    identifiers.insert(existing.identifier)
+                    continue
                 }
                 let game = Game(context: context)
                 game.identifier = identifier
@@ -452,22 +373,17 @@ extension DatabaseManager
                 game.filename = filename
                 
                 let databaseMetadata = self.gamesDatabase?.metadata(for: game)
-                game.name = javaMetadata?.midletName ?? databaseMetadata?.name ?? url.deletingPathExtension().lastPathComponent
+                game.name = inspection.displayName ?? databaseMetadata?.name ?? url.deletingPathExtension().lastPathComponent
                 game.artworkURL = databaseMetadata?.artworkURL
-                if gameType == .j2me {
-                    var settings: [String: Any] = ["j2me.originalFilename": url.lastPathComponent]
-                    let paired = descriptorURLs.filter { $0.deletingPathExtension().lastPathComponent.lowercased() == url.deletingPathExtension().lastPathComponent.lowercased() }
-                    if paired.count == 1, let descriptor = paired.first {
-                        settings["j2me.descriptor"] = J2MEScreenProfile.descriptorAttributes(at: descriptor)
-                    }
-                    game.gameSettings = settings as NSDictionary
-                    if let icon = javaMetadata?.readIcon(from: url.path), let data = icon.pngData() {
-                        let artworkURL = DatabaseManager.gamesDirectoryURL.appendingPathComponent(identifier + ".png")
-                        if !FileManager.default.fileExists(atPath: artworkURL.path), (try? data.write(to: artworkURL, options: .atomic)) != nil { game.artworkURL = artworkURL }
-                        else if FileManager.default.fileExists(atPath: artworkURL.path) { game.artworkURL = artworkURL }
-                    }
+                if let settings = inspection.configurationData {
+                    game.gameSettings = (try? JSONSerialization.jsonObject(with: settings)) as? NSDictionary
                 }
-                
+                if let data = inspection.artworkData {
+                    let artworkURL = DatabaseManager.gamesDirectoryURL.appendingPathComponent(identifier + ".png")
+                    if !FileManager.default.fileExists(atPath: artworkURL.path), (try? data.write(to: artworkURL, options: .atomic)) != nil { game.artworkURL = artworkURL }
+                    else if FileManager.default.fileExists(atPath: artworkURL.path) { game.artworkURL = artworkURL }
+                }
+
                 let gameCollection = GameCollection(context: context)
                 gameCollection.identifier = gameType.rawValue
                 gameCollection.index = Int16(system.year)

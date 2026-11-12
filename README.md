@@ -1,3 +1,7 @@
+# Epsilon
+
+Epsilon is based on the open-source [Delta](https://github.com/rileytestut/Delta) emulator, created by Riley Testut and its contributors. We are grateful for their work. Original attribution and license notices are retained below.
+
 # Delta
 
 > Delta is an all-in-one classic video game emulator for non-jailbroken iOS devices. 

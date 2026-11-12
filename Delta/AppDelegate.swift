@@ -60,6 +60,35 @@ enum AppOrientation: String, CaseIterable {
     }
 }
 
+// Shared by console and Java ME pause menus; uses the same app-wide preference as Library.
+extension AppOrientation {
+    static func presentPicker(from controller: UIViewController, sourceView: UIView? = nil,
+                              onChange: @escaping () -> Void = {}) {
+        let picker = UIAlertController(title: String(localized: "Orientation"), message: nil, preferredStyle: .actionSheet)
+        for orientation in allCases {
+            let title = orientation == current ? "✓ " + orientation.title : orientation.title
+            picker.addAction(UIAlertAction(title: title, style: .default) { [weak controller] _ in
+                apply(orientation) { error in
+                    DispatchQueue.main.async {
+                        guard let controller, controller.presentedViewController == nil else { return }
+                        let alert = UIAlertController(title: String(localized: "Unable to Change Orientation"),
+                                                      message: error.localizedDescription, preferredStyle: .alert)
+                        alert.addAction(UIAlertAction(title: String(localized: "OK"), style: .default))
+                        controller.present(alert, animated: true)
+                    }
+                }
+                onChange()
+            })
+        }
+        picker.addAction(UIAlertAction(title: String(localized: "Cancel"), style: .cancel))
+        let anchor = sourceView ?? controller.view!
+        picker.popoverPresentationController?.sourceView = anchor
+        picker.popoverPresentationController?.sourceRect = CGRect(x: anchor.bounds.midX, y: anchor.bounds.midY, width: 1, height: 1)
+        picker.popoverPresentationController?.permittedArrowDirections = []
+        controller.present(picker, animated: true)
+    }
+}
+
 private extension CFNotificationName
 {
     static let altstoreRequestAppState: CFNotificationName = CFNotificationName("com.altstore.RequestAppState.com.rileytestut.Delta" as CFString)
@@ -86,6 +115,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool
     {
+        GameTransferCoordinator.cleanInterruptedTransfers()
         Settings.registerDefaults()
         
         self.registerCores()
@@ -188,24 +218,21 @@ private extension AppDelegate
 {
     func registerCores()
     {
+        let systems: [System]
         #if LITE
-        
         #if BETA
-        Delta.register(System.nes.deltaCore)
-        Delta.register(System.gbc.deltaCore)
+        systems = [.nes, .gbc]
         #else
-        Delta.register(System.nes.deltaCore)
+        systems = [.nes]
         #endif
-        
+        #elseif BETA
+        systems = System.coreSystems
         #else
-        
-        #if BETA
-        System.coreSystems.forEach { Delta.register($0.deltaCore) }
-        #else
-        System.coreSystems.filter { $0 != .genesis }.forEach { Delta.register($0.deltaCore) }
+        systems = System.coreSystems.filter { $0 != .genesis }
         #endif
-        
-        #endif
+
+        systems.compactMap(\.deltaCore).forEach { Delta.register($0) }
+
     }
     
     func configureAppearance()
@@ -239,7 +266,11 @@ extension AppDelegate
     {
         if url.isFileURL
         {
-            if GameType(fileExtension: url.pathExtension) != nil || url.pathExtension.lowercased() == "zip"
+            if url.pathExtension.lowercased() == GameTransferCoordinator.fileExtension {
+                GameTransferCoordinator.receive([url]) { self.present($0) }
+                return true
+            }
+            else if GameType(fileExtension: url.pathExtension) != nil || url.pathExtension.lowercased() == "zip"
             {
                 return self.importGame(at: url)
             }

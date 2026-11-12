@@ -6,6 +6,7 @@
 //  Copyright © 2017 Riley Testut. All rights reserved.
 //
 
+import DeltaDomain
 import DeltaCore
 
 import SNESDeltaCore
@@ -16,148 +17,77 @@ import N64DeltaCore
 import MelonDSDeltaCore
 import GPGXDeltaCore
 
-enum System: CaseIterable
+/// A descriptor-backed compatibility facade. Adding a system no longer adds enum cases.
+struct System: RawRepresentable, CaseIterable, Hashable, CustomStringConvertible
 {
-    case nes
-    case genesis
-    case snes
-    case n64
-    case gbc
-    case gba
-    case ds
-    case j2me
-    
-    static var registeredSystems: [System] {
-        let systems = System.allCases.filter { Delta.registeredCores.keys.contains($0.gameType) }
-        return systems
-    }
-    
-    static var coreSystems: [System] { allCases.filter { $0 != .j2me } }
+    // Composition: extend this registry alongside a core factory/registration and its resources.
+    static let registry = BuiltInSystems.registry
+    let descriptor: SystemDescriptor
+    var rawValue: String { descriptor.preferenceKey }
+    var description: String { rawValue }
 
-    static var allCores: [DeltaCoreProtocol] {
-        return [NES.core, SNES.core, N64.core, GBC.core, GBA.core, MelonDS.core, GPGX.core]
+    private init(descriptor: SystemDescriptor) { self.descriptor = descriptor }
+    init?(rawValue: String)
+    {
+        guard let descriptor = Self.registry.systems.first(where: { $0.preferenceKey == rawValue }) else { return nil }
+        self.init(descriptor: descriptor)
     }
+    static let nes = System(rawValue: "nes")!
+    static let genesis = System(rawValue: "genesis")!
+    static let snes = System(rawValue: "snes")!
+    static let n64 = System(rawValue: "n64")!
+    static let gbc = System(rawValue: "gbc")!
+    static let gba = System(rawValue: "gba")!
+    static let ds = System(rawValue: "ds")!
+    static let j2me = System(rawValue: "j2me")!
+
+    static var allCases: [System] { registry.systems.map { System(descriptor: $0) } }
+    static var registeredSystems: [System] { allCases.filter { Delta.registeredCores.keys.contains($0.gameType) } }
+    static var coreSystems: [System] { allCases.filter { $0.descriptor.runtime == .deltaCore } }
+    static var allCores: [DeltaCoreProtocol] {
+        let builtIn: [DeltaCoreProtocol] = [NES.core, SNES.core, N64.core, GBC.core, GBA.core, MelonDS.core, GPGX.core]
+        let extra = Delta.registeredCores.values.filter { core in !builtIn.contains { $0.identifier == core.identifier } }
+        return builtIn + extra.sorted { $0.identifier < $1.identifier }
+    }
+    static func == (lhs: System, rhs: System) -> Bool { lhs.descriptor.identifier == rhs.descriptor.identifier }
+    func hash(into hasher: inout Hasher) { hasher.combine(descriptor.identifier) }
 }
 
 extension System
 {
-    var localizedName: String {
-        switch self
-        {
-        case .nes: return NSLocalizedString("Nintendo", comment: "")
-        case .snes: return NSLocalizedString("Super Nintendo", comment: "")
-        case .n64: return NSLocalizedString("Nintendo 64", comment: "")
-        case .gbc: return NSLocalizedString("Game Boy Color", comment: "")
-        case .gba: return NSLocalizedString("Game Boy Advance", comment: "")
-        case .ds: return NSLocalizedString("Nintendo DS", comment: "")
-        case .j2me: return "Java ME"
-        case .genesis: return NSLocalizedString("Sega Genesis", comment: "")
-        }
-    }
-    
-    var localizedShortName: String {
-        switch self
-        {
-        case .nes: return NSLocalizedString("NES", comment: "")
-        case .snes: return NSLocalizedString("SNES", comment: "")
-        case .n64: return NSLocalizedString("N64", comment: "")
-        case .gbc: return NSLocalizedString("GBC", comment: "")
-        case .gba: return NSLocalizedString("GBA", comment: "")
-        case .ds: return NSLocalizedString("DS", comment: "")
-        case .j2me: return "J2ME"
-        case .genesis: return NSLocalizedString("Genesis (Beta)", comment: "")
-        }
-    }
-    
-    var localizedDisplayName: String {
-        switch self
-        {
-        case .nes: return NSLocalizedString("NES", comment: "")
-        case .snes: return NSLocalizedString("Super Nintendo", comment: "")
-        case .n64: return NSLocalizedString("Nintendo 64", comment: "")
-        case .gbc: return NSLocalizedString("Game Boy Color", comment: "")
-        case .gba: return NSLocalizedString("Game Boy Advance", comment: "")
-        case .ds: return NSLocalizedString("Nintendo DS", comment: "")
-        case .j2me: return "Java ME"
-        case .genesis: return NSLocalizedString("Sega Genesis", comment: "")
-        }
-    }
-    
-    var year: Int {
-        switch self
-        {
-        case .nes: return 1985
-        case .j2me: return 2000
-        case .genesis: return 1989
-        case .snes: return 1990
-        case .n64: return 1996
-        case .gbc: return 1998
-        case .gba: return 2001
-        case .ds: return 2004
-        }
-    }
-    
+    var localizedName: String { NSLocalizedString(descriptor.name, comment: "") }
+    var localizedShortName: String { NSLocalizedString(descriptor.shortName, comment: "") }
+    var localizedDisplayName: String { NSLocalizedString(descriptor.displayName, comment: "") }
+    var year: Int { descriptor.year }
+
     var controllerIcon: UIImage {
         let fallback = UIImage(systemName: "gamecontroller.fill")!
-        switch self
-        {
-        case .nes: return UIImage(named: "NES") ?? fallback
-        case .snes: return UIImage(named: "SNES") ?? fallback
-        case .n64: return UIImage(named: "N64") ?? fallback
-        case .gbc: return UIImage(named: "GBC") ?? fallback
-        case .gba: return UIImage(named: "GBA") ?? fallback
-        case .ds: return UIImage(named: "DS") ?? fallback
-        case .j2me: return UIImage(systemName: "candybarphone") ?? fallback
-        case .genesis: return UIImage(named: "Genesis") ?? fallback
-        }
+        let names: [System: String] = [.nes: "NES", .snes: "SNES", .n64: "N64", .gbc: "GBC", .gba: "GBA", .ds: "DS", .genesis: "Genesis"]
+        if self == .j2me { return UIImage(systemName: "candybarphone") ?? fallback }
+        return names[self].flatMap { UIImage(named: $0) } ?? fallback
     }
 }
 
 extension System
 {
-    var deltaCore: DeltaCoreProtocol {
-        switch self
-        {
-        case .nes: return NES.core
-        case .snes: return SNES.core
-        case .n64: return N64.core
-        case .gbc: return GBC.core
-        case .gba: return GBA.core
-        case .ds: return Settings.preferredCore(for: .ds) ?? MelonDS.core
-        case .j2me: preconditionFailure("J2ME runs through J2MEGameViewController, not DeltaCore")
-        case .genesis: return GPGX.core
-        }
+    var deltaCore: DeltaCoreProtocol? {
+        guard descriptor.runtime == .deltaCore else { return nil }
+        if self == .ds { return Settings.preferredCore(for: .ds) ?? MelonDS.core }
+        let providers: [String: () -> DeltaCoreProtocol] = [
+            "nes": { NES.core }, "snes": { SNES.core }, "n64": { N64.core },
+            "gbc": { GBC.core }, "gba": { GBA.core }, "genesis": { GPGX.core }
+        ]
+        return providers[rawValue]?() ?? Delta.core(for: gameType)
     }
     
-    var gameType: DeltaCore.GameType {
-        switch self
-        {
-        case .nes: return .nes
-        case .snes: return .snes
-        case .n64: return .n64
-        case .gbc: return .gbc
-        case .gba: return .gba
-        case .ds: return .ds
-        case .j2me: return .j2me
-        case .genesis: return .genesis
-        }
-    }
-    
+    var gameType: DeltaCore.GameType { GameType(rawValue: descriptor.identifier) }
+
     init?(gameType: DeltaCore.GameType)
     {
-        switch gameType
-        {
-        case GameType.nes: self = .nes
-        case GameType.snes: self = .snes
-        case GameType.n64: self = .n64
-        case GameType.gbc: self = .gbc
-        case GameType.gba: self = .gba
-        case GameType.ds: self = .ds
-        case GameType.j2me: self = .j2me
-        case GameType.genesis: self = .genesis
-        default: return nil
-        }
+        guard let descriptor = Self.registry.system(identifier: gameType.rawValue) else { return nil }
+        self.init(descriptor: descriptor)
     }
+
 }
 
 extension DeltaCore.GameType
@@ -166,17 +96,7 @@ extension DeltaCore.GameType
 
     init?(fileExtension: String)
     {
-        switch fileExtension.lowercased()
-        {
-        case "jar": self = .j2me
-        case "nes": self = .nes
-        case "smc", "sfc", "fig": self = .snes
-        case "n64", "z64": self = .n64
-        case "gbc", "gb": self = .gbc
-        case "gba": self = .gba
-        case "ds", "nds": self = .ds
-        case "gen", "bin", "md", "smd": self = .genesis
-        default: return nil
-        }
+        guard let system = System.registry.system(fileExtension: fileExtension) else { return nil }
+        self.init(rawValue: system.identifier)
     }
 }

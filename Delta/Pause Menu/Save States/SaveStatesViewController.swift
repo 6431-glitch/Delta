@@ -35,15 +35,17 @@ extension SaveStatesViewController
         case quick
         case general
         case locked
+        case main
         
         var localizedName: String {
             switch self
             {
             case .info: return NSLocalizedString("Info", comment: "")
-            case .auto: return NSLocalizedString("Auto Save", comment: "")
+            case .auto: return String(localized: "Autosave History")
             case .quick: return NSLocalizedString("Quick Save", comment: "")
             case .general: return NSLocalizedString("General", comment: "")
             case .locked: return NSLocalizedString("Locked", comment: "")
+            case .main: return String(localized: "Main Save")
             }
         }
     }
@@ -58,12 +60,14 @@ extension SaveStatesViewController
     {
         case name
         case date
+        case manual
         
         public var localizedName: String {
             switch self
             {
             case .name: return NSLocalizedString("Name", comment: "")
             case .date: return NSLocalizedString("Date", comment: "")
+            case .manual: return String(localized: "Manual Order")
             }
         }
     }
@@ -123,6 +127,10 @@ class SaveStatesViewController: UICollectionViewController
     private var layoutButton: UIBarButtonItem!
     private var cardWidth: CGFloat = 150
     private var filter: Filter = .compatible
+    private var searchQuery = ""
+    private var tagFilter: String?
+    private var typeFilter: SaveStateType?
+    private let stateSearch = UISearchController(searchResultsController: nil)
         
     private var vibrancyView: UIVisualEffectView!
     private var placeholderView: RSTPlaceholderView!
@@ -136,7 +144,6 @@ class SaveStatesViewController: UICollectionViewController
     private var incompatibleLabel: UILabel!
     private var incompatibleButton: UIButton!
     
-    private weak var _previewTransitionViewController: PreviewGameViewController?
     private weak var _importingSaveState: SaveState?
     private var _exportedSaveStateURL: URL?
     
@@ -144,10 +151,10 @@ class SaveStatesViewController: UICollectionViewController
     private let infoDataSource: RSTDynamicCollectionViewPrefetchingDataSource<SaveState, UIImage>
     private let fetchedDataSource: RSTFetchedResultsCollectionViewPrefetchingDataSource<SaveState, UIImage>
     
-    private var emulatorCoreSaveState: SaveStateProtocol?
     
     @IBOutlet private var optionsButton: UIBarButtonItem!
 
+    private var selectedSaveStateIDs = Set<NSManagedObjectID>()
     private var selectionCountItem: UIBarButtonItem?
     private var deleteSelectionItem: UIBarButtonItem?
     
@@ -180,24 +187,33 @@ extension SaveStatesViewController
         navigationItem.largeTitleDisplayMode = .never
         overrideUserInterfaceStyle = .dark
 
+        stateSearch.obscuresBackgroundDuringPresentation = false
+        stateSearch.searchResultsUpdater = self
+        stateSearch.searchBar.placeholder = String(localized: "Search names or tags")
+        navigationItem.searchController = stateSearch
+        navigationItem.hidesSearchBarWhenScrolling = false
+        definesPresentationContext = true
+        navigationItem.prompt = String(localized: "Main Save · every 5 minutes") + " · " + String(SaveState.autosaveLimit(for: game)) + " " + String(localized: "history slots")
         self.collectionView?.dataSource = self.dataSource
         self.collectionView?.prefetchDataSource = self.dataSource
         
         switch self.mode
         {
         case .saving:
-            self.title = NSLocalizedString("Save State", comment: "")
-            self.placeholderView.detailTextLabel.text = NSLocalizedString("Create a new save state by pressing the + button in the top right.", comment: "")
+            self.title = String(localized: "Save States")
+            self.placeholderView.detailTextLabel.text = String(localized: "Tap + to update Main Save. It also saves automatically every five minutes of active gameplay.")
+            self.navigationItem.rightBarButtonItems?.first?.accessibilityLabel = String(localized: "Update Main Save")
             
         case .loading:
-            self.title = NSLocalizedString("Load State", comment: "")
-            self.placeholderView.detailTextLabel.text = NSLocalizedString("Create a new save state by pressing the Save State option in the pause menu.", comment: "")
+            self.title = String(localized: "Save States")
+            self.placeholderView.detailTextLabel.text = String(localized: "Main Save is created after five minutes of play, or from the Save State menu. Clear filters to see all checkpoints.")
             self.navigationItem.rightBarButtonItems?.removeFirst()
         }
         
         if #available(iOS 26, *)
         {
-            self.optionsButton.image = UIImage(systemName: "ellipsis")
+            self.optionsButton.image = UIImage(systemName: "line.3.horizontal.decrease.circle")
+            self.optionsButton.accessibilityLabel = String(localized: "Filters, Order and Autosave History")
         }
 
         self.collectionView.allowsMultipleSelectionDuringEditing = true
@@ -219,7 +235,7 @@ extension SaveStatesViewController
         self.prototypeHeaderWidthConstraint = self.prototypeHeader.widthAnchor.constraint(equalToConstant: 0)
         self.prototypeHeaderWidthConstraint.isActive = true
         
-        self.prepareEmulatorCoreSaveState()
+        // Browsing save states must leave the paused gameplay core intact.
     }
     
     override func viewWillAppear(_ animated: Bool) 
@@ -262,7 +278,7 @@ extension SaveStatesViewController
         
         if self.isEditing { self.setEditing(false, animated: false) }
 
-        self.resetEmulatorCoreIfNeeded()
+
     }
     
     override func viewWillTransition(to size: CGSize, with coordinator: any UIViewControllerTransitionCoordinator) 
@@ -313,7 +329,7 @@ private extension SaveStatesViewController
         self.incompatibleLabel.font = self.placeholderView.detailTextLabel.font
         self.incompatibleLabel.textColor = .white
         self.incompatibleLabel.numberOfLines = 0
-        self.incompatibleLabel.text = NSLocalizedString("You have save states that are incompatible with this version of Delta.", comment: "")
+        self.incompatibleLabel.text = NSLocalizedString("You have save states that are incompatible with this version of Epsilon.", comment: "")
         self.placeholderView.stackView.addArrangedSubview(self.incompatibleLabel)
         self.placeholderView.stackView.setCustomSpacing(30, after: self.placeholderView.detailTextLabel)
         self.vibrancyView.contentView.addSubview(self.placeholderView)
@@ -386,7 +402,7 @@ private extension SaveStatesViewController
                 let state: UIMenuElement.State = (sorting == self.preferredSorting) ? .on : .off
                 
                 let icon: UIImage?
-                if state == .on
+                if state == .on && sorting != .manual
                 {
                     // Only show chevron for active sorting.
                     icon = self.prefersDescendingSorting ? UIImage(symbolNameIfAvailable: "chevron.down") : UIImage(symbolNameIfAvailable: "chevron.up")
@@ -399,7 +415,7 @@ private extension SaveStatesViewController
                 let action = UIAction(title: sorting.localizedName, image: icon, state: state) { action in
                     self.preferredSorting = sorting
                     
-                    if state == .on
+                    if state == .on && sorting != .manual
                     {
                         // Previously enabled, so toggle sorting direction.
                         self.prefersDescendingSorting.toggle()
@@ -459,7 +475,7 @@ private extension SaveStatesViewController
         }
         
         let sortMenu = UIMenu(title: NSLocalizedString("Sort by…", comment: ""), options: menuOptions, children: [sortActions])
-        var allMenus = [sortMenu]
+        var allMenus: [UIMenuElement] = [sortMenu]
         
         if self.incompatibleSaveStatesCount > 0
         {
@@ -468,8 +484,11 @@ private extension SaveStatesViewController
             allMenus.append(filterMenu)
         }
         
+        allMenus += self.stateManagementMenus()
         let optionsMenu = UIMenu(children: allMenus)
         self.optionsButton.menu = optionsMenu
+        self.optionsButton.accessibilityValue = [typeFilter == nil ? nil : String(localized: "Type filter active"), tagFilter].compactMap { $0 }.joined(separator: ", ")
+        if #available(iOS 26, *) { self.optionsButton.image = UIImage(systemName: typeFilter != nil || tagFilter != nil ? "line.3.horizontal.decrease.circle.fill" : "line.3.horizontal.decrease.circle") }
     }
     
     internal override func setEditing(_ editing: Bool, animated: Bool)
@@ -496,6 +515,7 @@ private extension SaveStatesViewController
         }
         else
         {
+            selectedSaveStateIDs.removeAll()
             self.collectionView.indexPathsForSelectedItems?.forEach {
                 self.collectionView.deselectItem(at: $0, animated: false)
             }
@@ -578,9 +598,12 @@ private extension SaveStatesViewController
         let fetchRequest: NSFetchRequest<SaveState> = SaveState.fetchRequest()
         fetchRequest.returnsObjectsAsFaults = false
         
-        var sortDescriptors = [NSSortDescriptor(key: #keyPath(SaveState.type), ascending: true)]
+        var sortDescriptors = [NSSortDescriptor(key: #keyPath(SaveState.type), ascending: false)]
         switch self.preferredSorting
         {
+        case .manual:
+            sortDescriptors += [NSSortDescriptor(key: #keyPath(SaveState.sortPosition), ascending: true),
+                                NSSortDescriptor(key: #keyPath(SaveState.creationDate), ascending: true)]
         case .name:
             sortDescriptors += [NSSortDescriptor(key: #keyPath(SaveState.name), ascending: !self.prefersDescendingSorting),
                                 NSSortDescriptor(key: #keyPath(SaveState.creationDate), ascending: true)]
@@ -593,16 +616,31 @@ private extension SaveStatesViewController
         let predicate = self.makePredicate(filter: self.filter)
         fetchRequest.predicate = predicate
         
-        self.fetchedDataSource.fetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: DatabaseManager.shared.viewContext, sectionNameKeyPath: #keyPath(SaveState.type), cacheName: nil)
+        let results = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: DatabaseManager.shared.viewContext, sectionNameKeyPath: #keyPath(SaveState.type), cacheName: nil)
+        // Own change delivery before handing the controller to Roxas. Its default
+        // delegate queues a second batch of reloads after moved items animate.
+        // Autosave rotation can invalidate those index paths during dismissal.
+        results.delegate = self
+        self.fetchedDataSource.fetchedResultsController = results
     }
     
-    func makePredicate(filter: Filter) -> NSPredicate
+    func makePredicate(filter: Filter) -> NSPredicate {
+        var predicates = [makeCompatibilityPredicate(filter: filter)]
+        if !searchQuery.isEmpty {
+            predicates.append(NSPredicate(format: "name CONTAINS[cd] %@ OR tagsRaw CONTAINS[cd] %@", searchQuery, searchQuery))
+        }
+        if let tagFilter { predicates.append(NSPredicate(format: "tagsRaw CONTAINS[c] %@", "|" + tagFilter + "|")) }
+        if let typeFilter { predicates.append(NSPredicate(format: "type == %d", typeFilter.rawValue)) }
+        return NSCompoundPredicate(andPredicateWithSubpredicates: predicates)
+    }
+
+    func makeCompatibilityPredicate(filter: Filter) -> NSPredicate
     {
-        if let system = System(gameType: self.game.type)
+        if let core = System(gameType: self.game.type)?.deltaCore
         {
-            let predicate = NSPredicate(format: "%K == %@ AND %K == %@", #keyPath(SaveState.game), self.game, #keyPath(SaveState.coreIdentifier), system.deltaCore.identifier)
+            let predicate = NSPredicate(format: "%K == %@ AND %K == %@", #keyPath(SaveState.game), self.game, #keyPath(SaveState.coreIdentifier), core.identifier)
             
-            if let version = system.deltaCore.version
+            if let version = core.version
             {
                 let filterPredicate: NSPredicate
                 switch filter
@@ -673,11 +711,11 @@ private extension SaveStatesViewController
         {
             if self.incompatibleSaveStatesCount == 1
             {
-                self.incompatibleLabel.text = NSLocalizedString("You have 1 save state that is incompatible with this version of Delta.", comment: "")
+                self.incompatibleLabel.text = NSLocalizedString("You have 1 save state that is incompatible with this version of Epsilon.", comment: "")
             }
             else
             {
-                self.incompatibleLabel.text = String(format: NSLocalizedString("You have %@ save states that are incompatible with this version of Delta.", comment: ""), NSNumber(value: self.incompatibleSaveStatesCount))
+                self.incompatibleLabel.text = String(format: NSLocalizedString("You have %@ save states that are incompatible with this version of Epsilon.", comment: ""), NSNumber(value: self.incompatibleSaveStatesCount))
             }
             
             self.incompatibleLabel.isHidden = false
@@ -785,7 +823,10 @@ private extension SaveStatesViewController
         
         let fontDescriptor = UIFontDescriptor.preferredFontDescriptor(withTextStyle: .subheadline).withSymbolicTraits(.traitBold)!
         cell.textLabel.font = UIFont(descriptor: fontDescriptor, size: 0.0)
-        cell.textLabel.text = saveState.localizedName
+        cell.textLabel.numberOfLines = 3
+        let title = saveState.type == .main ? String(localized: "Main Save") : saveState.localizedName
+        let tags = saveState.tags.map { "#" + $0 }.joined(separator: " ")
+        cell.textLabel.text = [title, SaveState.localizedDateFormatter.string(from: saveState.modifiedDate), tags].filter { !$0.isEmpty }.joined(separator: "\n")
 
         let section = self.correctedSectionForSectionIndex(indexPath.section)
         cell.isInSelectionMode = self.isEditing && section != .auto && section != .info && section != .locked
@@ -799,7 +840,7 @@ private extension SaveStatesViewController
         switch section
         {
         case .info:
-            let attributedText = NSMutableAttributedString(string: NSLocalizedString("These save states are incompatible with this version of Delta. You can export them to continue playing in Delta Legacy.", comment: ""), attributes: [.font: UIFont.preferredFont(forTextStyle: .body), .foregroundColor: UIColor.lightGray])
+            let attributedText = NSMutableAttributedString(string: NSLocalizedString("These save states are incompatible with this version of Epsilon. You can export them to continue playing in Delta Legacy.", comment: ""), attributes: [.font: UIFont.preferredFont(forTextStyle: .body), .foregroundColor: UIColor.lightGray])
             attributedText.mutableString.append("\n\n")
             
             let learnMoreLink = NSAttributedString(string: NSLocalizedString("Learn More…", comment: ""), attributes: [.link: URL(string: "https://deltaemulator.com/legacy")!,
@@ -815,7 +856,7 @@ private extension SaveStatesViewController
             headerView.textView.tintColor = .deltaPurple
             headerView.isTextVibrancyEnabled = false
             
-        case .auto, .quick, .general, .locked:
+        case .auto, .quick, .general, .locked, .main:
             headerView.textView.text = section.localizedName
             
             switch self.theme
@@ -850,8 +891,10 @@ private extension SaveStatesViewController
             
             let game = backgroundContext.object(with: self.game.objectID) as! Game
             
-            saveState = SaveState.insertIntoManagedObjectContext(backgroundContext)
-            saveState.type = .general
+            saveState = (try? backgroundContext.fetch(SaveState.fetchRequest(for: game, type: .main)))?.first
+                ?? SaveState.insertIntoManagedObjectContext(backgroundContext)
+            saveState.type = .main
+            saveState.name = String(localized: "Main Save")
             saveState.game = game
         }
         
@@ -860,9 +903,6 @@ private extension SaveStatesViewController
     
     func updateSaveState(_ saveState: SaveState)
     {
-        // Switch back to self.emulatorCore
-        self.prepareEmulatorCore()
-        
         saveState.managedObjectContext?.performAndWait {
             self.delegate?.saveStatesViewController(self, updateSaveState: saveState)
             saveState.managedObjectContext?.saveWithErrorLogging()
@@ -871,9 +911,6 @@ private extension SaveStatesViewController
     
     func loadSaveState(_ saveState: SaveStateProtocol)
     {
-        // Stop previewGameViewController.emulatorCore, and switch to self.emulatorCore
-        self.prepareEmulatorCore()
-        
         self.delegate?.saveStatesViewController(self, loadSaveState: saveState)
         
         // Implicit assumption that loadSaveState will always result in SaveStatesViewController being dismissed
@@ -1124,13 +1161,13 @@ private extension SaveStatesViewController
     
     func actionsForSaveState(_ saveState: SaveState) -> [UIMenuElement]?
     {
-        if self.filter != .incompatible
-        {
-            // Don't show actions for auto save states (unless they're incompatible).
-            guard saveState.type != .auto else { return nil }
-        }
-        
-        var actions = [UIMenuElement]()
+        var actions: [UIMenuElement] = [
+            UIAction(title: String(localized: "Edit Tags"), image: UIImage(systemName: "tag")) { [weak self] _ in self?.editTags(saveState) },
+            UIMenu(title: String(localized: "Manual Order"), image: UIImage(systemName: "arrow.up.arrow.down"), children: [
+                UIAction(title: String(localized: "Move Up"), image: UIImage(systemName: "arrow.up")) { [weak self] _ in self?.moveState(saveState, by: -1) },
+                UIAction(title: String(localized: "Move Down"), image: UIImage(systemName: "arrow.down")) { [weak self] _ in self?.moveState(saveState, by: 1) }
+            ])
+        ]
         
         let previewAction: UIAction
         if saveState.game?.previewSaveState != saveState
@@ -1171,6 +1208,11 @@ private extension SaveStatesViewController
         case .incompatible: actions.append(compatibilityMenu)
         }
         
+        if saveState.type == .main || saveState.type == .auto {
+            actions.append(UIAction(title: String(localized: "Keep as Checkpoint"), image: UIImage(systemName: "bookmark")) { [weak self] _ in
+                self?.keepCheckpoint(saveState)
+            })
+        }
         let renameAction = UIAction(title: NSLocalizedString("Rename", comment: ""), image: UIImage(symbolNameIfAvailable: "pencil")) { [unowned self] action in
             self.renameSaveState(saveState)
         }
@@ -1179,7 +1221,7 @@ private extension SaveStatesViewController
         switch saveState.type
         {
         case .auto: break
-        case .quick: break
+        case .quick, .main: break
         case .general:
             let lockAction = UIAction(title: NSLocalizedString("Lock", comment: ""), image: UIImage(symbolNameIfAvailable: "lock.fill")) { [unowned self] action in
                 self.lockSaveState(saveState)
@@ -1214,109 +1256,24 @@ private extension SaveStatesViewController
         return actions
     }
     
-    //MARK: - Emulator -
-    
-    func resetEmulatorCoreIfNeeded()
-    {
-        self.prepareEmulatorCore()
-        
-        if let saveState = self.emulatorCoreSaveState
-        {
-            // Remove temporary save state file
-            do
-            {
-                try FileManager.default.removeItem(at: saveState.fileURL)
-            }
-            catch let error as NSError
-            {
-                print(error)
-            }
-        }
-    }
-    
-    func prepareEmulatorCore()
-    {
-        // We stopped emulation for 3D Touch, so now we must resume emulation and load the save state we made to make it seem like it was never stopped
-        // Additionally, if emulatorCore.state != .stopped, then we have already resumed emulation with correct save state, and don't need to do it again
-        guard let emulatorCore = self.emulatorCore, emulatorCore.state == .stopped else { return }
-        
-        // Temporarily disable video rendering to prevent flickers
-        emulatorCore.videoManager.isEnabled = false
-        
-        // Load the save state we stored a reference to
-        emulatorCore.start()
-        emulatorCore.pause()
-        
-        if let saveState = self.emulatorCoreSaveState
-        {
-            do
-            {
-                try emulatorCore.load(saveState)
-            }
-            catch EmulatorCore.SaveStateError.doesNotExist
-            {
-                print("Save State does not exist.")
-            }
-            catch let error as NSError
-            {
-                print(error)
-            }
-        }
-        
-        // Re-enable video rendering
-        emulatorCore.videoManager.isEnabled = true
-    }
 }
 
-private extension SaveStatesViewController
-{
-    private func prepareEmulatorCoreSaveState()
-    {
-        guard let emulatorCore = self.emulatorCore else { return }
-        
-        // Store reference to current game state before we stop emulation so we can resume it if user decides to not load a save state
-        
-        let fileURL = FileManager.default.uniqueTemporaryURL()
-        self.emulatorCoreSaveState = emulatorCore.saveSaveState(to: fileURL)
-        
-        if self.emulatorCoreSaveState != nil
-        {
-            emulatorCore.stop()
-        }
-    }
-    
-    func makePreviewGameViewController(for saveState: SaveState) -> PreviewGameViewController
-    {
-        let previewImage = self.dataSource.prefetchItemCache.object(forKey: saveState) ?? UIImage(contentsOfFile: saveState.imageFileURL.path)
-        
-        let gameViewController = PreviewGameViewController()
-        gameViewController.game = self.game
-        gameViewController.previewSaveState = saveState
-        gameViewController.previewImage = previewImage
-        return gameViewController
-    }
-    
-    func commitPreviewTransition()
-    {
-        guard let gameViewController = self._previewTransitionViewController else { return }
-        gameViewController.pauseEmulation()
-        
-        let fileURL = FileManager.default.uniqueTemporaryURL()
-        if let saveState = gameViewController.emulatorCore?.saveSaveState(to: fileURL)
-        {
-            gameViewController.emulatorCore?.stop()
-            
-            self.loadSaveState(saveState)
-            
-            do
-            {
-                try FileManager.default.removeItem(at: fileURL)
-            }
-            catch
-            {
-                print(error)
-            }
-        }
+private extension SaveStatesViewController {
+    /// Context menus display stored screenshots, never a second native emulator.
+    /// The cores use shared native memory, so a delayed preview teardown could free
+    /// the resumed gameplay core's ROM after deleting/dismissing a menu preview.
+    func makeSnapshotPreview(for saveState: SaveState) -> UIViewController? {
+        guard let image = self.dataSource.prefetchItemCache.object(forKey: saveState)
+                ?? UIImage(contentsOfFile: saveState.imageFileURL.path) else { return nil }
+        let preview = UIViewController()
+        let imageView = UIImageView(image: image)
+        imageView.contentMode = .scaleAspectFit
+        imageView.backgroundColor = .black
+        imageView.accessibilityLabel = saveState.localizedName
+        preview.view = imageView
+        let width = min(320, image.size.width)
+        preview.preferredContentSize = CGSize(width: width, height: width * image.size.height / max(1, image.size.width))
+        return preview
     }
 }
 
@@ -1346,6 +1303,7 @@ extension SaveStatesViewController
     {
         if self.isEditing
         {
+            selectedSaveStateIDs.insert(self.dataSource.item(at: indexPath).objectID)
             self.updateToolbarState()
             return
         }
@@ -1355,7 +1313,7 @@ extension SaveStatesViewController
         switch self.filter
         {
         case .incompatible:
-            let alertController = UIAlertController(title: NSLocalizedString("Incompatible Save State", comment: ""), message: NSLocalizedString("This save state is incompatible with this version of Delta.", comment: ""), preferredStyle: .alert)
+            let alertController = UIAlertController(title: NSLocalizedString("Incompatible Save State", comment: ""), message: NSLocalizedString("This save state is incompatible with this version of Epsilon.", comment: ""), preferredStyle: .alert)
             alertController.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .cancel, handler: nil))
             self.present(alertController, animated: true, completion: nil)
             
@@ -1369,7 +1327,7 @@ extension SaveStatesViewController
                 switch section
                 {
                 case .auto, .info: break
-                case .quick, .general:
+                case .quick, .general, .main:
                     let backgroundContext = DatabaseManager.shared.newBackgroundContext()
                     backgroundContext.performAndWait() {
                         let temporarySaveState = backgroundContext.object(with: saveState.objectID) as! SaveState
@@ -1391,6 +1349,7 @@ extension SaveStatesViewController
     override func collectionView(_ collectionView: UICollectionView, didDeselectItemAt indexPath: IndexPath)
     {
         guard self.isEditing else { return }
+        selectedSaveStateIDs.remove(self.dataSource.item(at: indexPath).objectID)
         self.updateToolbarState()
     }
 }
@@ -1402,7 +1361,7 @@ extension SaveStatesViewController: UICollectionViewDelegateFlowLayout
     {
         self.configure(self.prototypeCell, for: indexPath)
         
-        let textHeight = ceil(prototypeCell.textLabel.font.lineHeight * 2)
+        let textHeight = ceil(prototypeCell.textLabel.font.lineHeight * 3)
         let height = preferredLayout == .list ? max(84, textHeight + 24) : prototypeCell.maximumImageSize.height + textHeight + 28
         return CGSize(width: cardWidth, height: height)
     }
@@ -1428,15 +1387,12 @@ extension SaveStatesViewController
         let saveState = self.dataSource.item(at: indexPath)
         guard let actions = self.actionsForSaveState(saveState) else { return nil }
         
-        return UIContextMenuConfiguration(identifier: indexPath as NSIndexPath, previewProvider: { [weak self] in
-            guard let self = self, Settings.isPreviewsEnabled, self.filter != .incompatible,
+        return UIContextMenuConfiguration(identifier: saveState.objectID.uriRepresentation() as NSURL, previewProvider: { [weak self] in
+            guard let self = self, !saveState.isDeleted, Settings.isPreviewsEnabled, self.filter != .incompatible,
                   (!AchievementsManager.shared.isAuthenticated || !Settings.features.retroAchievements.isHardcoreModeEnabled) // Disable preview in hardcore mode so it can't be abused to load state
             else { return nil }
             
-            let previewGameViewController = self.makePreviewGameViewController(for: saveState)
-            self._previewTransitionViewController = previewGameViewController
-            
-            return previewGameViewController
+            return self.makeSnapshotPreview(for: saveState)
         }) { suggestedActions in
             return UIMenu(title: saveState.localizedName, children: actions)
         }
@@ -1444,13 +1400,25 @@ extension SaveStatesViewController
     
     override func collectionView(_ collectionView: UICollectionView, willPerformPreviewActionForMenuWith configuration: UIContextMenuConfiguration, animator: UIContextMenuInteractionCommitAnimating)
     {
-        self.commitPreviewTransition()
+        // Resolve the original object, not an index path that can shift on deletion.
+        guard let uri = configuration.identifier as? NSURL,
+              let context = self.game.managedObjectContext,
+              let id = context.persistentStoreCoordinator?.managedObjectID(forURIRepresentation: uri as URL),
+              let saveState = try? context.existingObject(with: id) as? SaveState,
+              !saveState.isDeleted else { return }
+        animator.addCompletion { [weak self] in
+            guard let self, !saveState.isDeleted else { return }
+            self.loadSaveState(saveState)
+        }
     }
     
     override func collectionView(_ collectionView: UICollectionView, previewForHighlightingContextMenuWithConfiguration configuration: UIContextMenuConfiguration) -> UITargetedPreview?
     {
-        guard let indexPath = configuration.identifier as? NSIndexPath else { return nil }
-        guard let cell = collectionView.cellForItem(at: indexPath as IndexPath) as? GridCollectionViewCell else { return nil }
+        guard let uri = configuration.identifier as? NSURL,
+              let context = self.game.managedObjectContext,
+              let id = context.persistentStoreCoordinator?.managedObjectID(forURIRepresentation: uri as URL),
+              let indexPath = collectionView.indexPathsForVisibleItems.first(where: { self.dataSource.item(at: $0).objectID == id }),
+              let cell = collectionView.cellForItem(at: indexPath) as? GridCollectionViewCell else { return nil }
         
         let parameters = UIPreviewParameters()
         parameters.backgroundColor = .clear
@@ -1461,7 +1429,6 @@ extension SaveStatesViewController
     
     override func collectionView(_ collectionView: UICollectionView, previewForDismissingContextMenuWithConfiguration configuration: UIContextMenuConfiguration) -> UITargetedPreview?
     {
-        self._previewTransitionViewController = nil
         return self.collectionView(collectionView, previewForHighlightingContextMenuWithConfiguration: configuration)
     }
 }
@@ -1524,4 +1491,130 @@ private extension UserDefaults
         }
     }
     @NSManaged @objc(preferredSaveStatesSorting) private var _preferredSaveStatesSorting: String?
+}
+
+
+// Save-state changes are infrequent and the snapshot is small. Reloading the
+// completed fetch avoids stale post-animation item reloads during autosave,
+// sync, filtering and layout changes, without changing any emulator state.
+
+extension SaveStatesViewController: UISearchResultsUpdating {
+    func updateSearchResults(for searchController: UISearchController) {
+        searchQuery = searchController.searchBar.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        updateDataSource()
+    }
+}
+
+private extension SaveStatesViewController {
+    func stateManagementMenus() -> [UIMenuElement] {
+        let kinds: [(String, SaveStateType?)] = [(String(localized: "All Types"), nil), (String(localized: "Main Save"), .main),
+            (String(localized: "Autosave History"), .auto), (String(localized: "Quick Save"), .quick),
+            (String(localized: "Checkpoints"), .general), (String(localized: "Locked"), .locked)]
+        let typeMenu = UIMenu(title: String(localized: "Filter by Type"), image: UIImage(systemName: "line.3.horizontal.decrease"), children: kinds.map { title, kind in
+            UIAction(title: title, state: typeFilter == kind ? .on : .off) { [weak self] _ in
+                self?.typeFilter = kind; self?.updateDataSource(); self?.prepareOptionsMenu()
+            }
+        })
+        let request = SaveState.fetchRequest()
+        request.predicate = NSPredicate(format: "game == %@", game)
+        let states = (try? game.managedObjectContext?.fetch(request)) ?? []
+        let tags = Array(Set(states.flatMap(\.tags))).sorted { $0.localizedStandardCompare($1) == .orderedAscending }
+        var tagActions = [UIAction(title: String(localized: "All Tags"), state: tagFilter == nil ? .on : .off) { [weak self] _ in
+            self?.tagFilter = nil; self?.updateDataSource(); self?.prepareOptionsMenu()
+        }]
+        tagActions += tags.map { tag in
+            UIAction(title: tag, state: tagFilter == tag ? .on : .off) { [weak self] _ in
+                self?.tagFilter = tag; self?.updateDataSource(); self?.prepareOptionsMenu()
+            }
+        }
+        let tagMenu = UIMenu(title: String(localized: "Filter by Tag"), image: UIImage(systemName: "tag"), children: tagActions)
+        let limit = SaveState.autosaveLimit(for: game)
+        let historyMenu = UIMenu(title: String(localized: "Autosave History") + " · \(limit)", image: UIImage(systemName: "clock.arrow.circlepath"), children: Array(0...20).map { count in
+            UIAction(title: count == 0 ? String(localized: "Off") : "\(count) " + String(localized: "states"), state: limit == count ? .on : .off) { [weak self] _ in
+                guard let self else { return }
+                var settings = self.game.gameSettings as? [String: Any] ?? [:]
+                settings["saveStates.autosaveLimit"] = count
+                self.game.gameSettings = settings as NSDictionary
+                self.game.managedObjectContext?.saveWithErrorLogging()
+                self.navigationItem.prompt = String(localized: "Main Save · every 5 minutes") + " · \(count) " + String(localized: "history slots")
+                self.prepareOptionsMenu()
+            }
+        })
+        let clear = UIAction(title: String(localized: "Clear Filters"), image: UIImage(systemName: "line.3.horizontal.decrease.circle")) { [weak self] _ in
+            guard let self else { return }
+            self.tagFilter = nil; self.typeFilter = nil; self.searchQuery = ""; self.stateSearch.searchBar.text = ""
+            self.updateDataSource(); self.prepareOptionsMenu()
+        }
+        return [typeMenu, tagMenu, historyMenu, clear]
+    }
+
+    func editTags(_ state: SaveState) {
+        let alert = UIAlertController(title: String(localized: "Edit Tags"), message: String(localized: "Separate tags with commas. Up to 8 tags, 32 characters each."), preferredStyle: .alert)
+        alert.addTextField { $0.text = state.tags.joined(separator: ", "); $0.placeholder = String(localized: "Boss, Chapter 2, Before battle") }
+        alert.addAction(UIAlertAction(title: String(localized: "Save"), style: .default) { [weak self, weak alert] _ in
+            guard !state.isDeleted else { return }
+            state.tags = (alert?.textFields?.first?.text ?? "").components(separatedBy: ",")
+            state.managedObjectContext?.saveWithErrorLogging()
+            self?.prepareOptionsMenu()
+        })
+        alert.addAction(UIAlertAction(title: String(localized: "Cancel"), style: .cancel))
+        present(alert, animated: true)
+    }
+
+    func moveState(_ state: SaveState, by offset: Int) {
+        guard !state.isDeleted, let context = state.managedObjectContext, let game = state.game else { return }
+        let request = SaveState.fetchRequest(for: game, type: state.type)
+        request.sortDescriptors = [NSSortDescriptor(key: #keyPath(SaveState.sortPosition), ascending: true), NSSortDescriptor(key: #keyPath(SaveState.creationDate), ascending: true)]
+        guard var states = try? context.fetch(request), let index = states.firstIndex(of: state) else { return }
+        let next = min(states.count - 1, max(0, index + offset))
+        states.swapAt(index, next)
+        preferredSorting = .manual
+        for (index, item) in states.enumerated() { item.sortPosition = Double(index + 1) }
+        context.saveWithErrorLogging()
+        updateDataSource(); prepareOptionsMenu()
+    }
+
+    func keepCheckpoint(_ source: SaveState) {
+        guard !source.isDeleted, let context = source.managedObjectContext else { return }
+        let checkpoint = SaveState(context: context)
+        checkpoint.game = source.game; checkpoint.type = .general
+        checkpoint.name = String(localized: "Checkpoint") + " · " + source.localizedName
+        checkpoint.coreIdentifier = source.coreIdentifier; checkpoint.coreVersion = source.coreVersion
+        checkpoint.tags = source.tags
+        do {
+            try FileManager.default.copyItem(at: source.fileURL, to: checkpoint.fileURL)
+            if FileManager.default.fileExists(atPath: source.imageFileURL.path) {
+                try FileManager.default.copyItem(at: source.imageFileURL, to: checkpoint.imageFileURL)
+            }
+            try context.save()
+        } catch {
+            context.delete(checkpoint)
+            let alert = UIAlertController(title: String(localized: "Unable to Keep Checkpoint"), message: error.localizedDescription, preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: String(localized: "OK"), style: .default))
+            present(alert, animated: true)
+        }
+    }
+}
+
+extension SaveStatesViewController: NSFetchedResultsControllerDelegate {
+    func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>, didChange anObject: Any,
+                    at indexPath: IndexPath?, for type: NSFetchedResultsChangeType, newIndexPath: IndexPath?) {
+        guard let saveState = anObject as? SaveState else { return }
+        dataSource.prefetchItemCache.removeObject(forKey: saveState)
+    }
+
+    func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
+        guard isViewLoaded else { return }
+        collectionView.reloadData()
+        if isEditing {
+            let states = fetchedDataSource.fetchedResultsController.fetchedObjects ?? []
+            selectedSaveStateIDs.formIntersection(Set(states.map(\.objectID)))
+            for state in states where selectedSaveStateIDs.contains(state.objectID) {
+                guard let index = fetchedDataSource.fetchedResultsController.indexPath(forObject: state) else { continue }
+                let offset = filter == .incompatible ? 1 : 0
+                collectionView.selectItem(at: IndexPath(item: index.item, section: index.section + offset), animated: false, scrollPosition: [])
+            }
+            updateToolbarState()
+        }
+    }
 }

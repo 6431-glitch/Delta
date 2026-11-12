@@ -82,7 +82,7 @@ final class J2MEGameSettingsController: UITableViewController, UIDocumentPickerD
     }
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
-        guard !busy, !J2MEGameViewController.isSessionActive else { J2MELibrary.showError("Exit the Java game before changing settings or saves.", from: self); return }
+        guard !busy, !EmulationServices.isJavaActive else { J2MELibrary.showError("Exit the Java game before changing settings or saves.", from: self); return }
         switch (indexPath.section, indexPath.row) {
         case (0, 0): choose("Phone Profile", values: J2MEPhone.allCases.map { $0.title }) { [weak self] index in
             guard let self else { return }

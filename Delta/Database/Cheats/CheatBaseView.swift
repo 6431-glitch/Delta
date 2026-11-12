@@ -239,7 +239,7 @@ struct CheatBaseView: View
                 Text("No Cheats")
                     .font(.title)
                 
-                Text("There are no cheats for this game in Delta's CheatBase. Please try a different game.")
+                Text("There are no cheats for this game in Epsilon’s CheatBase. Please try a different game.")
                     .font(.callout)
             }
             else if viewModel.allCheats == nil

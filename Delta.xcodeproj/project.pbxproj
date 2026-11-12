@@ -32,6 +32,25 @@
 /* End PBXAggregateTarget section */
 
 /* Begin PBXBuildFile section */
+		BDB7B6AFEE9953A604DCA749 /* QualityTransferDriver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81C7D1B5A526D320F3AB7866 /* QualityTransferDriver.swift */; };
+		0CF42082ABEA83E39FB27F15 /* GameTransferCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B1B4331F8C676B25B9CA430 /* GameTransferCoordinator.swift */; };
+		9E78A742C7309BEEF2182A0C /* GameTransferArchive.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37C1BDC7BF26498609474CA8 /* GameTransferArchive.swift */; };
+		29F7B271E6E3A6F8C9A13488 /* QualitySmokeDriver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8CC62E34270B41B417002186 /* QualitySmokeDriver.swift */; };
+		12CF56185C178E16068D1817 /* QualityDiagnostics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EABE8B8164FEC383EBC758D /* QualityDiagnostics.swift */; };
+		C3A1F62F328D6D9533A1CFF4 /* JavaRuntimeAdapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5468C0CF6F793C3EDC54DDED /* JavaRuntimeAdapter.swift */; };
+		46A80284B5B682887C5A60B7 /* OperatorLibraryAdapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE80453CDF6A4AA0E45222F4 /* OperatorLibraryAdapter.swift */; };
+		A0D1A0000000000000000005 /* DeltaApplication in Frameworks */ = {isa = PBXBuildFile; productRef = A0D1A0000000000000000004 /* DeltaApplication */; };
+		A0D1A0000000000000000003 /* DeltaDomain in Frameworks */ = {isa = PBXBuildFile; productRef = A0D1A0000000000000000002 /* DeltaDomain */; };
+		E40A6E12F79B1A89172A3048 /* JavaGamePersistenceAdapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87BE0FE31038C51B12E8A47F /* JavaGamePersistenceAdapter.swift */; };
+		CE48E751D406387BF45B48BB /* ContentImportAdapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6EA7AA2E25B3495F014DC17 /* ContentImportAdapter.swift */; };
+		58E844ED7981C19149682092 /* CoreStorageAdapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBDA771D9537BDA7D4C7B558 /* CoreStorageAdapter.swift */; };
+		8D94F31A50E42082F23830E8 /* MainSaveStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 072A5DD54074159CEC1D4C9A /* MainSaveStore.swift */; };
+		29B746939E8D75EF4191F079 /* RuntimeSessionAdapters.swift in Sources */ = {isa = PBXBuildFile; fileRef = E6D6C4D2D70B210CF6B767F1 /* RuntimeSessionAdapters.swift */; };
+		DAEB3743846EB0A6E2EC3665 /* CoreConfigurationAdapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 300E35A33EF6D6184A5986ED /* CoreConfigurationAdapter.swift */; };
+		D6CD2B0AE80F790BE8216AE2 /* LaunchServices.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEA0A7D2AEFDAF7F882ACAB7 /* LaunchServices.swift */; };
+		AABBAA000000000000000005 /* GameFileReplacement.swift in Sources */ = {isa = PBXBuildFile; fileRef = AABBAA000000000000000006; };
+		AABBAA000000000000000003 /* ArtworkImportValidation.swift in Sources */ = {isa = PBXBuildFile; fileRef = AABBAA000000000000000004; };
+		AABBAA000000000000000001 /* AuroraArtworkManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = AABBAA000000000000000002; };
 		003BB931CE3FCBEEB5A5F144 /* jvm_util.c in Sources */ = {isa = PBXBuildFile; fileRef = 94CE94E07CFE65C23165CA46 /* jvm_util.c */; };
 		0110032AF3BD76A042887D46 /* arc4.c in Sources */ = {isa = PBXBuildFile; fileRef = 33FF27168245909B0F4535AA /* arc4.c */; };
 		03B2735699876D4412C268F2 /* des.c in Sources */ = {isa = PBXBuildFile; fileRef = 4327484A7BAAD33E9AD14ADF /* des.c */; };
@@ -68,6 +87,7 @@
 		2AF2915512A5D32448B40937 /* cipher.c in Sources */ = {isa = PBXBuildFile; fileRef = 016BBEF7160807B1F20591FE /* cipher.c */; };
 		2B1086C39605BA11A5507563 /* cmac.c in Sources */ = {isa = PBXBuildFile; fileRef = C06AFD0699F5521A156CD315 /* cmac.c */; };
 		2F3594257E5CAF0AC8C33807 /* blowfish.c in Sources */ = {isa = PBXBuildFile; fileRef = 0512A4825FF21E0989E5D420 /* blowfish.c */; };
+		32C89D9AE0A60E134E37F076 /* ArtworkCoverLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA563C77CEEE1E23F6DE1EAC /* ArtworkCoverLayout.swift */; };
 		347EEBB8BCC49991480D0C1B /* ecp_curves.c in Sources */ = {isa = PBXBuildFile; fileRef = 4867836EE3B016674A39D274 /* ecp_curves.c */; };
 		35882111016DA5B0A1ADCF66 /* m3g_ios.c in Sources */ = {isa = PBXBuildFile; fileRef = 615C9C6BDCCB77A95A5E39A7 /* m3g_ios.c */; };
 		371A37A994C7A515038E1CA7 /* ssl_tls.c in Sources */ = {isa = PBXBuildFile; fileRef = BB7CE03AC413DC77367F9117 /* ssl_tls.c */; };
@@ -82,6 +102,7 @@
 		4A2105BE2CE8C187DDE30BB2 /* asn1parse.c in Sources */ = {isa = PBXBuildFile; fileRef = DE9D7E86AF59435ABCAFE723 /* asn1parse.c */; };
 		4A31C884B3C255EC9779906C /* J2MEJARMetadata.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4102D9D68D45094E843CF68B /* J2MEJARMetadata.swift */; };
 		4B61AA16B796A2111F258F82 /* j2me_input.c in Sources */ = {isa = PBXBuildFile; fileRef = A9F34352D404094FF1417EB9 /* j2me_input.c */; };
+		4BCAA4CE302B15382C8DC4E7 /* NukeExtensions in Frameworks */ = {isa = PBXBuildFile; productRef = 015BA9A7C0840E713AAF7F6B /* NukeExtensions */; };
 		4C9DD6C0CC4DC2F8F032ED35 /* AppDelegate+Operator.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE7C8DB38D2A6B16B8609EAC /* AppDelegate+Operator.swift */; };
 		4D428BBE5F472D261FF66A7B /* J2MEScreenProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 576F507EABB75E02073422E1 /* J2MEScreenProfile.swift */; };
 		4EBCAA0A03167E0A2972217D /* error.c in Sources */ = {isa = PBXBuildFile; fileRef = 392248398CAF24372D31166B /* error.c */; };
@@ -139,6 +160,7 @@
 		A110C97DC46D6FC2BAC4663C /* jdwp.c in Sources */ = {isa = PBXBuildFile; fileRef = A2AE40425B70E77D2EEA7F13 /* jdwp.c */; };
 		A13ABE64A4B88CCDECB059F1 /* ssl_ticket.c in Sources */ = {isa = PBXBuildFile; fileRef = 0979BC4428C92098897A6BEF /* ssl_ticket.c */; };
 		A2109E84F280A162ABF1118C /* xtea.c in Sources */ = {isa = PBXBuildFile; fileRef = 3E8AD0F547E232B454C4E9F2 /* xtea.c */; };
+		A227CB13323BC2798103257F /* Nuke in Frameworks */ = {isa = PBXBuildFile; productRef = CC9380252FCE384A34628F0C /* Nuke */; };
 		A55C6765FCA2ADD5D80D4767 /* memory_buffer_alloc.c in Sources */ = {isa = PBXBuildFile; fileRef = 5F62008D9ADFEFD7589BED2C /* memory_buffer_alloc.c */; };
 		A7F95D6C0D481DCB2A49D5F0 /* linkedlist.c in Sources */ = {isa = PBXBuildFile; fileRef = 2B22347B97C34F6CB9F38969 /* linkedlist.c */; };
 		A8A9F570F63A92834FCEF68F /* pem.c in Sources */ = {isa = PBXBuildFile; fileRef = 0ADFD8E5864F71A40A0447AE /* pem.c */; };
@@ -219,7 +241,6 @@
 		BF5942931E09BD1A0051894B /* NSFetchedResultsController+Conveniences.m in Sources */ = {isa = PBXBuildFile; fileRef = BF5942901E09BD1A0051894B /* NSFetchedResultsController+Conveniences.m */; };
 		BF5942941E09BD1A0051894B /* NSManagedObject+Conveniences.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF5942911E09BD1A0051894B /* NSManagedObject+Conveniences.swift */; };
 		BF5942951E09BD1A0051894B /* NSManagedObjectContext+Conveniences.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF5942921E09BD1A0051894B /* NSManagedObjectContext+Conveniences.swift */; };
-		BF5E7F441B9A650B00AE44F8 /* SettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF5E7F431B9A650B00AE44F8 /* SettingsViewController.swift */; };
 		BF5E7F461B9A652600AE44F8 /* Settings.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = BF5E7F451B9A652600AE44F8 /* Settings.storyboard */; };
 		BF63A1A321A4AAAE00EE8F61 /* RecordSyncStatusViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF63A1A221A4AAAE00EE8F61 /* RecordSyncStatusViewController.swift */; };
 		BF63A1B521A4B76E00EE8F61 /* RecordVersionsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF63A1B421A4B76E00EE8F61 /* RecordVersionsViewController.swift */; };
@@ -315,6 +336,7 @@
 		CDE178A8C6520870F62D22E9 /* certs.c in Sources */ = {isa = PBXBuildFile; fileRef = 9E00121B94C0A59A47A01A13 /* certs.c */; };
 		D1D3C5C4B06336199D8B0908 /* J2MELibrary.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12CB3D71FD4D0336F7BE398A /* J2MELibrary.swift */; };
 		D23102758ADD76237D76C4D0 /* ccm.c in Sources */ = {isa = PBXBuildFile; fileRef = 5340A950F3E2AA50D790E47D /* ccm.c */; };
+		D2EAF7E6BA62E115B89D6831 /* ArtworkImagePipeline.swift in Sources */ = {isa = PBXBuildFile; fileRef = D87B76BE7BD1BAB85643CEBD /* ArtworkImagePipeline.swift */; };
 		D3564E74B574D500E4A3B629 /* ssl_client.c in Sources */ = {isa = PBXBuildFile; fileRef = 1BD6921AB86BF8FF31661BDE /* ssl_client.c */; };
 		D367F62176EE94F029D8EFF4 /* ecjpake.c in Sources */ = {isa = PBXBuildFile; fileRef = E370C1171B295F70DEC66581 /* ecjpake.c */; };
 		D485E7DE778AB8A51EE0082A /* J2MEGameViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49BF752BC8632741F5BB12F3 /* J2MEGameViewController.swift */; };
@@ -732,6 +754,30 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		81C7D1B5A526D320F3AB7866 /* QualityTransferDriver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Delta/Importing/QualityTransferDriver.swift"; sourceTree = SOURCE_ROOT; };
+		8B1B4331F8C676B25B9CA430 /* GameTransferCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Delta/Importing/GameTransferCoordinator.swift"; sourceTree = SOURCE_ROOT; };
+		37C1BDC7BF26498609474CA8 /* GameTransferArchive.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Delta/Importing/GameTransferArchive.swift"; sourceTree = SOURCE_ROOT; };
+		8CC62E34270B41B417002186 /* QualitySmokeDriver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Delta/Emulation/Adapters/QualitySmokeDriver.swift"; sourceTree = SOURCE_ROOT; };
+		9EABE8B8164FEC383EBC758D /* QualityDiagnostics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Delta/Emulation/Adapters/QualityDiagnostics.swift"; sourceTree = SOURCE_ROOT; };
+		5468C0CF6F793C3EDC54DDED /* JavaRuntimeAdapter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Delta/Emulation/Adapters/JavaRuntimeAdapter.swift"; sourceTree = SOURCE_ROOT; };
+		DE80453CDF6A4AA0E45222F4 /* OperatorLibraryAdapter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Delta/Emulation/Adapters/OperatorLibraryAdapter.swift"; sourceTree = SOURCE_ROOT; };
+		87BE0FE31038C51B12E8A47F /* JavaGamePersistenceAdapter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Delta/Emulation/Adapters/JavaGamePersistenceAdapter.swift"; sourceTree = SOURCE_ROOT; };
+		F6EA7AA2E25B3495F014DC17 /* ContentImportAdapter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Delta/Emulation/Adapters/ContentImportAdapter.swift"; sourceTree = SOURCE_ROOT; };
+		FBDA771D9537BDA7D4C7B558 /* CoreStorageAdapter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Delta/Emulation/Adapters/CoreStorageAdapter.swift"; sourceTree = SOURCE_ROOT; };
+		5E6D2D18133049293E1AA3C9 /* ImportCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Modules/DeltaApplication/ImportCoordinator.swift"; sourceTree = SOURCE_ROOT; };
+		F9D8B2B0A32AAF3F96A264FF /* StorageArtifact.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Modules/DeltaDomain/StorageArtifact.swift"; sourceTree = SOURCE_ROOT; };
+		CC6CA25C6DC188454FD52A88 /* CallbackEmulationSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Modules/DeltaApplication/CallbackEmulationSession.swift"; sourceTree = SOURCE_ROOT; };
+		072A5DD54074159CEC1D4C9A /* MainSaveStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Delta/Emulation/Adapters/MainSaveStore.swift"; sourceTree = SOURCE_ROOT; };
+		E6D6C4D2D70B210CF6B767F1 /* RuntimeSessionAdapters.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Delta/Emulation/Adapters/RuntimeSessionAdapters.swift"; sourceTree = SOURCE_ROOT; };
+		300E35A33EF6D6184A5986ED /* CoreConfigurationAdapter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Delta/Emulation/Adapters/CoreConfigurationAdapter.swift"; sourceTree = SOURCE_ROOT; };
+		EEA0A7D2AEFDAF7F882ACAB7 /* LaunchServices.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Delta/Emulation/Adapters/LaunchServices.swift"; sourceTree = SOURCE_ROOT; };
+		08F308589AE0B794B67564EC /* LaunchCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Modules/DeltaApplication/LaunchCoordinator.swift"; sourceTree = SOURCE_ROOT; };
+		4864AE5F972B971745CBCEAF /* EmulationSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Modules/DeltaDomain/EmulationSession.swift"; sourceTree = SOURCE_ROOT; };
+		2480549AD793D4CE3D2A3C13 /* SystemDescriptor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Modules/DeltaDomain/SystemDescriptor.swift"; sourceTree = SOURCE_ROOT; };
+		A140A140A140A140A140A140 /* Delta 14.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "Delta 14.xcdatamodel"; sourceTree = "<group>"; };
+		AABBAA000000000000000006 /* GameFileReplacement.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = GameFileReplacement.swift; path = Delta/Components/Loading/GameFileReplacement.swift; sourceTree = "<group>"; };
+		AABBAA000000000000000004 /* ArtworkImportValidation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ArtworkImportValidation.swift; path = Delta/Components/Loading/ArtworkImportValidation.swift; sourceTree = "<group>"; };
+		AABBAA000000000000000002 /* AuroraArtworkManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuroraArtworkManager.swift; sourceTree = "<group>"; };
 		016BBEF7160807B1F20591FE /* cipher.c */ = {isa = PBXFileReference; includeInIndex = 1; name = cipher.c; path = Experiments/J2ME/JarBox/J2MEEmulator/minijvm/utils/https/mbedtls/library/cipher.c; sourceTree = "<group>"; };
 		0387433BF8E012E316490BF0 /* runtime.c */ = {isa = PBXFileReference; includeInIndex = 1; name = runtime.c; path = Experiments/J2ME/JarBox/J2MEEmulator/minijvm/jvm/runtime.c; sourceTree = "<group>"; };
 		04B6DD4B5E1005A0B25E5960 /* pkcs11.c */ = {isa = PBXFileReference; includeInIndex = 1; name = pkcs11.c; path = Experiments/J2ME/JarBox/J2MEEmulator/minijvm/utils/https/mbedtls/library/pkcs11.c; sourceTree = "<group>"; };
@@ -848,6 +894,7 @@
 		A7EE6FC6AB0CCB590B907E29 /* J2MEInputRouter.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = J2MEInputRouter.swift; path = Delta/J2ME/J2MEInputRouter.swift; sourceTree = "<group>"; };
 		A8DAEEF211588230C8E425E1 /* J2MEJoystickView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = J2MEJoystickView.swift; path = Delta/J2ME/J2MEJoystickView.swift; sourceTree = "<group>"; };
 		A9F34352D404094FF1417EB9 /* j2me_input.c */ = {isa = PBXFileReference; includeInIndex = 1; name = j2me_input.c; path = Experiments/J2ME/JarBox/J2MEEmulator/NativeBridge/j2me_input.c; sourceTree = "<group>"; };
+		AA563C77CEEE1E23F6DE1EAC /* ArtworkCoverLayout.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ArtworkCoverLayout.swift; path = Delta/Components/Loading/ArtworkCoverLayout.swift; sourceTree = "<group>"; };
 		AC1C990F29F8B8C30020E6E4 /* ToastNotificationOptions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToastNotificationOptions.swift; sourceTree = "<group>"; };
 		AC1C992629F9F1CF0020E6E4 /* GameViewController+ExperimentalToasts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "GameViewController+ExperimentalToasts.swift"; sourceTree = "<group>"; };
 		ACF7E30E29F743A3000FE071 /* PHPhotoLibrary+Screenshots.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PHPhotoLibrary+Screenshots.swift"; sourceTree = "<group>"; };
@@ -933,7 +980,6 @@
 		BF5942901E09BD1A0051894B /* NSFetchedResultsController+Conveniences.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSFetchedResultsController+Conveniences.m"; sourceTree = "<group>"; };
 		BF5942911E09BD1A0051894B /* NSManagedObject+Conveniences.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "NSManagedObject+Conveniences.swift"; sourceTree = "<group>"; };
 		BF5942921E09BD1A0051894B /* NSManagedObjectContext+Conveniences.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "NSManagedObjectContext+Conveniences.swift"; sourceTree = "<group>"; };
-		BF5E7F431B9A650B00AE44F8 /* SettingsViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SettingsViewController.swift; sourceTree = "<group>"; };
 		BF5E7F451B9A652600AE44F8 /* Settings.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = Settings.storyboard; path = Delta/Base.lproj/Settings.storyboard; sourceTree = SOURCE_ROOT; };
 		BF616A121F08184A0077F8B2 /* ControllerInputsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ControllerInputsViewController.swift; sourceTree = "<group>"; };
 		BF63A1A221A4AAAE00EE8F61 /* RecordSyncStatusViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordSyncStatusViewController.swift; sourceTree = "<group>"; };
@@ -1178,6 +1224,7 @@
 		D5F82FB72981D3AC00B229AF /* LegacySearchBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LegacySearchBar.swift; sourceTree = "<group>"; };
 		D5FB042B2C5AF40A008329DD /* libresolv.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libresolv.tbd; path = usr/lib/libresolv.tbd; sourceTree = SDKROOT; };
 		D82B672F1FA04C72206B320D /* havege.c */ = {isa = PBXFileReference; includeInIndex = 1; name = havege.c; path = Experiments/J2ME/JarBox/J2MEEmulator/minijvm/utils/https/mbedtls/library/havege.c; sourceTree = "<group>"; };
+		D87B76BE7BD1BAB85643CEBD /* ArtworkImagePipeline.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ArtworkImagePipeline.swift; path = Delta/Components/Loading/ArtworkImagePipeline.swift; sourceTree = "<group>"; };
 		DAD95742495F92F2E28C1019 /* oid.c */ = {isa = PBXFileReference; includeInIndex = 1; name = oid.c; path = Experiments/J2ME/JarBox/J2MEEmulator/minijvm/utils/https/mbedtls/library/oid.c; sourceTree = "<group>"; };
 		DB278341097E2FBF81E4540D /* ssl_cache.c */ = {isa = PBXFileReference; includeInIndex = 1; name = ssl_cache.c; path = Experiments/J2ME/JarBox/J2MEEmulator/minijvm/utils/https/mbedtls/library/ssl_cache.c; sourceTree = "<group>"; };
 		DC866E433B3BA9AE18ABA1EC /* libPods-Delta.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-Delta.a"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -1200,7 +1247,7 @@
 		E6BD34AA2F563F1A001C9D78 /* AchievementGreeting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AchievementGreeting.swift; sourceTree = "<group>"; };
 		E6BD34AC2F587BF0001C9D78 /* AchievementGameBanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AchievementGameBanner.swift; sourceTree = "<group>"; };
 		E6EB10AE2F58B1C50001AAD2 /* AchievementNotification.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AchievementNotification.swift; sourceTree = "<group>"; };
-		E8F7D54D4973FC220CBDDD8B /* j2me_render.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = j2me_render.m; path = Experiments/J2ME/JarBox/J2MEEmulator/NativeBridge/j2me_render.m; sourceTree = "<group>"; };
+		E8F7D54D4973FC220CBDDD8B /* j2me_render.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = j2me_render.m; path = Delta/J2ME/Native/J2MERender.m; sourceTree = "<group>"; };
 		E9C48185DE578FEC2B9A096C /* x509write_crt.c */ = {isa = PBXFileReference; includeInIndex = 1; name = x509write_crt.c; path = Experiments/J2ME/JarBox/J2MEEmulator/minijvm/utils/https/mbedtls/library/x509write_crt.c; sourceTree = "<group>"; };
 		F09797FDA5F1D8157926D719 /* jni_std.c */ = {isa = PBXFileReference; includeInIndex = 1; name = jni_std.c; path = Experiments/J2ME/JarBox/J2MEEmulator/minijvm/jvm/jni_std.c; sourceTree = "<group>"; };
 		F0C44BFA0F6C8B75C744A0B8 /* md.c */ = {isa = PBXFileReference; includeInIndex = 1; name = md.c; path = Experiments/J2ME/JarBox/J2MEEmulator/minijvm/utils/https/mbedtls/library/md.c; sourceTree = "<group>"; };
@@ -1227,6 +1274,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A0D1A0000000000000000005 /* DeltaApplication in Frameworks */,
+				A0D1A0000000000000000003 /* DeltaDomain in Frameworks */,
 				D5FB042C2C5AF40A008329DD /* libresolv.tbd in Frameworks */,
 				BF69FBA823E396860051BEEA /* libz.tbd in Frameworks */,
 				D52CB8C82CE2B7C800B04458 /* StoreKit.framework in Frameworks */,
@@ -1255,6 +1304,8 @@
 				2A7732E6064967B7CAD8FE36 /* AVFoundation.framework in Frameworks */,
 				F5DA78824508467B2A98B0E7 /* UIKit.framework in Frameworks */,
 				AE5DBFB6B0DACCB0372E9ED1 /* QuartzCore.framework in Frameworks */,
+				A227CB13323BC2798103257F /* Nuke in Frameworks */,
+				4BCAA4CE302B15382C8DC4E7 /* NukeExtensions in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1542,6 +1593,7 @@
 			children = (
 				BF107EC31BF413F000E0C32C /* GamesViewController.swift */,
 				AD1020260000000000000002 /* AuroraHomeView.swift */,
+				AABBAA000000000000000002 /* AuroraArtworkManager.swift */,
 				BFDD04F01D5E2C27002D450E /* GameCollectionViewController.swift */,
 				BFFC461A1D59820F00AF2CC6 /* Segues */,
 			);
@@ -1819,7 +1871,6 @@
 			children = (
 				BFAA1FEC1B8AA4FA00495943 /* Settings.swift */,
 				BF5E7F451B9A652600AE44F8 /* Settings.storyboard */,
-				BF5E7F431B9A650B00AE44F8 /* SettingsViewController.swift */,
 				8282422F2F7C487800D8F899 /* SettingsRow.swift */,
 				828242252F7C40C300D8F899 /* SettingsView.swift */,
 				BFB3645723245A6000CD0EB1 /* LicensesViewController.swift */,
@@ -1949,6 +2000,26 @@
 		BFFA71CE1AAC406100EE9DD1 = {
 			isa = PBXGroup;
 			children = (
+				81C7D1B5A526D320F3AB7866 /* QualityTransferDriver.swift */,
+				8B1B4331F8C676B25B9CA430 /* GameTransferCoordinator.swift */,
+				37C1BDC7BF26498609474CA8 /* GameTransferArchive.swift */,
+				8CC62E34270B41B417002186 /* QualitySmokeDriver.swift */,
+				9EABE8B8164FEC383EBC758D /* QualityDiagnostics.swift */,
+				5468C0CF6F793C3EDC54DDED /* JavaRuntimeAdapter.swift */,
+				DE80453CDF6A4AA0E45222F4 /* OperatorLibraryAdapter.swift */,
+				87BE0FE31038C51B12E8A47F /* JavaGamePersistenceAdapter.swift */,
+				F6EA7AA2E25B3495F014DC17 /* ContentImportAdapter.swift */,
+				FBDA771D9537BDA7D4C7B558 /* CoreStorageAdapter.swift */,
+				5E6D2D18133049293E1AA3C9 /* ImportCoordinator.swift */,
+				F9D8B2B0A32AAF3F96A264FF /* StorageArtifact.swift */,
+				CC6CA25C6DC188454FD52A88 /* CallbackEmulationSession.swift */,
+				072A5DD54074159CEC1D4C9A /* MainSaveStore.swift */,
+				E6D6C4D2D70B210CF6B767F1 /* RuntimeSessionAdapters.swift */,
+				300E35A33EF6D6184A5986ED /* CoreConfigurationAdapter.swift */,
+				EEA0A7D2AEFDAF7F882ACAB7 /* LaunchServices.swift */,
+				08F308589AE0B794B67564EC /* LaunchCoordinator.swift */,
+				4864AE5F972B971745CBCEAF /* EmulationSession.swift */,
+				2480549AD793D4CE3D2A3C13 /* SystemDescriptor.swift */,
 				BFFA71D91AAC406100EE9DD1 /* Delta */,
 				D539103029E88B6C0006B350 /* DeltaPreviews */,
 				D5D7C1F229E60E0000663793 /* DeltaFeatures */,
@@ -1960,6 +2031,10 @@
 				43183841AF258C4DC1FAC9AB /* DeltaOperator */,
 				3BE1D3946EB6578BA3DFB2CF /* J2MENative Sources */,
 				82830559A472A23B40FF8011 /* J2ME Integration */,
+				D87B76BE7BD1BAB85643CEBD /* ArtworkImagePipeline.swift */,
+				AA563C77CEEE1E23F6DE1EAC /* ArtworkCoverLayout.swift */,
+				AABBAA000000000000000006 /* GameFileReplacement.swift */,
+				AABBAA000000000000000004 /* ArtworkImportValidation.swift */,
 			);
 			sourceTree = "<group>";
 		};
@@ -2494,10 +2569,14 @@
 			);
 			name = Delta;
 			packageProductDependencies = (
+				A0D1A0000000000000000004 /* DeltaApplication */,
+				A0D1A0000000000000000002 /* DeltaDomain */,
 				D5C45FEE2BE992A80009DBB0 /* AltKit */,
 				D5AE76C12C2B59240086471B /* KeychainAccess */,
 				D5E76AAC2BE199890078C0C5 /* ShowTouches */,
 				D5EF1A1F2D84BD59001B06E6 /* rcheevos */,
+				CC9380252FCE384A34628F0C /* Nuke */,
+				015BA9A7C0840E713AAF7F6B /* NukeExtensions */,
 			);
 			productName = Delta;
 			productReference = BFFA71D71AAC406100EE9DD1 /* Delta.app */;
@@ -2590,10 +2669,12 @@
 			);
 			mainGroup = BFFA71CE1AAC406100EE9DD1;
 			packageReferences = (
+				A0D1A0000000000000000001 /* XCLocalSwiftPackageReference "." */,
 				D5C45FED2BE992A80009DBB0 /* XCRemoteSwiftPackageReference "AltKit" */,
 				D5AE76C02C2B59240086471B /* XCRemoteSwiftPackageReference "KeychainAccess" */,
 				D5E76AAB2BE199890078C0C5 /* XCRemoteSwiftPackageReference "ShowTouches" */,
 				D5EF1A1E2D84BD59001B06E6 /* XCRemoteSwiftPackageReference "rcheevos" */,
+				AC223E55A38F03C722DE4DDA /* XCRemoteSwiftPackageReference "Nuke" */,
 			);
 			productRefGroup = BFFA71D81AAC406100EE9DD1 /* Products */;
 			projectDirPath = "";
@@ -2852,6 +2933,7 @@
 			);
 			inputPaths = (
 				"$(SRCROOT)/Experiments/J2ME/prepare_native.py",
+				"$(SRCROOT)/Delta/J2ME/Native/J2MEAudioHandles.h",
 				"$(SRCROOT)/Experiments/J2ME/JarBox/J2MEEmulator/minijvm/jvm/interpreter.c",
 				"$(SRCROOT)/Experiments/J2ME/JarBox/J2MEEmulator/minijvm/jvm/jvm_util.c",
 				"$(SRCROOT)/Experiments/J2ME/JarBox/J2MEEmulator/NativeBridge/j2me_audio.m",
@@ -3080,6 +3162,20 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BDB7B6AFEE9953A604DCA749 /* QualityTransferDriver.swift in Sources */,
+				0CF42082ABEA83E39FB27F15 /* GameTransferCoordinator.swift in Sources */,
+				9E78A742C7309BEEF2182A0C /* GameTransferArchive.swift in Sources */,
+				29F7B271E6E3A6F8C9A13488 /* QualitySmokeDriver.swift in Sources */,
+				12CF56185C178E16068D1817 /* QualityDiagnostics.swift in Sources */,
+				C3A1F62F328D6D9533A1CFF4 /* JavaRuntimeAdapter.swift in Sources */,
+				46A80284B5B682887C5A60B7 /* OperatorLibraryAdapter.swift in Sources */,
+				E40A6E12F79B1A89172A3048 /* JavaGamePersistenceAdapter.swift in Sources */,
+				CE48E751D406387BF45B48BB /* ContentImportAdapter.swift in Sources */,
+				58E844ED7981C19149682092 /* CoreStorageAdapter.swift in Sources */,
+				8D94F31A50E42082F23830E8 /* MainSaveStore.swift in Sources */,
+				29B746939E8D75EF4191F079 /* RuntimeSessionAdapters.swift in Sources */,
+				DAEB3743846EB0A6E2EC3665 /* CoreConfigurationAdapter.swift in Sources */,
+				D6CD2B0AE80F790BE8216AE2 /* LaunchServices.swift in Sources */,
 				BFB3645823245A6000CD0EB1 /* LicensesViewController.swift in Sources */,
 				BFC6F7B81F435BC500221B96 /* Input+Display.swift in Sources */,
 				D5AE76C82C2B808F0086471B /* AltAppIconsViewController.swift in Sources */,
@@ -3252,6 +3348,7 @@
 				BF3540021C5DA3D500C1184C /* PauseStoryboardSegue.swift in Sources */,
 				BF107EC41BF413F000E0C32C /* GamesViewController.swift in Sources */,
 				AD1020260000000000000001 /* AuroraHomeView.swift in Sources */,
+				AABBAA000000000000000001 /* AuroraArtworkManager.swift in Sources */,
 				C6F24AD72D64B452002F939F /* Lu.swift in Sources */,
 				BF3D6C512202865F0083E05A /* Delta2ToDelta3.xcmappingmodel in Sources */,
 				BF59426F1E09BC5D0051894B /* DatabaseManager.swift in Sources */,
@@ -3276,7 +3373,6 @@
 				BF99A5971DC2F9C400468E9E /* ControllerSkinTableViewCell.swift in Sources */,
 				BFE9908024451E15006409A7 /* MelonDSCoreSettingsViewController.swift in Sources */,
 				BF5942861E09BC8B0051894B /* _Cheat.swift in Sources */,
-				BF5E7F441B9A650B00AE44F8 /* SettingsViewController.swift in Sources */,
 				BF8CA9361F5F651900499FDD /* PopoverMenuController.swift in Sources */,
 				D5AE76B52C2B52820086471B /* UserAccount.swift in Sources */,
 				D5D39E792AF2D624004BE3F7 /* GameView+AirPlay.swift in Sources */,
@@ -3331,6 +3427,10 @@
 				234315D289F551EA2244E934 /* J2MEPreferences.swift in Sources */,
 				B268FD77892585C9C3CB0C50 /* J2MESaveStore.swift in Sources */,
 				8A4895F244C34D78BCABDD1D /* J2MEInputState.swift in Sources */,
+				D2EAF7E6BA62E115B89D6831 /* ArtworkImagePipeline.swift in Sources */,
+				32C89D9AE0A60E134E37F076 /* ArtworkCoverLayout.swift in Sources */,
+				AABBAA000000000000000005 /* GameFileReplacement.swift in Sources */,
+				AABBAA000000000000000003 /* ArtworkImportValidation.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3600,7 +3700,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				MARKETING_VERSION = 2.0.4;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -3656,7 +3756,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				MARKETING_VERSION = 2.0.4;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				OTHER_CFLAGS = "-DGLES_SILENCE_DEPRECATION";
@@ -3713,7 +3813,6 @@
 					"-l\"GoogleSignIn\"",
 					"-l\"Harmony\"",
 					"-l\"Roxas\"",
-					"-l\"SDWebImage\"",
 					"-l\"SMCalloutView\"",
 					"-l\"SQLite.swift\"",
 					"-l\"SwiftyDropbox\"",
@@ -3830,7 +3929,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2023 Riley Testut. All rights reserved.";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -3878,7 +3977,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2023 Riley Testut. All rights reserved.";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -4050,7 +4149,22 @@
 		};
 /* End XCConfigurationList section */
 
+/* Begin XCLocalSwiftPackageReference section */
+        A0D1A0000000000000000001 /* XCLocalSwiftPackageReference "." */ = {
+            isa = XCLocalSwiftPackageReference;
+            relativePath = .;
+        };
+/* End XCLocalSwiftPackageReference section */
+
 /* Begin XCRemoteSwiftPackageReference section */
+		AC223E55A38F03C722DE4DDA /* XCRemoteSwiftPackageReference "Nuke" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/kean/Nuke.git";
+			requirement = {
+				kind = exactVersion;
+				version = 12.8.0;
+			};
+		};
 		D5AE76C02C2B59240086471B /* XCRemoteSwiftPackageReference "KeychainAccess" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/kishikawakatsumi/KeychainAccess.git";
@@ -4086,6 +4200,18 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		A0D1A0000000000000000004 /* DeltaApplication */ = {isa = XCSwiftPackageProductDependency; productName = DeltaApplication; };
+		A0D1A0000000000000000002 /* DeltaDomain */ = {isa = XCSwiftPackageProductDependency; productName = DeltaDomain; };
+		015BA9A7C0840E713AAF7F6B /* NukeExtensions */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = AC223E55A38F03C722DE4DDA /* XCRemoteSwiftPackageReference "Nuke" */;
+			productName = NukeExtensions;
+		};
+		CC9380252FCE384A34628F0C /* Nuke */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = AC223E55A38F03C722DE4DDA /* XCRemoteSwiftPackageReference "Nuke" */;
+			productName = Nuke;
+		};
 		D5AE76C12C2B59240086471B /* KeychainAccess */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = D5AE76C02C2B59240086471B /* XCRemoteSwiftPackageReference "KeychainAccess" */;
@@ -4112,6 +4238,7 @@
 		BF4828811F9027B600028B97 /* Delta.xcdatamodeld */ = {
 			isa = XCVersionGroup;
 			children = (
+				A140A140A140A140A140A140 /* Delta 14.xcdatamodel */,
 				A130A130A130A130A130A130 /* Delta 13.xcdatamodel */,
 				D58C54852FCAC37B00B408BA /* Delta 12.xcdatamodel */,
 				D51D8EC62D49C998002649C2 /* Delta 11.xcdatamodel */,
@@ -4126,7 +4253,7 @@
 				BF4828821F9027B600028B97 /* Delta 2.xcdatamodel */,
 				BF4828831F9027B600028B97 /* Delta.xcdatamodel */,
 			);
-			currentVersion = A130A130A130A130A130A130 /* Delta 13.xcdatamodel */;
+			currentVersion = A140A140A140A140A140A140 /* Delta 14.xcdatamodel */;
 			path = Delta.xcdatamodeld;
 			sourceTree = "<group>";
 			versionGroupType = wrapper.xcdatamodel;

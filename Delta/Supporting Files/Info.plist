@@ -9,6 +9,12 @@
 	<key>CFBundleDocumentTypes</key>
 	<array>
         <dict>
+            <key>CFBundleTypeName</key><string>Delta Game Transfer</string>
+            <key>CFBundleTypeRole</key><string>Editor</string>
+            <key>LSHandlerRank</key><string>Owner</string>
+            <key>LSItemContentTypes</key><array><string>page.ducnguyen.delta.transfer</string></array>
+        </dict>
+        <dict>
             <key>CFBundleTypeName</key><string>Java ME Game</string>
             <key>CFBundleTypeRole</key><string>Viewer</string>
             <key>LSHandlerRank</key><string>Alternate</string>
@@ -146,6 +152,8 @@
 	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
+	<key>CFBundleDisplayName</key>
+	<string>Epsilon</string>
 	<key>CFBundleName</key>
 	<string>$(PRODUCT_NAME)</string>
 	<key>CFBundlePackageType</key>
@@ -217,13 +225,13 @@
 		<string>_altserver._tcp</string>
 	</array>
 	<key>NSLocalNetworkUsageDescription</key>
-	<string>Delta uses the local network to communicate with AltServer, enable JIT, and connect to Epilogue Operator devices.</string>
+	<string>Epsilon uses the local network to communicate with AltServer, enable JIT, and connect to Epilogue Operator devices.</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>Delta uses your microphone to emulate the Nintendo DS microphone.</string>
+	<string>Epsilon uses your microphone to emulate the Nintendo DS microphone.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>Please allow Delta to save screenshots to your Photo Library.</string>
+	<string>Please allow Epsilon to save screenshots to your Photo Library.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Press “OK” to allow Delta to use images from your Photo Library as game artwork.</string>
+	<string>Press “OK” to allow Epsilon to use images from your Photo Library as game artwork.</string>
 	<key>NSUserActivityTypes</key>
 	<array>
 		<string>com.rileytestut.Delta.PlayGame</string>
@@ -333,6 +341,15 @@
 	<true/>
 	<key>UTExportedTypeDeclarations</key>
 	<array>
+        <dict>
+            <key>UTTypeIdentifier</key><string>page.ducnguyen.delta.transfer</string>
+            <key>UTTypeDescription</key><string>Delta Game Transfer</string>
+            <key>UTTypeConformsTo</key><array><string>public.data</string><string>public.archive</string></array>
+            <key>UTTypeTagSpecification</key><dict>
+                <key>public.filename-extension</key><array><string>deltatransfer</string></array>
+                <key>public.mime-type</key><string>application/x-delta-transfer</string>
+            </dict>
+        </dict>
         <dict>
             <key>UTTypeIdentifier</key><string>page.ducnguyen.delta.j2me</string>
             <key>UTTypeDescription</key><string>Java ME JAR</string>

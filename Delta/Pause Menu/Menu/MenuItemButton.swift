@@ -33,6 +33,9 @@ struct MenuItemButton: View
                 if let image = item.image
                 {
                     Image(uiImage: image)
+                        .resizable()
+                        .renderingMode(.template)
+                        .scaledToFit()
                         .frame(width: 44, height: 44)
                 }
                 

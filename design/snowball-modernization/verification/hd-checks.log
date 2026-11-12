@@ -1,0 +1,18 @@
+Scale 1, asset density 1, DensityProbe:
+[J2ME Render] Registered 32 native methods
+PASS: logical asset dimensions, mutable image sizes, high-density getRGB, scaled region crops, rotation and drawRGB
+
+Scale 3, asset density 3, DensityProbe:
+[J2ME Render] Registered 32 native methods
+PASS: logical asset dimensions, mutable image sizes, high-density getRGB, scaled region crops, rotation and drawRGB
+
+Scale 3, asset density 3, MenuProbe:
+[J2ME Render] Registered 32 native methods
+FORM: 
+COMMAND: Original 0
+COMMAND: Original 1
+COMMAND: Original 2
+COMMAND: Original 3
+COMMAND: Original 4
+CANVAS SHOWN
+PASS: five original menu actions, selection wraparound, and native title rendering at 176x208

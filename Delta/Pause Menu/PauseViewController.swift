@@ -20,7 +20,7 @@ class PauseViewController: UIViewController, PauseInfoProviding
     }
     
     var pauseItems: [MenuItem] {
-        return [self.saveStateItem, self.loadStateItem, self.cheatCodesItem, self.fastForwardItem, self.sustainButtonsItem, self.screenshotItem, self.askLuItem].compactMap { $0 }
+        return [self.saveStateItem, self.loadStateItem, self.cheatCodesItem, self.fastForwardItem, self.sustainButtonsItem, self.screenshotItem, self.orientationItem, self.askLuItem].compactMap { $0 }
     }
     
     var closeButtonTitle: String = NSLocalizedString("Main Menu", comment: "")
@@ -43,6 +43,7 @@ class PauseViewController: UIViewController, PauseInfoProviding
     var fastForwardItem: MenuItem?
     var sustainButtonsItem: MenuItem?
     var screenshotItem: MenuItem?
+    var orientationItem: MenuItem?
     var askLuItem: MenuItem?
     
     /// PauseInfoProviding
@@ -239,6 +240,7 @@ private extension PauseViewController
         self.sustainButtonsItem = nil
         self.fastForwardItem = nil
         self.screenshotItem = nil
+        self.orientationItem = nil
         
         guard let emulatorCore = self.emulatorCore else { return }
         
@@ -281,9 +283,21 @@ private extension PauseViewController
         })
         
         let speed = (emulatorCore.game as? Game).map { FastForwardSpeed.resolvedRate(for: $0, core: emulatorCore.deltaCore) } ?? emulatorCore.deltaCore.supportedRates.upperBound
-        self.fastForwardItem = MenuItem(text: String(localized: "Fast Forward") + " · " + FastForwardSpeed(rawValue: speed).description, image: #imageLiteral(resourceName: "FastForward"), action: { _ in })
+        if System(gameType: emulatorCore.game.type) != .gba {
+            self.fastForwardItem = MenuItem(text: String(localized: "Fast Forward") + " · " + FastForwardSpeed(rawValue: speed).description, image: #imageLiteral(resourceName: "FastForward"), action: { _ in })
+        }
         self.sustainButtonsItem = MenuItem(text: String(localized: "Repeat Buttons"), image: #imageLiteral(resourceName: "SustainButtons"), action: { _ in })
         self.screenshotItem = MenuItem(text: NSLocalizedString("Screenshot", comment: ""), image: #imageLiteral(resourceName: "Screenshot"), action: { _ in })
+        self.orientationItem = MenuItem(text: String(localized: "Orientation"),
+                                        image: UIImage(systemName: AppOrientation.current.symbol), action: { [weak self] item in
+            item.isSelected = false
+            guard let self else { return }
+            AppOrientation.presentPicker(from: self) { [weak item] in
+                item?.text = String(localized: "Orientation")
+                item?.image = UIImage(systemName: AppOrientation.current.symbol)
+            }
+        })
+
         
         if let game = emulatorCore.game as? Game
         {

@@ -33,15 +33,8 @@ struct SettingsRow<Content: View>: View
             Label {
                 label
             } icon: {
-                if #available(iOS 26, *)
-                {
-                    image
-                        .glassEffect(.regular.tint(color), in: RoundedRectangle(cornerRadius: badgeSize / 4))
-                }
-                else
-                {
-                    image
-                }
+                image
+                    .glassEffect(.regular.tint(color), in: RoundedRectangle(cornerRadius: badgeSize / 4))
             }
         }
     }

@@ -78,25 +78,25 @@ struct CustomFastForwardOptions
     // @Option // No name = hidden
     // var preferredSpeedsBySystem: [String: Double] = [:]
     
-    @Option(name: "Nintendo", description: "Preferred NES fast forward speed.", values: FastForwardSpeed.speeds(in: System.nes.deltaCore.supportedRates))
+    @Option(name: "Nintendo", description: "Preferred NES fast forward speed.", values: FastForwardSpeed.speeds(in: (System.nes.deltaCore?.supportedRates ?? 1...1)))
     var nes: FastForwardSpeed?
 
-    @Option(name: "Super Nintendo", description: "Preferred SNES fast forward speed.", values: FastForwardSpeed.speeds(in: System.snes.deltaCore.supportedRates))
+    @Option(name: "Super Nintendo", description: "Preferred SNES fast forward speed.", values: FastForwardSpeed.speeds(in: (System.snes.deltaCore?.supportedRates ?? 1...1)))
     var snes: FastForwardSpeed?
     
-    @Option(name: "Sega Genesis", description: "Preferred Genesis fast forward speed.", values: FastForwardSpeed.speeds(in: System.genesis.deltaCore.supportedRates))
+    @Option(name: "Sega Genesis", description: "Preferred Genesis fast forward speed.", values: FastForwardSpeed.speeds(in: (System.genesis.deltaCore?.supportedRates ?? 1...1)))
     var genesis: FastForwardSpeed?
 
-    @Option(name: "Nintendo 64", description: "Preferred N64 fast forward speed.", values: FastForwardSpeed.speeds(in: System.n64.deltaCore.supportedRates))
+    @Option(name: "Nintendo 64", description: "Preferred N64 fast forward speed.", values: FastForwardSpeed.speeds(in: (System.n64.deltaCore?.supportedRates ?? 1...1)))
     var n64: FastForwardSpeed?
 
-    @Option(name: "Game Boy Color", description: "Preferred GBC fast forward speed.", values: FastForwardSpeed.speeds(in: System.gbc.deltaCore.supportedRates))
+    @Option(name: "Game Boy Color", description: "Preferred GBC fast forward speed.", values: FastForwardSpeed.speeds(in: (System.gbc.deltaCore?.supportedRates ?? 1...1)))
     var gbc: FastForwardSpeed?
 
-    @Option(name: "Game Boy Advance", description: "Preferred GBA fast forward speed.", values: FastForwardSpeed.speeds(in: System.gba.deltaCore.supportedRates))
+    @Option(name: "Game Boy Advance", description: "Preferred GBA fast forward speed.", values: FastForwardSpeed.speeds(in: (System.gba.deltaCore?.supportedRates ?? 1...1)))
     var gba: FastForwardSpeed?
 
-    @Option(name: "Nintendo DS", description: "Preferred DS fast forward speed.", values: FastForwardSpeed.speeds(in: System.ds.deltaCore.supportedRates))
+    @Option(name: "Nintendo DS", description: "Preferred DS fast forward speed.", values: FastForwardSpeed.speeds(in: (System.ds.deltaCore?.supportedRates ?? 1...1)))
     var ds: FastForwardSpeed?
     
     @Option(name: "Allow Unrestricted Speeds", description: "Allow choosing speeds that exceed the maximum supported speed of a system.\n\nThis can be used to test the performance of new iOS devices.")
@@ -116,8 +116,8 @@ extension Feature where Options == CustomFastForwardOptions
             case .n64: return self.n64
             case .gbc: return self.gbc
             case .gba: return self.gba
-            case .j2me: return nil
             case .ds: return self.ds
+            default: return nil
             }
         }
         set {
@@ -130,8 +130,8 @@ extension Feature where Options == CustomFastForwardOptions
             case .n64: self.n64 = newValue
             case .gbc: self.gbc = newValue
             case .gba: self.gba = newValue
-            case .j2me: break
             case .ds: self.ds = newValue
+            default: break
             }
         }
     }

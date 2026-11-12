@@ -206,6 +206,7 @@ extension PauseViewController {
                         case .quick: return "quick"
                         case .general: return "general"
                         case .locked: return "locked"
+                        case .main: return "main"
                         }
                     }()  // Immediately execute this inline closure
                 )

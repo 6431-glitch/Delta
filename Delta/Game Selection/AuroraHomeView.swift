@@ -1,7 +1,7 @@
 import SwiftUI
 import CoreData
 import UIKit
-import SDWebImage
+import NukeExtensions
 
 /// Immutable presentation data keeps Core Data objects on the controller's queue.
 struct AuroraGame: Identifiable, Equatable {
@@ -26,12 +26,14 @@ final class AuroraHomeModel: NSObject, ObservableObject, NSFetchedResultsControl
     @Published var selectedID: NSManagedObjectID?
     @Published var collectionID: String?
     @Published var favoritesOnly = false
+    @Published var recentlyPlayedOnly = false
     @Published var query = ""
     @Published var bannerOnly = false
     @Published var orientation = AppOrientation.current
     @Published var orientationError: String?
     @Published var artworkRevision = UUID()
     @Published var selectedTab = 0
+    @Published var managingArtwork = false
     private let results: NSFetchedResultsController<Game>
     #if DEBUG
     private let previewContext = NSManagedObjectContext(concurrencyType: .mainQueueConcurrencyType)
@@ -87,11 +89,13 @@ final class AuroraHomeModel: NSObject, ObservableObject, NSFetchedResultsControl
         if selectedGame == nil { bannerOnly = false }
     }
     var filteredGames: [AuroraGame] {
-        games.filter {
+        let matches = games.filter {
             (collectionID == nil || $0.collectionID == collectionID) &&
             (!favoritesOnly || $0.isFavorite) &&
             (query.isEmpty || $0.name.localizedStandardContains(query))
         }
+        return recentlyPlayedOnly ? Array(matches.filter { $0.playedDate != nil }
+            .sorted { $0.playedDate! > $1.playedDate! }.prefix(12)) : matches
     }
     var recentGames: [AuroraGame] {
         Array(games.filter { $0.playedDate != nil }.sorted { $0.playedDate! > $1.playedDate! }.prefix(12))
@@ -114,17 +118,18 @@ final class AuroraHomeModel: NSObject, ObservableObject, NSFetchedResultsControl
     }
     func select(_ game: AuroraGame) {
         if !filteredGames.contains(where: { $0.id == game.id }) {
-            collectionID = nil; favoritesOnly = false; query = ""
+            collectionID = nil; favoritesOnly = false; recentlyPlayedOnly = false; query = ""
         }
         selectedID = game.id
     }
 }
 
-/// SDWebImage handles local covers, remote covers, caching and cancellation.
-private struct AuroraArtwork: UIViewRepresentable {
+/// Nuke handles local covers, remote covers, caching and cancellation.
+struct AuroraArtwork: UIViewRepresentable {
     let url: URL?
     var fit = false
     var revision: UUID? = nil
+    var imageLoaded: ((CGSize) -> Void)? = nil
     func makeUIView(context: Context) -> UIImageView {
         let view = UIImageView()
         view.clipsToBounds = true
@@ -142,11 +147,55 @@ private struct AuroraArtwork: UIViewRepresentable {
         context.coordinator.url = url
         context.coordinator.revision = revision
         context.coordinator.loaded = true
-        view.sd_setImage(with: url, placeholderImage: UIImage(systemName: "gamecontroller"), options: [])
+        var options = ImageLoadingOptions(placeholder: UIImage(systemName: "gamecontroller"))
+        options.pipeline = ArtworkImagePipeline.shared
+        options.isProgressiveRenderingEnabled = false
+        let coordinator = context.coordinator
+        NukeExtensions.loadImage(with: url.map { ArtworkImagePipeline.request(for: $0) }, options: options, into: view) { result in
+            guard case .success(let response) = result else { return }
+            // Cache hits can complete inside updateUIView; defer SwiftUI state changes.
+            DispatchQueue.main.async { [weak coordinator] in
+                guard let coordinator, coordinator.loaded, coordinator.url == url, coordinator.revision == revision else { return }
+                imageLoaded?(response.image.size)
+            }
+        }
     }
-    static func dismantleUIView(_ view: UIImageView, coordinator: Coordinator) { view.sd_cancelCurrentImageLoad() }
+    static func dismantleUIView(_ view: UIImageView, coordinator: Coordinator) { coordinator.loaded = false; NukeExtensions.cancelRequest(for: view) }
     func makeCoordinator() -> Coordinator { Coordinator() }
     final class Coordinator { var url: URL?; var revision: UUID?; var loaded = false }
+}
+
+/// Learns dimensions from the loaded image without doing disk work during layout.
+private struct AuroraCover: View {
+    let url: URL?
+    let revision: UUID
+    var maximumSize: CGSize? = nil
+    var cornerRadius: CGFloat = 14
+    var selected = false
+    @State private var aspectRatio: CGFloat = 1
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    var body: some View {
+        Group {
+            if let maximumSize {
+                let size = ArtworkCoverLayout.fittedSize(aspectRatio: aspectRatio, maximum: maximumSize)
+                artwork.frame(width: size.width, height: size.height)
+            } else {
+                artwork.aspectRatio(aspectRatio, contentMode: .fit)
+            }
+        }
+        .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
+        .overlay(RoundedRectangle(cornerRadius: cornerRadius).stroke(.purple.opacity(selected ? 1 : 0), lineWidth: 2))
+        .animation(reduceMotion ? nil : .easeInOut(duration: 0.18), value: aspectRatio)
+        .onChange(of: url) { _, _ in aspectRatio = 1 }
+    }
+
+    private var artwork: AuroraArtwork {
+        AuroraArtwork(url: url, fit: true, revision: revision) { size in
+            let ratio = ArtworkCoverLayout.aspectRatio(of: size)
+            if aspectRatio != ratio { aspectRatio = ratio }
+        }
+    }
 }
 
 @available(iOS 26, *)
@@ -156,7 +205,7 @@ struct AuroraLibraryTabs: View {
     var body: some View {
         TabView(selection: $model.selectedTab) {
             Tab("Library", systemImage: "square.grid.2x2", value: 0) {
-                AuroraHomeView(model: model)
+                NavigationStack { AuroraHomeView(model: model) }
             }
             Tab("Settings", systemImage: "gearshape", value: 1) {
                 SettingsView(isTab: true)
@@ -189,6 +238,7 @@ struct AuroraHomeView: View {
     @State private var gridVisible = false
     @FocusState private var searchFocused: Bool
     @State private var wheelProgress: CGFloat?
+    @State private var didInitializeCarouselSection = false
 
     var body: some View {
         GeometryReader { geometry in
@@ -217,12 +267,33 @@ struct AuroraHomeView: View {
             .onChange(of: model.query) { model.reconcileSelection() }
             .onChange(of: model.collectionID) { model.reconcileSelection() }
             .onChange(of: model.favoritesOnly) { model.reconcileSelection() }
-            .onChange(of: landscape) { searchFocused = false }
+            .onChange(of: model.recentlyPlayedOnly) { model.reconcileSelection(); wheelProgress = nil }
+            .onChange(of: model.filteredGames.map(\.id)) {
+                initializeCarouselSection(landscape: landscape)
+                model.reconcileSelection(); wheelProgress = nil
+            }
+            .onAppear { initializeCarouselSection(landscape: landscape) }
+            .onChange(of: landscape) {
+                searchFocused = false
+                model.recentlyPlayedOnly = landscape && !model.recentGames.isEmpty
+                model.reconcileSelection()
+                wheelProgress = nil
+            }
+            .toolbar(.hidden, for: .navigationBar)
+            .navigationDestination(isPresented: $model.managingArtwork) { AuroraArtworkManager(model: model) }
             .onPreferenceChange(AuroraWheelProgressKey.self) { wheelProgress = $0 }
             .alert("Unable to Update Home", isPresented: Binding(get: { model.orientationError != nil }, set: { if !$0 { model.orientationError = nil } })) {
                 Button("OK") { model.orientationError = nil }
             } message: { Text(model.orientationError ?? "") }
         }
+    }
+
+    private func initializeCarouselSection(landscape: Bool) {
+        guard !didInitializeCarouselSection, !model.games.isEmpty else { return }
+        didInitializeCarouselSection = true
+        model.recentlyPlayedOnly = landscape && !model.recentGames.isEmpty
+        model.reconcileSelection()
+        wheelProgress = nil
     }
 
     /// The incoming image sits over an opaque outgoing image. Its opacity is the
@@ -304,7 +375,9 @@ struct AuroraHomeView: View {
     }
     private var platformMenu: some View {
         Menu {
-            Button("All Games") { model.collectionID = nil; model.favoritesOnly = false }
+            Button("Manage Artwork", systemImage: "photo.on.rectangle.angled") { model.managingArtwork = true }
+            Divider()
+            Button("All Games") { model.collectionID = nil; model.favoritesOnly = false; model.recentlyPlayedOnly = false }
             Button("Favorites", systemImage: "star") { model.collectionID = nil; model.favoritesOnly = true }
             ForEach(model.platforms) { platform in
                 Button(platform.platform) { model.collectionID = platform.collectionID; model.favoritesOnly = false }
@@ -338,10 +411,10 @@ struct AuroraHomeView: View {
     private var emptyState: some View {
         VStack(spacing: 16) {
             Image(systemName: "gamecontroller").font(.largeTitle)
-            Text(model.games.isEmpty ? "Your next adventure starts here" : "No matching games").font(.title2.bold())
+            Text(model.games.isEmpty ? "Your next adventure starts here" : model.recentlyPlayedOnly ? "No recently played games" : "No matching games").font(.title2.bold())
             Text(model.games.isEmpty ? "Import a game to build your library." : "Try another collection or search.").foregroundStyle(.secondary)
             if model.games.isEmpty { Button("Import Games", systemImage: "plus") { model.importGames?() }.buttonStyle(.glassProminent) }
-            else { Button("Show All Games") { model.query = ""; model.collectionID = nil; model.favoritesOnly = false }.buttonStyle(.glass) }
+            else { Button("Show All Games") { model.query = ""; model.collectionID = nil; model.favoritesOnly = false; model.recentlyPlayedOnly = false }.buttonStyle(.glass) }
         }.multilineTextAlignment(.center).padding(24)
     }
 
@@ -381,8 +454,7 @@ struct AuroraHomeView: View {
             AuroraArtwork(url: game.backdropURL ?? game.artworkURL, revision: model.artworkRevision)
             LinearGradient(colors: [.clear, .black.opacity(0.65)], startPoint: .center, endPoint: .bottom)
             HStack(spacing: 12) {
-                AuroraArtwork(url: game.artworkURL, fit: true, revision: model.artworkRevision)
-                    .frame(width: 64, height: 64).clipShape(RoundedRectangle(cornerRadius: 10))
+                AuroraCover(url: game.artworkURL, revision: model.artworkRevision, maximumSize: CGSize(width: 64, height: 86), cornerRadius: 10)
                     .accessibilityHidden(true)
                 VStack(alignment: .leading, spacing: 12) {
                     Text(game.name).font(.title2.bold()).lineLimit(2)
@@ -416,12 +488,15 @@ struct AuroraHomeView: View {
             ScrollView(.horizontal, showsIndicators: false) {
                 LazyHStack(spacing: 12) {
                     ForEach(model.recentGames) { game in
-                        Button { model.select(game) } label: {
+                        Button { model.select(game); model.launch?(game.id) } label: {
                             VStack(alignment: .leading, spacing: 6) {
-                                AuroraArtwork(url: game.artworkURL, fit: true, revision: model.artworkRevision).frame(width: 100, height: 100).clipShape(RoundedRectangle(cornerRadius: 12))
+                                AuroraCover(url: game.artworkURL, revision: model.artworkRevision, maximumSize: CGSize(width: 100, height: 134), cornerRadius: 12)
+                                    .frame(width: 100, height: 134, alignment: .bottom)
                                 Text(game.name).font(.caption).lineLimit(2).frame(width: 100, alignment: .leading)
-                            }
-                        }.buttonStyle(.plain).accessibilityLabel(Text(game.name))
+                            }.contentShape(Rectangle())
+                        }.buttonStyle(.plain)
+                            .accessibilityLabel(Text(game.name))
+                            .accessibilityHint("Play this game")
                     }
                 }.padding(.horizontal, 20)
             }
@@ -443,8 +518,7 @@ struct AuroraHomeView: View {
                         ForEach(model.filteredGames) { game in
                             VStack(alignment: .leading, spacing: 8) {
                                 Button { model.select(game); gridVisible = false } label: {
-                                    AuroraArtwork(url: game.artworkURL, fit: true, revision: model.artworkRevision)
-                                        .aspectRatio(1, contentMode: .fit).clipShape(RoundedRectangle(cornerRadius: 18))
+                                    AuroraCover(url: game.artworkURL, revision: model.artworkRevision, cornerRadius: 18)
                                         .frame(maxWidth: .infinity)
                                 }.buttonStyle(.plain).accessibilityLabel(Text(game.name))
                                     .onDrag { model.dragProvider?(game.id) ?? NSItemProvider() }
@@ -469,10 +543,23 @@ struct AuroraHomeView: View {
         return ZStack(alignment: .bottomLeading) {
             LinearGradient(colors: [.clear, .black.opacity(0.8)], startPoint: .center, endPoint: .bottom).ignoresSafeArea().allowsHitTesting(false)
             HStack(spacing: 0) {
-                ZStack {
+                VStack(spacing: 0) {
+                    Picker("Carousel Section", selection: $model.recentlyPlayedOnly) {
+                        Text("All Games").tag(false)
+                        Text("Recently Played").tag(true)
+                    }
+                    .pickerStyle(.menu)
+                    .labelsHidden()
+                    .accessibilityLabel("Carousel Section")
+                    .tint(.white)
+                    .frame(maxWidth: .infinity, minHeight: 36, alignment: .leading)
+                    .padding(.leading, 4)
+                    .padding(.top, 60)
                     if !model.filteredGames.isEmpty {
                         AuroraWheel(model: model, leadingOverflow: geometry.safeAreaInsets.leading)
-                            .padding(.top, 48)
+                            .id(model.filteredGames.map(\.id))
+                    } else {
+                        Spacer()
                     }
                 }.frame(width: wheelWidth, height: geometry.size.height)
                     .background(alignment: .topLeading) {
@@ -658,16 +745,14 @@ private struct AuroraWheel: View {
         let scale = max(0.55, 1 - magnitude * 0.2)
         let blur = min(4, max(0, magnitude - 0.65) * 1.5)
         let opacity = Double(max(0.05, 1 - magnitude * 0.29))
-        let side = coverSide(size)
-        let x = side / 2 - min(magnitude * magnitude * 16, size.width * 0.4)
-        let y = size.height * 0.5 + distance * step
+        let x = -min(magnitude * magnitude * 16, size.width * 0.4)
         return cover(game, size: size)
             .rotationEffect(.degrees(reduceMotion ? 0 : Double(distance) * 13))
             .scaleEffect(scale)
             .blur(radius: blur)
             .opacity(opacity)
-            .position(x: x, y: y)
-            .frame(width: size.width, height: size.height)
+            .frame(width: size.width, height: size.height, alignment: .leading)
+            .offset(x: x, y: distance * step)
             .zIndex(10 - Double(magnitude))
     }
 
@@ -677,10 +762,9 @@ private struct AuroraWheel: View {
 
     private func cover(_ game: AuroraGame, size: CGSize) -> some View {
         let side = coverSide(size)
-        return AuroraArtwork(url: game.artworkURL, fit: true, revision: model.artworkRevision)
-            .frame(width: side, height: side)
-            .clipShape(RoundedRectangle(cornerRadius: 14))
-            .overlay(RoundedRectangle(cornerRadius: 14).stroke(.purple.opacity(game.id == model.selectedGame?.id ? 1 : 0), lineWidth: 2))
+        return AuroraCover(url: game.artworkURL, revision: model.artworkRevision,
+                           maximumSize: CGSize(width: side, height: min(side * 1.5, size.height * 0.65)),
+                           selected: game.id == model.selectedGame?.id)
             .allowsHitTesting(false)
     }
 }

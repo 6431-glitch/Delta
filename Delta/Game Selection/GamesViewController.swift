@@ -9,7 +9,6 @@
 import UIKit
 import UniformTypeIdentifiers
 import ImageIO
-import SDWebImage
 import CoreData
 import MobileCoreServices
 
@@ -66,9 +65,13 @@ class GamesViewController: UIViewController
     private var hasRecentlyPlayed: Bool = false
     private var auroraModel: AuroraHomeModel?
     private var auroraController: UIViewController?
+    #if DEBUG
+    private var didLaunchJ2MEDiagnostic = false
+    #endif
+    private var replacementGameImporter: ImportController?
+    private var replacementGameID: NSManagedObjectID?
     private var auroraArtworkImporter: ImportController?
     private var auroraArtworkSelection: (id: NSManagedObjectID, kind: AuroraArtworkKind)?
-    private var showingAuroraHome = true
 
     override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
         return AppOrientation.current.mask
@@ -293,7 +296,31 @@ extension GamesViewController
     override func viewDidAppear(_ animated: Bool)
     {
         super.viewDidAppear(animated)
-        if #available(iOS 26, *), showingAuroraHome {
+        #if DEBUG
+        if let path = ProcessInfo.processInfo.environment["DELTA_QUALITY_TEST_GAME"] ?? ProcessInfo.processInfo.environment["DELTA_J2ME_TEST_JAR"], !didLaunchJ2MEDiagnostic {
+            didLaunchJ2MEDiagnostic = true
+            DatabaseManager.shared.importGames(at: [URL(fileURLWithPath: path)]) { [weak self] games, errors in
+                let id = games.first?.objectID
+                DispatchQueue.main.async {
+                    guard let self else { return }
+                    guard let id, let game = try? DatabaseManager.shared.viewContext.existingObject(with: id) as? Game else {
+                        print("[J2ME QA] Import failed: \(errors)"); return
+                    }
+                    print("[J2ME QA] Launching \(game.name)")
+                    if ProcessInfo.processInfo.environment["DELTA_QUALITY_TRANSFER_ROUNDTRIP"] == "1" {
+                        QualityTransferDriver.run(game)
+                        return
+                    }
+                    if game.type == .j2me { J2MELibrary.launch(game, from: self) }
+                    else if let controller = self.pageViewController.viewControllers?.first as? GameCollectionViewController {
+                        controller.launchFromHome(game)
+                    }
+                }
+            }
+            return
+        }
+        #endif
+        do {
             auroraModel?.orientation = AppOrientation.current
             self.applyAppOrientation(AppOrientation.current)
         }
@@ -555,6 +582,9 @@ private extension GamesViewController
 extension GamesViewController: ImportControllerDelegate
 {
     func importControllerDidCancel(_ importController: ImportController) {
+        if importController === replacementGameImporter {
+            replacementGameImporter = nil; replacementGameID = nil
+        }
         if importController === auroraArtworkImporter {
             auroraArtworkImporter = nil
             auroraArtworkSelection = nil
@@ -569,6 +599,7 @@ extension GamesViewController: ImportControllerDelegate
         documentTypes.insert(UTType.data.identifier)
         documentTypes.insert(UTType.item.identifier)
         documentTypes.insert(kUTTypeZipArchive as String)
+        documentTypes.insert("page.ducnguyen.delta.transfer")
         documentTypes.insert("com.rileytestut.delta.skin")
         
         #if BETA
@@ -594,6 +625,15 @@ extension GamesViewController: ImportControllerDelegate
     
     func importController(_ importController: ImportController, didImportItemsAt urls: Set<URL>, errors: [Error])
     {
+        if importController === replacementGameImporter, let id = replacementGameID {
+            replacementGameImporter = nil; replacementGameID = nil
+            guard let url = urls.first else {
+                auroraModel?.orientationError = errors.first?.localizedDescription ?? String(localized: "No game file was selected.")
+                return
+            }
+            replaceGameFile(at: url, for: id)
+            return
+        }
         if importController === auroraArtworkImporter, let selection = auroraArtworkSelection {
             auroraArtworkImporter = nil
             auroraArtworkSelection = nil
@@ -605,7 +645,9 @@ extension GamesViewController: ImportControllerDelegate
             print(error)
         }
         
-        let gameURLs = urls.filter { $0.pathExtension.lowercased() != "deltaskin" }
+        let transfers = urls.filter { $0.pathExtension.lowercased() == GameTransferCoordinator.fileExtension }
+        GameTransferCoordinator.receive(Array(transfers)) { [weak self] in self?.present($0, animated: true) }
+        let gameURLs = urls.filter { $0.pathExtension.lowercased() != "deltaskin" && $0.pathExtension.lowercased() != GameTransferCoordinator.fileExtension }
         DatabaseManager.shared.importGames(at: Set(gameURLs)) { (games, errors) in
             if errors.count > 0
             {
@@ -1006,18 +1048,17 @@ private extension GamesViewController {
             self?.auroraModel?.artworkRevision = UUID()
             self?.auroraModel?.refresh()
         }
-        if let url, let manager = SDWebImageManager.shared(), let key = manager.cacheKey(for: url) {
-            manager.imageCache.removeImage(forKey: key, withCompletion: refresh)
-        } else { refresh() }
+        if let url { ArtworkImagePipeline.invalidate(url) }
+        refresh()
     }
 
     func installAuroraHome() {
-        guard #available(iOS 26, *) else { return }
         let model = AuroraHomeModel()
         model.importGames = { [weak self] in self?.importFiles() }
         model.gameActions = { [weak self, weak model] id, source in
             let artwork: [UIMenuElement] = [
-                UIAction(title: String(localized: "Change Cover"), image: UIImage(systemName: "rectangle.portrait")) { _ in self?.pickAuroraArtwork(for: id, kind: .cover) },
+                UIAction(title: String(localized: "Manage Artwork"), image: UIImage(systemName: "photo.on.rectangle.angled")) { _ in model?.managingArtwork = true },
+                UIAction(title: String(localized: "Change Cover"), image: UIImage(systemName: "text.below.photo")) { _ in self?.pickAuroraArtwork(for: id, kind: .cover) },
                 UIAction(title: String(localized: "Change Backdrop"), image: UIImage(systemName: "photo")) { _ in self?.pickAuroraArtwork(for: id, kind: .backdrop) }
             ]
             if model?.isPreview == true {
@@ -1031,7 +1072,10 @@ private extension GamesViewController {
                 choices.append(UIAction(title: String(localized: "Use Cover as Backdrop"), image: UIImage(systemName: "arrow.uturn.backward")) { _ in self?.resetAuroraBackdrop(for: id) })
             }
             controller.activeEmulatorCore = self?.activeEmulatorCore
-            return controller.actionsFromAurora(for: game, sourceView: source, artworkActions: choices)
+            let replace = UIAction(title: String(localized: "Replace Game File…"), image: UIImage(systemName: "arrow.triangle.2.circlepath")) { [weak self] _ in
+                self?.pickReplacementGameFile(for: id)
+            }
+            return [replace] + controller.actionsFromAurora(for: game, sourceView: source, artworkActions: choices)
         }
         model.dragProvider = { [weak self, weak model] id in
             guard model?.isPreview != true,
@@ -1080,24 +1124,68 @@ private extension GamesViewController {
 
     func updateAuroraVisibility() {
         guard auroraController != nil else { return }
-        auroraController?.view.isHidden = !showingAuroraHome
-        placeholderView.accessibilityElementsHidden = showingAuroraHome
+        placeholderView.accessibilityElementsHidden = true
         if let container = pageViewController.view.superview, container !== view {
-            container.accessibilityElementsHidden = showingAuroraHome
+            container.accessibilityElementsHidden = true
         }
-        if showingAuroraHome {
-            navigationItem.searchController = nil
-            navigationController?.setNavigationBarHidden(true, animated: false)
-            navigationController?.setToolbarHidden(true, animated: false)
-            pageControl.isHidden = true
-            view.bringSubviewToFront(auroraController!.view)
-        }
+        navigationItem.searchController = nil
+        navigationController?.setNavigationBarHidden(true, animated: false)
+        navigationController?.setToolbarHidden(true, animated: false)
+        pageControl.isHidden = true
+        view.bringSubviewToFront(auroraController!.view)
     }
 
     func applyAppOrientation(_ orientation: AppOrientation) {
         AppOrientation.apply(orientation) { [weak self] error in
             DispatchQueue.main.async {
                 self?.auroraModel?.orientationError = error.localizedDescription
+            }
+        }
+    }
+}
+
+
+private extension GamesViewController {
+    func pickReplacementGameFile(for id: NSManagedObjectID) {
+        guard presentedViewController == nil else { return }
+        guard let game = try? DatabaseManager.shared.viewContext.existingObject(with: id) as? Game else { return }
+        guard !EmulationServices.isJavaActive, activeEmulatorCore?.game.fileURL != game.fileURL else {
+            auroraModel?.orientationError = String(localized: "Close the running game before replacing its file.")
+            return
+        }
+        let picker = ImportController(documentTypes: [UTType.data.identifier, UTType.item.identifier])
+        picker.allowsMultipleSelection = false
+        picker.delegate = self
+        replacementGameImporter = picker; replacementGameID = id
+        present(picker, animated: true, completion: nil)
+    }
+
+    func replaceGameFile(at importedURL: URL, for id: NSManagedObjectID) {
+        DatabaseManager.shared.performBackgroundTask { [weak self] context in
+            defer { try? FileManager.default.removeItem(at: importedURL) }
+            do {
+                guard let game = try context.existingObject(with: id) as? Game, !game.isDeleted else { throw CocoaError(.managedObjectReferentialIntegrity) }
+                try ContentImportAdapter.validateReplacement(importedURL, systemIdentifier: game.type.rawValue)
+                let destination = game.fileURL
+                do {
+                    try GameFileReplacement.replace(source: importedURL, destination: destination) {
+                        ContentImportAdapter.updateReplacementConfiguration(game, source: importedURL)
+                        try context.save()
+                    }
+                } catch { context.rollback(); throw error }
+                // Retain identifier, filename, artwork, preferences and all save relationships.
+                SyncManager.shared.recordController?.updateRecord(for: game)
+                DispatchQueue.main.async {
+                    self?.auroraModel?.refresh()
+                    let alert = UIAlertController(title: String(localized: "Game File Replaced"), message: String(localized: "Your artwork, settings and saved data have been kept."), preferredStyle: .alert)
+                    alert.addAction(UIAlertAction(title: String(localized: "OK"), style: .default))
+                    guard let self else { return }
+                    if let transition = self.presentedViewController?.transitionCoordinator {
+                        transition.animate(alongsideTransition: nil) { _ in self.present(alert, animated: true) }
+                    } else { self.present(alert, animated: true) }
+                }
+            } catch {
+                DispatchQueue.main.async { self?.auroraModel?.orientationError = error.localizedDescription }
             }
         }
     }

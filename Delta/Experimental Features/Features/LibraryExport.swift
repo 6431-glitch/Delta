@@ -14,7 +14,6 @@ import CoreData
 
 import DeltaCore
 
-import SDWebImage
 
 enum LibraryExport
 {
@@ -130,12 +129,7 @@ enum LibraryExport
     
     private static func cachedImage(for url: URL) -> UIImage?
     {
-        guard let manager = SDWebImageManager.shared() else { return nil }
-        
-        let cacheKey = manager.cacheKey(for: url)
-        
-        return manager.imageCache.imageFromMemoryCache(forKey: cacheKey)
-            ?? manager.imageCache.imageFromDiskCache(forKey: cacheKey)
+        return ArtworkImagePipeline.cachedImage(for: url)
     }
 }
 

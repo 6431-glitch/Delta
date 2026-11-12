@@ -37,7 +37,7 @@ extension SaveStateToSaveStateMigrationPolicy
         switch system
         {
         case .ds: return Delta.desmumeCoreID // Assume any existing save state is from DeSmuME.
-        default: return system.deltaCore.identifier
+        default: return system.deltaCore?.identifier
         }
     }
 }

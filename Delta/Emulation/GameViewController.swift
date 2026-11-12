@@ -10,10 +10,6 @@ import UIKit
 import Photos
 
 import DeltaCore
-import GBADeltaCore
-import N64DeltaCore
-import MelonDSDeltaCore
-import GPGXDeltaCore
 
 import Roxas
 import AltKit
@@ -91,9 +87,32 @@ private extension GameViewController
 
 class GameViewController: DeltaCore.GameViewController
 {
+    private(set) var runtimeSession: DeltaCoreSessionAdapter?
+    private var sessionRegistration: UUID?
+    #if DEBUG
+    private var didRunQualitySmoke = false
+    #endif
+
+    override func makeEmulatorCore(game: GameProtocol, options: [EmulatorCore.Option: Any]) -> EmulatorCore?
+    {
+        // Scene restoration can construct a core without the library launch preflight.
+        if let game = game as? Game, EmulationServices.transferringGameIdentifiers.contains(game.identifier) { return nil }
+        #if DEBUG
+        if QualitySmokeDriver.enabled {
+            let standard = EmulatorRenderingServices.apple
+            let services = EmulatorRenderingServices(makeAudio: { QualitySilentAudio(audioFormat: $0) },
+                makeVideo: standard.makeVideo, acceptsInput: standard.acceptsInput)
+            return EmulatorCore(game: game, options: options, renderingServices: services)
+        }
+        #endif
+        return super.makeEmulatorCore(game: game, options: options)
+    }
+
     /// Assumed to be Delta.Game instance
     override var game: GameProtocol? {
         willSet {
+            if let token = sessionRegistration { EmulationServices.sessions.remove(token) }
+            sessionRegistration = nil
             self.stopRepeatingButtons()
             self.emulatorCore?.removeObserver(self, forKeyPath: #keyPath(EmulatorCore.state), context: &kvoContext)
             
@@ -101,9 +120,11 @@ class GameViewController: DeltaCore.GameViewController
             NotificationCenter.default.removeObserver(self, name: .NSManagedObjectContextDidSave, object: game?.managedObjectContext)
         }
         didSet {
+            self.runtimeSession = self.emulatorCore.map { DeltaCoreSessionAdapter(core: $0) }
             self.emulatorCore?.addObserver(self, forKeyPath: #keyPath(EmulatorCore.state), options: [.old], context: &kvoContext)
             
             let game = self.game as? Game
+            if let game, let runtimeSession { sessionRegistration = EmulationServices.sessions.register(gameIdentifier: game.identifier, session: runtimeSession) }
             NotificationCenter.default.addObserver(self, selector: #selector(GameViewController.managedObjectContextDidChange(with:)), name: .NSManagedObjectContextObjectsDidChange, object: game?.managedObjectContext)
             
             self.emulatorCore?.saveHandler = { [weak self] _ in self?.updateGameSave() }
@@ -215,6 +236,7 @@ class GameViewController: DeltaCore.GameViewController
     private var repeatPlayerIndex: Int?
     private lazy var gbaQuickSaveButton = makeGBAQuickStateButton(symbol: "square.and.arrow.down", label: String(localized: "Quick Save"), action: #selector(saveFromGBAControl))
     private lazy var gbaQuickLoadButton = makeGBAQuickStateButton(symbol: "arrow.counterclockwise", label: String(localized: "Quick Load"), action: #selector(loadFromGBAControl))
+    private lazy var gbaFastForwardButton = makeGBAQuickStateButton(symbol: "forward.fill", label: String(localized: "Fast Forward"), action: #selector(fastForwardFromGBAControl))
 
     private var repeatTimer: Timer?
     private var repeatStartedAt = ProcessInfo.processInfo.systemUptime
@@ -295,10 +317,10 @@ class GameViewController: DeltaCore.GameViewController
         NotificationCenter.default.addObserver(self, selector: #selector(GameViewController.deepLinkControllerWillLaunchGame(with:)), name: .deepLinkControllerWillLaunchGame, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(GameViewController.deepLinkControllerLaunchGame(with:)), name: .deepLinkControllerLaunchGame, object: nil)
         
-        NotificationCenter.default.addObserver(self, selector: #selector(GameViewController.didActivateGyro(with:)), name: GBA.didActivateGyroNotification, object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(GameViewController.didDeactivateGyro(with:)), name: GBA.didDeactivateGyroNotification, object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(GameViewController.didConnectOnline(with:)), name: MelonDS.didConnectToWFCNotification, object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(GameViewController.didDisconnectFromOnline(with:)), name: MelonDS.didDisconnectFromWFCNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(GameViewController.didActivateGyro(with:)), name: CoreConfigurationAdapter.gyroActivated, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(GameViewController.didDeactivateGyro(with:)), name: CoreConfigurationAdapter.gyroDeactivated, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(GameViewController.didConnectOnline(with:)), name: CoreConfigurationAdapter.onlineConnected, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(GameViewController.didDisconnectFromOnline(with:)), name: CoreConfigurationAdapter.onlineDisconnected, object: nil)
         
         NotificationCenter.default.addObserver(self, selector: #selector(GameViewController.emulationDidQuit(with:)), name: EmulatorCore.emulationDidQuitNotification, object: nil)
         
@@ -315,8 +337,39 @@ class GameViewController: DeltaCore.GameViewController
         self.automaticallyPausesWhileInactive = Settings.pauseWhileInactive
     }
     
+    private var mainSaveTimer: Timer?
+    private var mainSaveClock = MainSaveClock()
+    private var mainSaveLastTick = Date()
+
+    private func startMainSaveTimer() {
+        guard mainSaveTimer == nil else { return }
+        mainSaveLastTick = Date()
+        mainSaveTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in
+            guard let self else { return }
+            let now = Date()
+            let delta = min(2, max(0, now.timeIntervalSince(self.mainSaveLastTick)))
+            self.mainSaveLastTick = now
+            guard let game = self.game as? Game else { return }
+            let active = self.viewIfLoaded?.window != nil && self.presentedViewController == nil &&
+                UIApplication.shared.applicationState == .active && self.emulatorCore?.state == .running &&
+                self.emulatorCore?.isWirelessMultiplayerActive == false
+            guard self.mainSaveClock.advance(seconds: delta, gameID: game.identifier, active: active) else { return }
+            self.checkpointMainSave(game)
+        }
+    }
+
+    private func checkpointMainSave(_ game: Game) {
+        guard pauseEmulation() else { return }
+        defer { resumeEmulation() }
+        let id = game.objectID
+        let context = DatabaseManager.shared.newBackgroundContext()
+        MainSaveStore.checkpoint(objectID: id, context: context,
+            writeState: { self.update($0) }, copyState: { self.update($0, with: $1) })
+    }
+
     deinit
     {
+        mainSaveTimer?.invalidate()
         stopRepeatingButtons()
         self.emulatorCore?.removeObserver(self, forKeyPath: #keyPath(EmulatorCore.state), context: &kvoContext)
     }
@@ -527,13 +580,20 @@ extension GameViewController
     override func viewDidAppear(_ animated: Bool)
     {
         super.viewDidAppear(animated)
+        #if DEBUG
+        if !didRunQualitySmoke, QualitySmokeDriver.enabled, game != nil {
+            didRunQualitySmoke = true
+            QualitySmokeDriver.console(self)
+        }
+        #endif
         
-        if self.emulatorCore?.deltaCore == MelonDS.core, ProcessInfo.processInfo.isJITAvailable
+        if CoreConfigurationAdapter.supportsJIT(self.emulatorCore), ProcessInfo.processInfo.isJITAvailable
         {
             self.showJITEnabledAlert()
         }
         
         self.startGameActivity()
+        self.startMainSaveTimer()
         
         if let scene = UIApplication.shared.externalDisplayScene, Settings.supportsExternalDisplays
         {
@@ -608,7 +668,7 @@ extension GameViewController
             self.pausingGameController = gameController
             
             let pauseViewController = segue.destination as! PauseViewController
-            pauseViewController.pauseText = (self.game as? Game)?.name ?? NSLocalizedString("Delta", comment: "")
+            pauseViewController.pauseText = (self.game as? Game)?.name ?? NSLocalizedString("Epsilon", comment: "")
             pauseViewController.emulatorCore = self.emulatorCore
             pauseViewController.saveStatesViewControllerDelegate = self
             pauseViewController.cheatsViewControllerDelegate = self
@@ -713,7 +773,7 @@ extension GameViewController
                 
                 self._isLoadingSaveState = false
                 
-                if self.emulatorCore?.deltaCore == MelonDS.core, ProcessInfo.processInfo.isJITAvailable
+                if CoreConfigurationAdapter.supportsJIT(self.emulatorCore), ProcessInfo.processInfo.isJITAvailable
                 {
                     self.transitionCoordinator?.animate(alongsideTransition: nil, completion: { (context) in
                         self.showJITEnabledAlert()
@@ -753,7 +813,7 @@ extension GameViewController
         
         if let emulatorCore = self.emulatorCore, emulatorCore.state == .paused
         {
-            emulatorCore.resume()
+            try? runtimeSession?.resume()
         }
     }
     
@@ -1170,6 +1230,9 @@ extension GameViewController: SaveStatesViewControllerDelegate
         
         guard let emulatorCore = self.emulatorCore, emulatorCore.state != .stopped, !emulatorCore.isWirelessMultiplayerActive else { return }
         
+        let historyLimit = SaveState.autosaveLimit(for: game)
+        guard historyLimit > 0 else { return }
+
         // If pausedSaveState exists and has already been saved, don't update auto save state
         // This prevents us from filling our auto save state slots with the same save state
         let savedPausedSaveState = self.pausedSaveState?.isSaved ?? false
@@ -1189,8 +1252,9 @@ extension GameViewController: SaveStatesViewControllerDelegate
             do
             {
                 let saveStates = try fetchRequest.execute()
-                
-                if let saveState = saveStates.first, saveStates.count >= 2
+                for old in saveStates.dropLast(historyLimit) { backgroundContext.delete(old) }
+                let retained = Array(saveStates.suffix(historyLimit))
+                if let saveState = retained.first, retained.count >= historyLimit
                 {
                     // If there are two or more auto save states, update the oldest one
                     self.update(saveState, with: self.pausedSaveState)
@@ -1206,7 +1270,7 @@ extension GameViewController: SaveStatesViewControllerDelegate
                     saveState.type = .auto
                     saveState.game = game
                     
-                    self.update(saveState, with: self.pausedSaveState)
+                    if !self.update(saveState, with: self.pausedSaveState) { backgroundContext.delete(saveState) }
                 }
             }
             catch
@@ -1218,7 +1282,7 @@ extension GameViewController: SaveStatesViewControllerDelegate
         }
     }
     
-    private func update(_ saveState: SaveState, with replacementSaveState: SaveStateProtocol? = nil)
+    @discardableResult private func update(_ saveState: SaveState, with replacementSaveState: SaveStateProtocol? = nil) -> Bool
     {
         let isRunning = (self.emulatorCore?.state == .running)
         
@@ -1227,54 +1291,36 @@ extension GameViewController: SaveStatesViewControllerDelegate
             self.pauseEmulation()
         }
         
-        if let replacementSaveState = replacementSaveState
-        {
-            do
-            {
-                if FileManager.default.fileExists(atPath: saveState.fileURL.path)
-                {
-                    // Don't use replaceItem(), since that removes the original file as well
-                    try FileManager.default.removeItem(at: saveState.fileURL)
-                }
-                
-                try FileManager.default.copyItem(at: replacementSaveState.fileURL, to: saveState.fileURL)
+        defer { if isRunning { self.resumeEmulation() } }
+        guard let core = self.emulatorCore, core.state != .stopped else { return false }
+        let staged = FileManager.default.uniqueTemporaryURL()
+        defer { try? FileManager.default.removeItem(at: staged) }
+        do {
+            if let replacementSaveState {
+                try FileManager.default.copyItem(at: replacementSaveState.fileURL, to: staged)
+            } else {
+                core.saveSaveState(to: staged)
             }
-            catch
-            {
-                print(error)
+            let image = core.videoManager.snapshot()?.pngData()
+            try GameFileReplacement.replace(source: staged, destination: saveState.fileURL) {
+                if let image { try image.write(to: saveState.imageFileURL, options: .atomic) }
             }
+        } catch {
+            print("Save state write failed: \(error)")
+            return false
         }
-        else
-        {
-            self.emulatorCore?.saveSaveState(to: saveState.fileURL)
-        }
-        
-        if let snapshot = self.emulatorCore?.videoManager.snapshot(), let data = snapshot.pngData()
-        {
-            do
-            {
-                try data.write(to: saveState.imageFileURL, options: [.atomicWrite])
-            }
-            catch
-            {
-                print(error)
-            }
-        }
-        
+
         saveState.modifiedDate = Date()
         saveState.coreIdentifier = self.emulatorCore?.deltaCore.identifier
         saveState.coreVersion = self.emulatorCore?.deltaCore.version
         
         if ExperimentalFeatures.shared.toastNotifications.stateSaveEnabled,
-           saveState.type != .auto
+           saveState.type != .auto && saveState.type != .main
         {
             self.presentExperimentalToastView(NSLocalizedString("Saved Save State", comment: ""))
         }
         
-        if isRunning
-        {
-            self.resumeEmulation()
-        }
+        return true
     }
     
     private func load(_ saveState: SaveStateProtocol)
@@ -1296,7 +1342,7 @@ extension GameViewController: SaveStatesViewControllerDelegate
             
             do
             {
-                try FileManager.default.moveItem(at: saveState.fileURL, to: temporaryURL)
+                try FileManager.default.copyItem(at: saveState.fileURL, to: temporaryURL)
                 temporarySaveState = DeltaCore.SaveState(fileURL: temporaryURL, gameType: saveState.gameType)
             }
             catch
@@ -1347,8 +1393,15 @@ extension GameViewController: SaveStatesViewControllerDelegate
     {
         let updatingExistingSaveState = FileManager.default.fileExists(atPath: saveState.fileURL.path)
         
-        self.update(saveState)
-        
+        guard self.update(saveState) else {
+            if saveState.isInserted { saveState.managedObjectContext?.delete(saveState) }
+            DispatchQueue.main.async { [weak saveStatesViewController] in
+                let alert = UIAlertController(title: String(localized: "Unable to Save State"), message: String(localized: "The state could not be written. Your previous save was preserved. Check available storage and try again."), preferredStyle: .alert)
+                alert.addAction(UIAlertAction(title: String(localized: "OK"), style: .default))
+                saveStatesViewController?.present(alert, animated: true)
+            }
+            return
+        }
         // Dismiss if updating an existing save state.
         // If creating a new one, don't dismiss.
         if updatingExistingSaveState
@@ -1424,8 +1477,14 @@ private extension GameViewController {
         performQuickLoadAction()
     }
 
+    @objc func fastForwardFromGBAControl() {
+        guard let emulatorCore, emulatorCore.state == .running else { return }
+        let isFastForwarding = emulatorCore.rate != emulatorCore.deltaCore.supportedRates.lowerBound
+        performFastForwardAction(activate: !isFastForwarding)
+    }
+
     func updateGBAQuickStateControls() {
-        let buttons = [gbaQuickSaveButton, gbaQuickLoadButton]
+        let buttons = [gbaQuickSaveButton, gbaQuickLoadButton, gbaFastForwardButton]
         for button in buttons where button.superview == nil { view.addSubview(button) }
         guard let game = game as? Game, System(gameType: game.type) == .gba,
               !controllerView.isHidden, controllerView.playerIndex != nil,
@@ -1448,7 +1507,15 @@ private extension GameViewController {
         }
         let side: CGFloat = 44
         gbaQuickSaveButton.frame = CGRect(x: left.maxX + 8, y: left.midY - side / 2, width: side, height: side)
-        gbaQuickLoadButton.frame = CGRect(x: right.minX - 8 - side, y: right.midY - side / 2, width: side, height: side)
+        gbaQuickLoadButton.frame = gbaQuickSaveButton.frame.offsetBy(dx: side + 8, dy: 0)
+        gbaFastForwardButton.frame = CGRect(x: right.minX - 8 - side, y: right.midY - side / 2, width: side, height: side)
+        if gbaQuickLoadButton.frame.maxX + 8 > gbaFastForwardButton.frame.minX {
+            // Narrow portrait skins cannot fit three touch targets between the shoulders.
+            let origin = CGPoint(x: (left.maxX + right.minX - (side * 2 + 8)) / 2,
+                                 y: min(left.minY, right.minY) - side - 8)
+            gbaQuickSaveButton.frame.origin = origin
+            gbaQuickLoadButton.frame = gbaQuickSaveButton.frame.offsetBy(dx: side + 8, dy: 0)
+        }
         let available = emulatorCore?.isWirelessMultiplayerActive != true
         let request = SaveState.fetchRequest(for: game, type: .quick)
         request.fetchLimit = 1
@@ -1456,6 +1523,30 @@ private extension GameViewController {
         gbaQuickSaveButton.isEnabled = available
         gbaQuickLoadButton.isEnabled = available && hasQuickSave && (!AchievementsManager.shared.isAuthenticated || !Settings.features.retroAchievements.isHardcoreModeEnabled)
         gbaQuickLoadButton.accessibilityHint = hasQuickSave ? String(localized: "Loads your latest quick save.") : String(localized: "Create a quick save first.")
+        gbaFastForwardButton.isEnabled = available && (emulatorCore?.deltaCore.supportedRates.upperBound ?? 1) > 1
+        let isFastForwarding = emulatorCore.map { $0.rate != $0.deltaCore.supportedRates.lowerBound } ?? false
+        gbaFastForwardButton.isSelected = isFastForwarding
+        gbaFastForwardButton.configuration?.baseForegroundColor = isFastForwarding ? .systemYellow : .white
+        gbaFastForwardButton.accessibilityValue = isFastForwarding ? String(localized: "On") : String(localized: "Off")
+        if let core = emulatorCore?.deltaCore {
+            let preferred = game.settings[.fastForwardSpeed] as? Double
+            var actions = FastForwardSpeed.speeds(in: core.supportedRates).map { speed in
+                UIAction(title: speed.description, state: preferred == speed.rawValue ? .on : .off) { [weak self, weak game] _ in
+                    guard let self, let game else { return }
+                    game.settings[.fastForwardSpeed] = speed.rawValue
+                    game.managedObjectContext?.saveWithErrorLogging()
+                    self.performFastForwardAction(activate: true)
+                }
+            }
+            let defaultSpeed = FastForwardSpeed(rawValue: FastForwardSpeed.resolvedRate(for: game, core: core, useGamePreference: false))
+            actions.append(UIAction(title: String(localized: "Default") + " · " + defaultSpeed.description, state: preferred == nil ? .on : .off) { [weak self, weak game] _ in
+                guard let self, let game else { return }
+                game.settings[.fastForwardSpeed] = nil
+                game.managedObjectContext?.saveWithErrorLogging()
+                self.performFastForwardAction(activate: true)
+            })
+            gbaFastForwardButton.menu = UIMenu(title: String(localized: "Fast Forward"), children: actions)
+        }
         for button in buttons {
             button.isHidden = false
             button.alpha = button.isEnabled ? 1 : 0.4
@@ -1564,6 +1655,7 @@ private extension GameViewController
         self.isSelectingSustainedButtons = true
         gbaQuickSaveButton.isHidden = true
         gbaQuickLoadButton.isHidden = true
+        gbaFastForwardButton.isHidden = true
         
         let sustainInputsMapping = SustainInputsMapping(gameController: gameController)
         gameController.addReceiver(self, inputMapping: sustainInputsMapping)
@@ -1633,7 +1725,7 @@ extension GameViewController
                     saveState.type = .quick
                     saveState.game = game
                     
-                    self.update(saveState)
+                    if !self.update(saveState) { backgroundContext.delete(saveState) }
                 }
             }
             catch
@@ -1672,6 +1764,7 @@ extension GameViewController
     func performFastForwardAction(activate: Bool)
     {
         guard let emulatorCore = self.emulatorCore, !emulatorCore.isWirelessMultiplayerActive else { return }
+        defer { view.setNeedsLayout() }
         
         if activate
         {
@@ -1942,30 +2035,7 @@ extension GameViewController: GameViewControllerDelegate
     
     func gameViewController(_ gameViewController: DeltaCore.GameViewController, optionsFor game: GameProtocol) -> [EmulatorCore.Option: Any]
     {
-        if let game = game as? Game, game.type == .n64
-        {
-            if let useOpenGLES2 = game.settings[.openGLES2] as? Bool, useOpenGLES2
-            {
-                return [.openGLES2: true]
-            }
-            else
-            {
-                return [:]
-            }
-        }
-        else
-        {
-            var options: [EmulatorCore.Option: Any] = [.metal: ExperimentalFeatures.shared.metal.isEnabled]
-            
-            if #available(iOS 18, macOS 15, *), ProcessInfo.processInfo.isiOSAppOnMac
-            {
-                // macOS 15 Sequoia no longer supports rendering bitmap CIImages with OpenGL ES,
-                // so always render with Metal.
-                options[.metal] = true
-            }
-            
-            return options
-        }
+        return CoreConfigurationAdapter.renderingOptions(for: game)
     }
 }
 
@@ -2252,7 +2322,7 @@ private extension GameViewController
             {
                 var message = NSLocalizedString("Please restart this game to apply your changes.", comment: "")
                 
-                if FileManager.default.fileExists(atPath: MelonDSEmulatorBridge.shared.firmwareURL.path)
+                if CoreConfigurationAdapter.firmwareExists
                 {
                     message += "\n\n"
                     message += NSLocalizedString("You may need to also “Erase Nintendo WFC Configuration” in-game.", comment: "")
@@ -2260,10 +2330,7 @@ private extension GameViewController
                 
                 let alertController = UIAlertController(title: NSLocalizedString("Restart Required", comment: ""), message: message, preferredStyle: .alert)
                 alertController.addAction(UIAlertAction(title: NSLocalizedString("Restart", comment: ""), style: .destructive) { _ in
-                    if let emulatorBridge = self.emulatorCore?.deltaCore.emulatorBridge as? MelonDSEmulatorBridge
-                    {
-                        emulatorBridge.wfcDNS = preferredWFCServer
-                    }
+                    CoreConfigurationAdapter.setWirelessServer(preferredWFCServer, for: self.emulatorCore)
                     
                     self.emulatorCore?.stop()
                     self.emulatorCore?.start()
@@ -2770,54 +2837,9 @@ private extension GameViewController
     @objc func didEnableJIT(with notification: Notification)
     {
         DispatchQueue.main.async {
+            guard let core = self.emulatorCore else { return }
             self.showJITEnabledAlert()
-        }
-        
-        DispatchQueue.global(qos: .utility).async {
-            guard let emulatorCore = self.emulatorCore, let emulatorBridge = emulatorCore.deltaCore.emulatorBridge as? MelonDSEmulatorBridge, !emulatorBridge.isJITEnabled
-            else { return }
-            
-            guard emulatorCore.state != .stopped else {
-                // Emulator core is not running, which means we can set
-                // isJITEnabled to true without resetting the core.
-                emulatorBridge.isJITEnabled = true
-                return
-            }
-            
-            let isVideoEnabled = emulatorCore.videoManager.isEnabled
-            emulatorCore.videoManager.isEnabled = false
-            
-            let isRunning = (emulatorCore.state == .running)
-            if isRunning
-            {
-                self.pauseEmulation()
-            }
-            
-            let temporaryFileURL = FileManager.default.uniqueTemporaryURL()
-            
-            let saveState = emulatorCore.saveSaveState(to: temporaryFileURL)
-            emulatorCore.stop()
-            
-            emulatorBridge.isJITEnabled = true
-            
-            emulatorCore.start()
-            emulatorCore.pause()
-            
-            do
-            {
-                try emulatorCore.load(saveState)
-            }
-            catch
-            {
-                print("Failed to load save state after enabling JIT.", error)
-            }
-            
-            if isRunning
-            {
-                self.resumeEmulation()
-            }
-            
-            emulatorCore.videoManager.isEnabled = isVideoEnabled
+            CoreConfigurationAdapter.enableJIT(core, pause: { self.pauseEmulation() }, resume: { self.resumeEmulation() })
         }
     }
     

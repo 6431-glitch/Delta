@@ -35,9 +35,6 @@ PODS:
     - Roxas
     - SwiftyDropbox (~> 5.0.0)
   - Roxas (0.1)
-  - SDWebImage (3.8.3):
-    - SDWebImage/Core (= 3.8.3)
-  - SDWebImage/Core (3.8.3)
   - SMCalloutView (2.1.5)
   - SQLite.swift (0.12.2):
     - SQLite.swift/standard (= 0.12.2)
@@ -48,7 +45,6 @@ PODS:
 DEPENDENCIES:
   - Harmony (from `External/Harmony`)
   - Roxas (from `External/Roxas`)
-  - SDWebImage (~> 3.8)
   - SMCalloutView (~> 2.1.0)
   - SQLite.swift (~> 0.12.0)
 
@@ -60,7 +56,6 @@ SPEC REPOS:
     - GoogleSignIn
     - GTMAppAuth
     - GTMSessionFetcher
-    - SDWebImage
     - SMCalloutView
     - SQLite.swift
     - SwiftyDropbox
@@ -80,11 +75,10 @@ SPEC CHECKSUMS:
   GTMSessionFetcher: 3a63d75eecd6aa32c2fc79f578064e1214dfdec2
   Harmony: 0fb9b6bbf41c63bbbbd0c518e56de920d30e30e0
   Roxas: 1990039f843f5dc284918dc82375feb80020ef62
-  SDWebImage: a72e880a8fe0f7fc31efe15aaed443c074d2a80c
   SMCalloutView: 5c0ee363dc8e7204b2fda17dfad38c93e9e23481
   SQLite.swift: d2b4642190917051ce6bd1d49aab565fe794eea3
   SwiftyDropbox: 378b4425a2e8d0cb24c7b0f2e3af72bfbaaf1e73
 
-PODFILE CHECKSUM: 74c742bd3126f7f3b86d9f57163a7efe8008a5a9
+PODFILE CHECKSUM: 136525cc88d9ea2155f0528a3775aa136f8c6bb0
 
 COCOAPODS: 1.16.2

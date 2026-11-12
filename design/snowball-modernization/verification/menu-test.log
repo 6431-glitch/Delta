@@ -1,0 +1,28 @@
+[GC] collected: java 12116KB→759KB, native 924KB, total 13159KB→1683KB (threshold 91750KB) objs=4450
+[GC] collected: java 759KB→736KB, native 924KB, total 1683KB→1660KB (threshold 91750KB) objs=4255
+[GC] collected: java 736KB→736KB, native 924KB, total 1660KB→1660KB (threshold 91750KB) objs=4255
+[GC] collected: java 737KB→736KB, native 924KB, total 1661KB→1661KB (threshold 91750KB) objs=4262
+[GC] collected: java 736KB→736KB, native 924KB, total 1661KB→1661KB (threshold 91750KB) objs=4262
+[GC] collected: java 736KB→736KB, native 924KB, total 1661KB→1661KB (threshold 91750KB) objs=4262
+[GC] collected: java 736KB→736KB, native 924KB, total 1661KB→1661KB (threshold 91750KB) objs=4262
+[J2ME Render] Registered 32 native methods
+FORM: 
+COMMAND: Original 0
+COMMAND: Original 1
+COMMAND: Original 2
+COMMAND: Original 3
+COMMAND: Original 4
+CANVAS SHOWN
+PASS: five original menu actions, selection wraparound, and native title rendering at 176x208
+FORM: 
+CANVAS SHOWN
+RecordStore snowball_scores opened
+RecordStore snowball_scores closed
+FORM: 
+CANVAS SHOWN
+RecordStore snowball_prefs opened
+RecordStore snowball_prefs closed
+FORM: 
+COMMAND: Back
+CANVAS SHOWN
+PASS: refreshed menu invokes original leaderboard scene

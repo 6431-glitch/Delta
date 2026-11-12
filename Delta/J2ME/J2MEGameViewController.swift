@@ -6,6 +6,8 @@
 //  Engine lifecycle and native form/list presentation remain vendor-compatible.
 //
 
+import DeltaApplication
+import DeltaDomain
 import UIKit
 
 // MARK: - Layout mode (extensible for future layouts)
@@ -16,8 +18,18 @@ enum J2MEGameLayoutMode {
 
 // MARK: - J2MEGameViewController
 
-class J2MEGameViewController: UIViewController {
-    static var isSessionActive = false
+class J2MEGameViewController: UIViewController, UIAdaptivePresentationControllerDelegate {
+    #if DEBUG
+    private var qualitySmokeFailure: String?
+    #endif
+    var sessionLease: SessionOwnership.Lease?
+    private lazy var runtimeSession = CallbackEmulationSession(start: { [weak self] in self?.runGameAsynchronously() }, pause: { paused in
+        delta_j2me_set_paused(paused ? 1 : 0)
+        delta_j2me_audio_pause(paused ? 1 : 0)
+    }, stop: {
+        jvm_bridge_request_stop()
+        delta_j2me_set_paused(0)
+    })
     var saveDirectory: URL!
     var gameIdentifier = ""
     var preferences = J2MEPreferences()
@@ -137,7 +149,7 @@ class J2MEGameViewController: UIViewController {
         NotificationCenter.default.addObserver(self, selector: #selector(suspendForInactivity), name: UIApplication.willResignActiveNotification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(activateSession), name: UIApplication.didBecomeActiveNotification, object: nil)
         input.preferences = preferences
-        input.onPause = { [weak self] in self?.togglePause() }
+        input.onPause = { [weak self] in self?.showPauseMenu() }
         input.startControllers()
         pauseLabel.text = "Paused"
         pauseLabel.font = .systemFont(ofSize: 22, weight: .semibold)
@@ -162,7 +174,13 @@ class J2MEGameViewController: UIViewController {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         navigationController?.setNavigationBarHidden(true, animated: false)
-        if !didStart { didStart = true; startGame() }
+        if !didStart {
+            didStart = true
+            startGame()
+            #if DEBUG
+            if QualitySmokeDriver.enabled { runQualitySmoke() }
+            #endif
+        }
     }
 
     // MARK: - Adaptive Aurora layout
@@ -201,15 +219,15 @@ class J2MEGameViewController: UIViewController {
             button.addTarget(self, action: #selector(softKeyDown(_:)), for: .touchDown)
             button.addTarget(self, action: #selector(softKeyUp(_:)), for: [.touchUpInside, .touchUpOutside, .touchCancel])
         }
-        for (button, symbol, label) in [(backButton, "xmark", "Exit game"), (menuButton, "ellipsis", "Game menu")] {
+        for (button, symbol, label) in [(backButton, "pause.fill", "Pause menu"), (menuButton, "ellipsis", "Game menu")] {
             J2MEAuroraKey.style(button)
             button.setImage(UIImage(systemName: symbol, withConfiguration: UIImage.SymbolConfiguration(pointSize: 20, weight: .semibold)), for: .normal)
             button.accessibilityLabel = label
             button.layer.cornerRadius = 22
         }
-        backButton.addTarget(self, action: #selector(backTapped), for: .touchUpInside)
+        backButton.addTarget(self, action: #selector(showPauseMenu), for: .touchUpInside)
         menuButton.showsMenuAsPrimaryAction = true
-        menuButton.menu = UIMenu(children: [UIAction(title: "Exit Game", image: UIImage(systemName: "xmark"), attributes: .destructive) { [weak self] _ in self?.backTapped() }])
+        menuButton.menu = UIMenu(children: [UIAction(title: "Home", image: UIImage(systemName: "house")) { [weak self] _ in self?.backTapped() }])
         emulatorView.layer.cornerRadius = 14
         emulatorView.clipsToBounds = true
         emulatorView.layer.borderWidth = 1
@@ -240,7 +258,7 @@ class J2MEGameViewController: UIViewController {
             numpadView?.frame = CGRect(x: right.midX - keypadWidth / 2, y: right.midY - keypadHeight / 2, width: keypadWidth, height: keypadHeight)
         } else {
             let keypadHeight: CGFloat = 200
-            let pad: CGFloat = safe.height < 700 ? 132 : 144
+            let pad: CGFloat = 144
             let top = safe.minY + 60
             let available = safe.maxY - top - keypadHeight - pad - 32
             let height = min(available, (safe.width - 32) / ratio)
@@ -297,21 +315,31 @@ class J2MEGameViewController: UIViewController {
     // ============================================================
 
     private func startGame() {
+        do { try runtimeSession.start(); updatePause() }
+        catch { runtimeError = error.localizedDescription; runtimeFinished = true; finishIfReady() }
+    }
+
+    private func runGameAsynchronously() {
+        let request = JavaRuntimeAdapter.Request(resourceRoot: Bundle.main.resourcePath, saveDirectory: saveDirectory,
+            jarPath: jarPath, gameIdentifier: gameIdentifier, appName: appName, canvasWidth: canvasWidth,
+            canvasHeight: canvasHeight, render3dScale: render3dScale, fpsLimit: fpsLimit, preferences: preferences)
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in
-            self?.runMIDlet()
+            let outcome = JavaRuntimeAdapter.run(request)
             DispatchQueue.main.async {
                 guard let self else { return }
+                self.runtimeError = outcome.error
                 self.runtimeTerminated = true
                 self.input.enabled = false
                 self.input.stopControllers()
                 self.joystickView?.cancelKeys(); self.numpadView?.cancelKeys()
-                let complete: (Result<Void, Error>) -> Void = { [weak self] result in
+                let checkpoint = LaunchPreparation { [weak self] _, result in
                     guard let self else { return }
                     if case .failure(let error) = result { self.runtimeError = [self.runtimeError, "Could not sync Java saves: \(error.localizedDescription)"].compactMap { $0 }.joined(separator: "\n") }
+                    self.runtimeSession.finish(failed: self.runtimeError != nil)
                     self.runtimeFinished = true
                     self.finishIfReady()
                 }
-                if let closed = self.onSessionClosed { closed(complete) } else { complete(.success(())) }
+                if let closed = self.onSessionClosed { closed { checkpoint.complete($0) } } else { checkpoint.complete(.success(())) }
                 setGlobalJ2MEEmulatorView(nil)
                 activeJ2MEGameViewController = nil
                 self.finishIfReady()
@@ -326,43 +354,90 @@ class J2MEGameViewController: UIViewController {
         didFinishSession = true
         let presenter = presentingViewController
         dismiss(animated: true) {
-            J2MEGameViewController.isSessionActive = false
+            if let lease = self.sessionLease { EmulationServices.ownership.release(lease) }
+            self.sessionLease = nil
+            #if DEBUG
+            if QualitySmokeDriver.enabled {
+                let archive = DatabaseManager.gamesDirectoryURL.appendingPathComponent(self.gameIdentifier + ".sav")
+                let passed = self.runtimeError == nil && self.qualitySmokeFailure == nil && !EmulationServices.isJavaActive && FileManager.default.fileExists(atPath: archive.path)
+                QualitySmokeDriver.record(runtime: "java", passed: passed, detail: self.runtimeError ?? self.qualitySmokeFailure ?? "Import, frame, native pause/resume, shutdown and save checkpoint")
+            }
+            #endif
             if let error = self.runtimeError, let presenter { J2MELibrary.showError(error, from: presenter) }
         }
     }
 
-    private func runMIDlet() {
-        let started = Date()
-        let sessionPreferences = preferences
-        var diagnosticResult: Int32 = -1
-        defer {
-            J2MEDiagnostics.write(id: gameIdentifier, name: appName, screen: "\(canvasWidth) × \(canvasHeight)", preferences: sessionPreferences, result: diagnosticResult, error: runtimeError, duration: Date().timeIntervalSince(started))
+    #if DEBUG
+    private func runQualitySmoke() {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2) { [weak self] in
+            guard let self else { return }
+            guard let frame = self.emulatorView.displayedFrame else {
+                self.qualitySmokeFailure = "No rendered frame"
+                QualitySmokeDriver.record(runtime: "java", passed: false, detail: "No rendered frame")
+                self.backTapped(); return
+            }
+            if let directory = try? QualitySmokeDriver.directory(), let data = UIImage(cgImage: frame).pngData() {
+                try? data.write(to: directory.appendingPathComponent("java-frame.png"))
+            }
+            self.userPaused = true; self.updatePause()
+            guard delta_j2me_is_paused() != 0 else {
+                self.qualitySmokeFailure = "Native pause failed"
+                QualitySmokeDriver.record(runtime: "java", passed: false, detail: "Native pause failed")
+                self.backTapped(); return
+            }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1) { [weak self] in
+                guard let self else { return }
+                self.userPaused = false; self.updatePause()
+                guard delta_j2me_is_paused() == 0 else {
+                    self.qualitySmokeFailure = "Native resume failed"
+                QualitySmokeDriver.record(runtime: "java", passed: false, detail: "Native resume failed")
+                    self.backTapped(); return
+                }
+                self.backTapped()
+            }
         }
-        guard let resRoot = Bundle.main.resourcePath else { runtimeError = "Runtime resources are missing."; return }
-        let saveRoot = saveDirectory.path
-        do { try FileManager.default.createDirectory(at: saveDirectory, withIntermediateDirectories: true) }
-        catch { runtimeError = "Could not create this game's save folder: \(error.localizedDescription)"; return }
+    }
+    #endif
 
-        let initResult = jvm_bridge_init(resRoot, saveRoot, jarPath,
-                                         Int32(canvasWidth),
-                                         Int32(canvasHeight),
-                                         Int32(render3dScale),
-                                         Int32(fpsLimit))
-        diagnosticResult = initResult
-        guard initResult == 0 else {
-            runtimeError = "The Java runtime could not start (\(initResult))."
-            jvm_bridge_destroy()
-            return
+    @objc private func showPauseMenu() {
+        guard !runtimeTerminated, !exiting, !editingControls, presentedViewController == nil else { return }
+        userPaused = true
+        updatePause()
+        let panel = J2MEPausePanel(title: appName)
+        panel.onContinue = { [weak self] in self?.continueGame() }
+        panel.onHome = { [weak self] in self?.backTapped() }
+        panel.onScreenshot = { [weak self] in self?.shareScreenshot() }
+        present(panel, animated: true)
+        panel.presentationController?.delegate = self
+    }
+
+    private func continueGame() {
+        userPaused = false
+        updatePause()
+        refreshMenu()
+    }
+
+    func presentationControllerDidDismiss(_ presentationController: UIPresentationController) {
+        continueGame()
+    }
+
+    private func shareScreenshot() {
+        let image: UIImage
+        if formView.isHidden, listView.isHidden, let frame = emulatorView.displayedFrame {
+            image = UIImage(cgImage: frame)
+        } else {
+            // Native Java forms/lists do not have a Canvas framebuffer.
+            let target: UIView = !formView.isHidden ? formView : !listView.isHidden ? listView : emulatorView
+            image = UIGraphicsImageRenderer(bounds: target.bounds).image { _ in
+                target.drawHierarchy(in: target.bounds, afterScreenUpdates: true)
+            }
         }
-
-        for (key, value) in sessionPreferences.properties { delta_j2me_set_property(key, value) }
-        let runResult = jvm_bridge_run_midlet(jarPath)
-        diagnosticResult = runResult
-        let javaError = String(cString: delta_j2me_get_property("delta.j2me.error"))
-        if !javaError.isEmpty { runtimeError = "Java compatibility error: " + javaError }
-        if runResult != 0 && runtimeError == nil { runtimeError = "This MIDlet could not run (\(runResult)). It may require unsupported phone APIs." }
-        print("[Swift] MIDlet run result: \(runResult)")
-        jvm_bridge_destroy()
+        let share = UIActivityViewController(activityItems: [image], applicationActivities: nil)
+        share.completionWithItemsHandler = { [weak self] _, _, _, _ in self?.continueGame() }
+        share.popoverPresentationController?.sourceView = backButton
+        share.popoverPresentationController?.sourceRect = backButton.bounds
+        present(share, animated: true)
+        share.presentationController?.delegate = self
     }
 
     @objc private func backTapped() {
@@ -371,9 +446,7 @@ class J2MEGameViewController: UIViewController {
         onPreferencesChanged?(preferences)
         input.enabled = false; input.releaseAll()
         joystickView?.cancelKeys(); numpadView?.cancelKeys()
-        jvm_bridge_request_stop()
-        // Wake paused Java threads so the event loop can observe the stop request.
-        delta_j2me_set_paused(0)
+        try? runtimeSession.stop()
     }
 
     // MARK: - Pause and touch layout editor
@@ -391,8 +464,8 @@ class J2MEGameViewController: UIViewController {
         emulatorView.isUserInteractionEnabled = !paused
         formView.isUserInteractionEnabled = !paused
         listView.isUserInteractionEnabled = !paused
-        delta_j2me_set_paused(paused ? 1 : 0)
-        delta_j2me_audio_pause(paused ? 1 : 0)
+        if paused { try? runtimeSession.pause() }
+        else { try? runtimeSession.resume() }
         pauseLabel.isHidden = !paused || editingControls
     }
     private var orientationKey: String { view.bounds.width > view.bounds.height ? "landscape." : "portrait." }
@@ -411,7 +484,7 @@ class J2MEGameViewController: UIViewController {
                 })
             }
         }
-        actions.append(UIAction(title: userPaused ? "Resume Game" : "Pause Game", image: UIImage(systemName: userPaused ? "play" : "pause")) { [weak self] _ in self?.togglePause() })
+        actions.append(UIAction(title: "Pause Menu", image: UIImage(systemName: "pause")) { [weak self] _ in self?.showPauseMenu() })
         actions.append(UIAction(title: editingControls ? "Done Editing Layout" : "Edit Touch Layout", image: UIImage(systemName: "hand.draw")) { [weak self] _ in
             guard let self else { return }
             self.editingControls.toggle()
@@ -426,9 +499,9 @@ class J2MEGameViewController: UIViewController {
                 self.view.setNeedsLayout()
             })
         }
-        actions.append(UIAction(title: "Exit Game", image: UIImage(systemName: "xmark"), attributes: .destructive) { [weak self] _ in self?.backTapped() })
+        actions.append(UIAction(title: "Home", image: UIImage(systemName: "house")) { [weak self] _ in self?.backTapped() })
         menuButton.menu = UIMenu(children: actions)
-        backButton.accessibilityLabel = "Exit game"
+        backButton.accessibilityLabel = "Pause menu"
     }
     private func rebuildEditor() {
         // Keep recognizer views stable across layout passes, including touch-down
@@ -441,7 +514,7 @@ class J2MEGameViewController: UIViewController {
                 continue
             }
             let overlay = UILabel(frame: pair.1.frame)
-            overlay.text = pair.0.capitalized + "\nDrag / Pinch / Tap"
+            overlay.text = (pair.0 == "joystick" ? "Direction Pad" : pair.0.capitalized) + "\nDrag / Pinch / Tap"
             overlay.numberOfLines = 2; overlay.textAlignment = .center
             overlay.font = .systemFont(ofSize: 12, weight: .bold); overlay.textColor = .white
             overlay.backgroundColor = J2MEAuroraKey.purple.withAlphaComponent(0.35)
@@ -601,6 +674,91 @@ let j2meGameUICallback: @convention(c) (Int32, UnsafePointer<CChar>?) -> Void = 
         case Int32(J2ME_UI_ACTION_SHOW_LIST):    vc.showListView()
         case Int32(J2ME_UI_ACTION_SHOW_ALERT):   vc.showAlert()
         default: break
+        }
+    }
+}
+
+/// Native sheet follows the console pause menu's action hierarchy.
+private final class J2MEPausePanel: UIViewController {
+    var onContinue: (() -> Void)?
+    var onHome: (() -> Void)?
+    var onScreenshot: (() -> Void)?
+    private let gameTitle: String
+    override var supportedInterfaceOrientations: UIInterfaceOrientationMask { AppOrientation.current.mask }
+
+    init(title: String) {
+        gameTitle = title
+        super.init(nibName: nil, bundle: nil)
+        modalPresentationStyle = .pageSheet
+    }
+    required init?(coder: NSCoder) { fatalError() }
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        overrideUserInterfaceStyle = .dark
+        view.backgroundColor = UIColor(red: 0.07, green: 0.04, blue: 0.13, alpha: 1)
+        let scroll = UIScrollView()
+        scroll.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(scroll)
+        let content = UIStackView()
+        content.axis = .vertical
+        content.spacing = 12
+        content.translatesAutoresizingMaskIntoConstraints = false
+        scroll.addSubview(content)
+        NSLayoutConstraint.activate([
+            scroll.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 20),
+            scroll.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
+            scroll.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 24),
+            scroll.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -24),
+            content.topAnchor.constraint(equalTo: scroll.contentLayoutGuide.topAnchor),
+            content.bottomAnchor.constraint(equalTo: scroll.contentLayoutGuide.bottomAnchor, constant: -20),
+            content.leadingAnchor.constraint(equalTo: scroll.contentLayoutGuide.leadingAnchor),
+            content.trailingAnchor.constraint(equalTo: scroll.contentLayoutGuide.trailingAnchor),
+            content.widthAnchor.constraint(equalTo: scroll.frameLayoutGuide.widthAnchor)
+        ])
+        let title = UILabel()
+        title.text = gameTitle
+        title.font = .preferredFont(forTextStyle: .title2)
+        title.adjustsFontForContentSizeCategory = true
+        title.textColor = .white
+        title.numberOfLines = 2
+        content.addArrangedSubview(title)
+        let subtitle = UILabel()
+        subtitle.text = "Paused"
+        subtitle.textColor = .secondaryLabel
+        subtitle.font = .preferredFont(forTextStyle: .subheadline)
+        content.addArrangedSubview(subtitle)
+        for (label, symbol, action) in [("Continue", "play.fill", 0), ("Screenshot", "camera", 1), ("Orientation", AppOrientation.current.symbol, 3), ("Home", "house", 2)] {
+            let button = J2MEAuroraButton(type: .system)
+            J2MEAuroraKey.style(button)
+            var config = UIButton.Configuration.plain()
+            config.title = action == 3 ? String(localized: "Orientation") + " · " + AppOrientation.current.title : label
+            config.image = UIImage(systemName: symbol)
+            config.imagePadding = 12
+            config.contentInsets = NSDirectionalEdgeInsets(top: 16, leading: 20, bottom: 16, trailing: 20)
+            button.configuration = config
+            button.contentHorizontalAlignment = .leading
+            if action == 0 { button.backgroundColor = J2MEAuroraKey.purple }
+            button.addAction(UIAction { [weak self, weak button] _ in
+                guard let self else { return }
+                if action == 3 {
+                    AppOrientation.presentPicker(from: self, sourceView: button) { [weak button] in
+                        var updated = button?.configuration
+                        updated?.title = String(localized: "Orientation") + " · " + AppOrientation.current.title
+                        updated?.image = UIImage(systemName: AppOrientation.current.symbol)
+                        button?.configuration = updated
+                    }
+                    return
+                }
+                let callback = action == 0 ? self.onContinue : action == 1 ? self.onScreenshot : self.onHome
+                self.dismiss(animated: true) { callback?() }
+            }, for: .touchUpInside)
+            content.addArrangedSubview(button)
+        }
+        if let sheet = sheetPresentationController {
+            sheet.detents = [.medium(), .large()]
+            sheet.prefersGrabberVisible = true
+            sheet.preferredCornerRadius = 28
         }
     }
 }

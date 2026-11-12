@@ -30,6 +30,10 @@ class J2MENumpadView: UIView {
     required init?(coder: NSCoder) { fatalError() }
 
     private func setup() {
+        // One continuous phone keypad; only the outer boundary is rounded.
+        layer.cornerRadius = 16
+        layer.cornerCurve = .continuous
+        clipsToBounds = true
         let numpad: [(String, Int32)] = [
             ("1", 49), ("2", 50), ("3", 51),
             ("4", 52), ("5", 53), ("6", 54),
@@ -40,6 +44,8 @@ class J2MENumpadView: UIView {
             let btn = J2MEAuroraButton(type: .system)
             btn.setTitle(title, for: .normal)
             J2MEAuroraKey.style(btn)
+            btn.layer.cornerRadius = 0
+            btn.titleLabel?.font = .systemFont(ofSize: 24, weight: .semibold)
             btn.accessibilityLabel = title == "*" ? "Star" : title == "#" ? "Hash" : title
             btn.tag = Int(code)
             btn.addTarget(self, action: #selector(down(_:)), for: .touchDown)
@@ -56,10 +62,8 @@ class J2MENumpadView: UIView {
 
         let cols: CGFloat = 3
         let numRows: CGFloat = 4
-        let gap: CGFloat = 8
-
-        let btnW = (w - gap * (cols - 1)) / cols
-        let btnH = (h - gap * (numRows - 1)) / numRows
+        let btnW = w / cols
+        let btnH = h / numRows
 
         for sub in subviews {
             guard let btn = sub as? UIButton else { continue }
@@ -82,8 +86,8 @@ class J2MENumpadView: UIView {
             default: continue
             }
             btn.frame = CGRect(
-                x: CGFloat(col) * (btnW + gap),
-                y: CGFloat(row) * (btnH + gap),
+                x: CGFloat(col) * btnW,
+                y: CGFloat(row) * btnH,
                 width: btnW, height: btnH)
         }
 

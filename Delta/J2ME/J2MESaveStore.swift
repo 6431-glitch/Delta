@@ -1,4 +1,5 @@
 import Foundation
+import DeltaDomain
 import Roxas
 import CoreData
 
@@ -24,6 +25,9 @@ enum J2MESaveStore {
                     }
                 }
                 DispatchQueue.main.async {
+                    guard !game.isDeleted, game.managedObjectContext != nil else {
+                        completion(.failure(EmulationError.gameNotFound)); return
+                    }
                     if let settings {
                         var current = game.gameSettings as? [String: Any] ?? [:]
                         current = current.filter { !$0.key.hasPrefix("j2me.") }
@@ -47,7 +51,7 @@ enum J2MESaveStore {
                 try hash.write(to: receipt(id), atomically: true, encoding: .utf8)
                 DatabaseManager.shared.performBackgroundTask { context in
                     do {
-                        guard let game = try context.existingObject(with: objectID) as? Game else { return }
+                        guard let game = try context.existingObject(with: objectID) as? Game, !game.isDeleted else { throw EmulationError.gameNotFound }
                         if game.gameSave?.sha1 != hash {
                             let save = game.gameSave ?? GameSave(context: context)
                             save.identifier = id; save.modifiedDate = Date(); save.sha1 = hash

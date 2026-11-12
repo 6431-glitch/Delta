@@ -15,13 +15,10 @@ import RegexBuilder
 // Access UIWindowScene.isStageManagerEnabled
 @_spi(Internal) import DeltaCore
 
-import MelonDSDeltaCore
-import GBCDeltaCore
 
 import Roxas
 import Harmony
 
-import SDWebImage
 
 extension GameCollectionViewController
 {
@@ -47,9 +44,9 @@ extension GameCollectionViewController
         var errorDescription: String? {
             switch self
             {
-            case .alreadyRunning: return NSLocalizedString("Delta can only play one copy of a game at a time.", comment: "")
+            case .alreadyRunning: return NSLocalizedString("Epsilon can only play one copy of a game at a time.", comment: "")
             case .downloadingGameSave: return NSLocalizedString("Please wait until after this game's save file has been downloaded before playing to prevent losing save data.", comment: "")
-            case .biosNotFound: return NSLocalizedString("Please import the required files in Delta's settings to play DS games.", comment: "")
+            case .biosNotFound: return NSLocalizedString("Please import the required files in Epsilon’s settings to play DS games.", comment: "")
             case .systemAlreadyRunning(let game, _):
                 var gameNamePhrase = ""
                 if let game
@@ -57,7 +54,7 @@ extension GameCollectionViewController
                     gameNamePhrase = String(format: " (“%@”)", game.name)
                 }
                 
-                let message = String(format: NSLocalizedString("Delta can only play one game per system at a time.\n\nPlease quit the other game%@, or choose another game for a different system.", comment: ""), gameNamePhrase)
+                let message = String(format: NSLocalizedString("Epsilon can only play one game per system at a time.\n\nPlease quit the other game%@, or choose another game for a different system.", comment: ""), gameNamePhrase)
                 return message
                 
             case .multiplayerSessionActive(let emulatorCore):
@@ -203,6 +200,8 @@ extension GameCollectionViewController
     override func viewWillDisappear(_ animated: Bool)
     {
         super.viewWillDisappear(animated)
+        // A delayed restore must not present gameplay after this launch surface is gone.
+        EmulationServices.cancelPendingJavaLaunch(ownedBy: self)
         
         if _performingPreviewTransition
         {
@@ -287,41 +286,8 @@ extension GameCollectionViewController
                 destinationViewController.game = game
             }
             
-            if let emulatorBridge = destinationViewController.emulatorCore?.deltaCore.emulatorBridge as? GBCEmulatorBridge
-            {
-                if let preferredPalette = Settings.preferredGBColorPalette
-                {
-                    emulatorBridge.backgroundPalette = preferredPalette.palettes.0
-                    emulatorBridge.spritePalette = preferredPalette.palettes.1
-                    emulatorBridge.foregroundPalette = preferredPalette.palettes.2
-                }
-                else
-                {
-                    emulatorBridge.backgroundPalette = nil
-                    emulatorBridge.spritePalette = nil
-                    emulatorBridge.foregroundPalette = nil
-                }
-            }
+            CoreConfigurationAdapter.configure(destinationViewController.emulatorCore, game: game)
 
-            if let emulatorBridge = destinationViewController.emulatorCore?.deltaCore.emulatorBridge as? MelonDSEmulatorBridge
-            {
-                //TODO: Update this to work with multiple processes by retrieving emulatorBridge directly from emulatorCore.
-                
-                if game.identifier == Game.melonDSDSiBIOSIdentifier
-                {
-                    emulatorBridge.systemType = .dsi
-                }
-                else
-                {
-                    emulatorBridge.systemType = .ds
-                }
-                
-                emulatorBridge.isJITEnabled = ProcessInfo.processInfo.isJITAvailable
-                emulatorBridge.isWFCEnabled = true
-                emulatorBridge.gbaGameURL = game.secondaryGame?.fileURL
-                emulatorBridge.wfcDNS = Settings.preferredWFCServer
-            }
-            
             if let saveState = self.activeSaveState /* && self.isResumingGame */ // activeSaveState can be non-nil even when not resuming game.
             {
                 // Must be synchronous or else there will be a flash of black
@@ -373,8 +339,8 @@ extension GameCollectionViewController
         if let activeEmulatorCore = self.activeEmulatorCore, !activeEmulatorCore.isWirelessMultiplayerActive
         {
             let fetchRequest = SaveState.rst_fetchRequest() as! NSFetchRequest<SaveState>
-            fetchRequest.predicate = NSPredicate(format: "%K == %@ AND %K == %d", #keyPath(SaveState.game), game, #keyPath(SaveState.type), SaveStateType.auto.rawValue)
-            fetchRequest.sortDescriptors = [NSSortDescriptor(key: #keyPath(SaveState.creationDate), ascending: true)]
+            fetchRequest.predicate = NSPredicate(format: "%K == %@ AND %K IN %@", #keyPath(SaveState.game), game, #keyPath(SaveState.type), [SaveStateType.auto.rawValue, SaveStateType.main.rawValue])
+            fetchRequest.sortDescriptors = [NSSortDescriptor(key: #keyPath(SaveState.modifiedDate), ascending: true)]
             
             do
             {
@@ -577,6 +543,11 @@ private extension GameCollectionViewController
     {
         self.isResumingGame = false
         let selected = selectedGame ?? self.dataSource.item(at: indexPath)
+        do { _ = try EmulationServices.prepare(selected) }
+        catch {
+            self.present(UIAlertController(title: NSLocalizedString("Could Not Launch Game", comment: ""), error: error), animated: true)
+            return
+        }
         if selected.type == .j2me {
             do { try self.validateLaunchingGame(selected, ignoringErrors: []) }
             catch { J2MELibrary.showError(error.localizedDescription, from: self); return }
@@ -617,8 +588,8 @@ private extension GameCollectionViewController
                         if let activeEmulatorCore = self.activeEmulatorCore, !activeEmulatorCore.isWirelessMultiplayerActive
                         {
                             let fetchRequest = SaveState.rst_fetchRequest() as! NSFetchRequest<SaveState>
-                            fetchRequest.predicate = NSPredicate(format: "%K == %@ AND %K == %d", #keyPath(SaveState.game), game, #keyPath(SaveState.type), SaveStateType.auto.rawValue)
-                            fetchRequest.sortDescriptors = [NSSortDescriptor(key: #keyPath(SaveState.creationDate), ascending: true)]
+                            fetchRequest.predicate = NSPredicate(format: "%K == %@ AND %K IN %@", #keyPath(SaveState.game), game, #keyPath(SaveState.type), [SaveStateType.auto.rawValue, SaveStateType.main.rawValue])
+                            fetchRequest.sortDescriptors = [NSSortDescriptor(key: #keyPath(SaveState.modifiedDate), ascending: true)]
                             
                             do
                             {
@@ -645,7 +616,7 @@ private extension GameCollectionViewController
                     self.present(alertController, animated: true)
                     
                 case .biosNotFound:
-                    let alertController = UIAlertController(title: NSLocalizedString("Missing Required DS Files", comment: ""), message: NSLocalizedString("Delta requires certain files to play Nintendo DS games. Please import them to launch this game.", comment: ""), preferredStyle: .alert)
+                    let alertController = UIAlertController(title: NSLocalizedString("Missing Required DS Files", comment: ""), message: NSLocalizedString("Epsilon requires certain files to play Nintendo DS games. Please import them to launch this game.", comment: ""), preferredStyle: .alert)
                     alertController.addAction(UIAlertAction(title: NSLocalizedString("Import Files", comment: ""), style: .default) { _ in
                         self.performSegue(withIdentifier: "showDSSettings", sender: nil)
                     })
@@ -740,55 +711,8 @@ private extension GameCollectionViewController
             }
         }
         
-        if let coordinator = SyncManager.shared.coordinator, coordinator.isSyncing
-        {
-            if let gameSave = game.gameSave
-            {
-                do
-                {
-                    if let record = try coordinator.recordController.fetchRecords(for: [gameSave]).first
-                    {
-                        if record.isSyncingEnabled && !record.isConflicted && (record.localStatus == nil || record.remoteStatus == .updated)
-                        {
-                            throw LaunchError.downloadingGameSave
-                        }
-                    }
-                }
-                catch let error as LaunchError
-                {
-                    throw error
-                }
-                catch
-                {
-                    print("Error fetching record for game save.", error)
-                }
-            }
-        }
-        
-        if game.type == .ds && Settings.preferredCore(for: .ds) == MelonDS.core
-        {
-            if game.identifier == Game.melonDSDSiBIOSIdentifier
-            {
-                guard
-                    FileManager.default.fileExists(atPath: MelonDSEmulatorBridge.shared.dsiBIOS7URL.path) &&
-                    FileManager.default.fileExists(atPath: MelonDSEmulatorBridge.shared.dsiBIOS9URL.path) &&
-                    FileManager.default.fileExists(atPath: MelonDSEmulatorBridge.shared.dsiFirmwareURL.path) &&
-                    FileManager.default.fileExists(atPath: MelonDSEmulatorBridge.shared.dsiNANDURL.path)
-                else { throw LaunchError.biosNotFound }
-            }
-            else if game.identifier == Game.melonDSBIOSIdentifier
-            {
-                guard
-                    FileManager.default.fileExists(atPath: MelonDSEmulatorBridge.shared.bios7URL.path) &&
-                    FileManager.default.fileExists(atPath: MelonDSEmulatorBridge.shared.bios9URL.path) &&
-                    FileManager.default.fileExists(atPath: MelonDSEmulatorBridge.shared.firmwareURL.path)
-                else { throw LaunchError.biosNotFound }
-            }
-            else
-            {
-                // BIOS files are only required to emulate DS(i) home screen.
-            }
-        }
+        guard CoreConfigurationAdapter.requiredFilesAvailable(for: game) else { throw LaunchError.biosNotFound }
+
     }
 }
 
@@ -821,6 +745,10 @@ private extension GameCollectionViewController
         
         let shareAction = UIAction(title: NSLocalizedString("Share", comment: ""), image: UIImage(symbolNameIfAvailable: "square.and.arrow.up")) { [unowned self] action in
             self.share(game)
+        }
+        let transferAction = UIAction(title: String(localized: "Transfer"), image: UIImage(systemName: "arrow.up.arrow.down")) { [weak self] _ in
+            guard let self else { return }
+            GameTransferCoordinator.export(game, from: self, sourceView: self._popoverSourceView)
         }
         
         let settingsAction = UIAction(title: NSLocalizedString("Game Settings", comment: ""), image: UIImage(symbolNameIfAvailable: "gear")) { [unowned self] _ in
@@ -857,7 +785,7 @@ private extension GameCollectionViewController
         switch game.type
         {
         case .j2me:
-            return [favoriteAction, renameAction, changeArtworkAction, shareAction, settingsMenu, deleteAction]
+            return [favoriteAction, renameAction, changeArtworkAction, shareAction, transferAction, settingsMenu, deleteAction]
 
         case GameType.unknown:
             return [renameAction, shareAction, settingsMenu, deleteAction]
@@ -866,7 +794,7 @@ private extension GameCollectionViewController
             return openActions + [favoriteAction, renameAction, changeArtworkAction, settingsMenu, saveStatesAction]
             
         default:
-            return openActions + [favoriteAction, renameAction, changeArtworkAction, shareAction, settingsMenu, savesMenu, deleteAction]
+            return openActions + [favoriteAction, renameAction, changeArtworkAction, shareAction, transferAction, settingsMenu, savesMenu, deleteAction]
         }
     }
     
@@ -1072,11 +1000,7 @@ private extension GameCollectionViewController
         {
             self.dataSource.prefetchItemCache.removeObject(forKey: game)
             
-            if let cacheManager = SDWebImageManager.shared()
-            {
-                let cacheKey = cacheManager.cacheKey(for: imageURL)
-                cacheManager.imageCache.removeImage(forKey: cacheKey)
-            }
+            ArtworkImagePipeline.invalidate(imageURL)
             
             DatabaseManager.shared.performBackgroundTask { (context) in
                 let temporaryGame = context.object(with: game.objectID) as! Game
@@ -1296,22 +1220,8 @@ private extension GameCollectionViewController
             gameViewController.previewImage = UIImage(contentsOfFile: previewSaveState.imageFileURL.path)
         }
         
-        if let emulatorBridge = gameViewController.emulatorCore?.deltaCore.emulatorBridge as? MelonDSEmulatorBridge
-        {
-            //TODO: Update this to work with multiple processes by retrieving emulatorBridge directly from emulatorCore.
+        CoreConfigurationAdapter.configure(gameViewController.emulatorCore, game: game, preview: true)
 
-            if game.identifier == Game.melonDSDSiBIOSIdentifier
-            {
-                emulatorBridge.systemType = .dsi
-            }
-            else
-            {
-                emulatorBridge.systemType = .ds
-            }
-
-            emulatorBridge.isJITEnabled = ProcessInfo.processInfo.isJITAvailable
-        }
-        
         return gameViewController
     }
     
@@ -1367,8 +1277,10 @@ extension GameCollectionViewController: SaveStatesViewControllerDelegate
         self.activeSaveState = saveState
         
         self.dismiss(animated: true) {
-            let indexPath = self.dataSource.fetchedResultsController.indexPath(forObject: saveStatesViewController.game)!
-            self.launchGame(at: indexPath, clearScreen: false, ignoreAlreadyRunningError: true)
+            // Aurora can open a game from any platform while the backing grid
+            // is still showing another collection. Launch the explicit game.
+            self.launchGame(at: IndexPath(item: 0, section: 0), clearScreen: false,
+                            ignoreAlreadyRunningError: true, selectedGame: saveStatesViewController.game)
         }
     }
 }

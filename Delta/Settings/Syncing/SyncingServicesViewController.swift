@@ -229,7 +229,7 @@ extension SyncingServicesViewController
             {
                 let isCloud = self.selectedSyncingService == .iCloud
                 let title = isCloud ? NSLocalizedString("Disconnect iCloud Sync?", comment: "") : NSLocalizedString("Are you sure you want to sign out?", comment: "")
-                let message = isCloud ? NSLocalizedString("This stops Delta syncing. Your device stays signed in to iCloud and your cloud data is kept.", comment: "") : NSLocalizedString("Signing in again later may result in conflicts that must be resolved manually.", comment: "")
+                let message = isCloud ? NSLocalizedString("This stops Epsilon syncing. Your device stays signed in to iCloud and your cloud data is kept.", comment: "") : NSLocalizedString("Signing in again later may result in conflicts that must be resolved manually.", comment: "")
                 let alertController = UIAlertController(title: title, message: message, preferredStyle: .alert)
                 alertController.addAction(.cancel)
                 alertController.addAction(UIAlertAction(title: isCloud ? NSLocalizedString("Disconnect", comment: "") : NSLocalizedString("Sign Out", comment: ""), style: .destructive) { (action) in

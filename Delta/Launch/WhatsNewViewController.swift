@@ -97,7 +97,7 @@ class WhatsNewViewController: UICollectionViewController
         self.footerView.translatesAutoresizingMaskIntoConstraints = false
         self.view.addSubview(self.footerView)
         
-        self.versionLabel.text = String(localized: "Delta \(UserDefaults.whatsNewVersion)")
+        self.versionLabel.text = String(localized: "Epsilon \(UserDefaults.whatsNewVersion)")
         
         if #available(iOS 26, *)
         {

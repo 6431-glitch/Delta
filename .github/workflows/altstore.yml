@@ -1,0 +1,71 @@
+name: Publish Epsilon to AltStore
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: read
+
+concurrency:
+  group: epsilon-altstore-publish
+  cancel-in-progress: false
+
+jobs:
+  context:
+    runs-on: macos-26
+    outputs:
+      deploy: ${{ steps.release.outputs.deploy }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Require a merged main PR or manual main dispatch
+        id: release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 Scripts/AltStore/release_event.py
+  publish:
+    needs: context
+    if: needs.context.outputs.deploy == 'true'
+    runs-on: macos-26
+    environment: altstore
+    timeout-minutes: 90
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.6.app/Contents/Developer
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+          lfs: true
+      - name: Check out pinned dependencies
+        env:
+          GIT_CONFIG_COUNT: 1
+          GIT_CONFIG_KEY_0: url.https://github.com/.insteadOf
+          GIT_CONFIG_VALUE_0: 'git@github.com:'
+          GIT_TERMINAL_PROMPT: 0
+        run: git submodule update --init --recursive
+      - name: Verify release helpers and Swift contracts
+        run: |
+          python3 -m unittest discover -s Scripts/AltStore -p 'test_*.py'
+          swift test
+      - name: Archive and export signed IPA
+        env:
+          EPSILON_CERTIFICATE_P12_BASE64: ${{ secrets.EPSILON_CERTIFICATE_P12_BASE64 }}
+          EPSILON_CERTIFICATE_PASSWORD: ${{ secrets.EPSILON_CERTIFICATE_PASSWORD }}
+          EPSILON_PROFILE_BASE64: ${{ secrets.EPSILON_PROFILE_BASE64 }}
+          EPSILON_TEAM_ID: ${{ vars.EPSILON_TEAM_ID }}
+        run: bash Scripts/AltStore/archive.sh
+      - name: Publish verified IPA and update catalog
+        env:
+          GH_TOKEN: ${{ secrets.ALTSTORE_PUBLISH_TOKEN }}
+        run: |
+          shopt -s nullglob
+          ipas=("$RUNNER_TEMP"/epsilon-export/*.ipa)
+          if (( ${#ipas[@]} != 1 )); then echo '::error::Expected exactly one exported IPA'; exit 1; fi
+          python3 Scripts/AltStore/publish.py "$RUNNER_TEMP/epsilon-export"
+      - name: Remove temporary exports
+        if: always()
+        run: rm -rf "$RUNNER_TEMP/epsilon-export"

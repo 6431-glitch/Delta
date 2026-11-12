@@ -33,3 +33,10 @@ xcuserdata
 
 ## Project-Specific
 Delta.playground
+
+# Local quality validation logs
+.quality-*.log
+
+# Python tooling caches
+__pycache__/
+*.pyc
